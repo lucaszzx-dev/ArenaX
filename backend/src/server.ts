@@ -1,12 +1,34 @@
-import { buildApp } from "./app.js";
+import { loadEnvFile } from "node:process";
 
-const app = buildApp();
-const port = 3333;
+import { buildApp } from "./app.js";
+import { DrizzleAuthRepository } from "./auth/drizzle-auth-repository.js";
+import { AuthService } from "./auth/auth-service.js";
+import { parseEnv } from "./config/env.js";
+import { createDatabase } from "./db/client.js";
+
+try {
+  loadEnvFile();
+} catch {
+  // Production platforms usually provide environment variables directly.
+}
+
+const env = parseEnv();
+const database = createDatabase(env.DATABASE_URL);
+const authRepository = new DrizzleAuthRepository(database.db);
+const authService = new AuthService(authRepository, env.SESSION_TTL_DAYS);
+const app = buildApp({
+  authService,
+  env
+});
+
+app.addHook("onClose", async () => {
+  await database.close();
+});
 
 try {
   await app.listen({
-    host: "0.0.0.0",
-    port
+    host: env.HOST,
+    port: env.PORT
   });
 } catch (error) {
   app.log.error(error);
