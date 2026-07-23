@@ -1,0 +1,191 @@
+import {
+  boolean,
+  check,
+  integer,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid
+} from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
+
+export const championshipEntryType = pgEnum("championship_entry_type", [
+  "INDIVIDUAL",
+  "TEAM"
+]);
+
+export const championshipStatus = pgEnum("championship_status", [
+  "DRAFT",
+  "PUBLISHED",
+  "FINISHED"
+]);
+
+export const matchStatus = pgEnum("match_status", [
+  "SCHEDULED",
+  "FINISHED",
+  "CANCELED"
+]);
+
+const timestamps = {
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+};
+
+export const users = pgTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  ...timestamps
+});
+
+export const profiles = pgTable("profiles", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  displayName: text("display_name").notNull(),
+  avatarUrl: text("avatar_url"),
+  bio: text("bio"),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+});
+
+export const sessions = pgTable("sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull().unique(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+});
+
+export const championships = pgTable(
+  "championships",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizerId: uuid("organizer_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "restrict" }),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    sport: text("sport").notNull(),
+    description: text("description"),
+    entryType: championshipEntryType("entry_type").notNull(),
+    status: championshipStatus("status").notNull().default("DRAFT"),
+    winPoints: integer("win_points").notNull().default(3),
+    drawPoints: integer("draw_points").notNull().default(1),
+    lossPoints: integer("loss_points").notNull().default(0),
+    allowsDraw: boolean("allows_draw").notNull().default(true),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    ...timestamps
+  },
+  (table) => [
+    check(
+      "championship_dates_order",
+      sql`${table.endsAt} is null or ${table.startsAt} is null or ${table.endsAt} >= ${table.startsAt}`
+    ),
+    check(
+      "championship_points_non_negative",
+      sql`${table.winPoints} >= 0 and ${table.drawPoints} >= 0 and ${table.lossPoints} >= 0`
+    )
+  ]
+);
+
+export const teams = pgTable(
+  "teams",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    championshipId: uuid("championship_id")
+      .notNull()
+      .references(() => championships.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    shortName: text("short_name"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    unique("teams_championship_name_unique").on(
+      table.championshipId,
+      table.name
+    )
+  ]
+);
+
+export const teamMembers = pgTable("team_members", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  teamId: uuid("team_id")
+    .notNull()
+    .references(() => teams.id, { onDelete: "cascade" }),
+  displayName: text("display_name").notNull(),
+  userId: uuid("user_id").references(() => users.id, {
+    onDelete: "set null"
+  }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+});
+
+export const championshipEntries = pgTable(
+  "championship_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    championshipId: uuid("championship_id")
+      .notNull()
+      .references(() => championships.id, { onDelete: "cascade" }),
+    displayName: text("display_name").notNull(),
+    userId: uuid("user_id").references(() => users.id, {
+      onDelete: "set null"
+    }),
+    teamId: uuid("team_id").references(() => teams.id, {
+      onDelete: "cascade"
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    check(
+      "championship_entry_exactly_one_subject",
+      sql`((${table.userId} is not null)::integer + (${table.teamId} is not null)::integer) = 1`
+    )
+  ]
+);
+
+export const matches = pgTable(
+  "matches",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    championshipId: uuid("championship_id")
+      .notNull()
+      .references(() => championships.id, { onDelete: "cascade" }),
+    homeEntryId: uuid("home_entry_id")
+      .notNull()
+      .references(() => championshipEntries.id, { onDelete: "restrict" }),
+    awayEntryId: uuid("away_entry_id")
+      .notNull()
+      .references(() => championshipEntries.id, { onDelete: "restrict" }),
+    scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
+    status: matchStatus("status").notNull().default("SCHEDULED"),
+    homeScore: integer("home_score"),
+    awayScore: integer("away_score"),
+    ...timestamps
+  },
+  (table) => [
+    check("match_distinct_entries", sql`${table.homeEntryId} <> ${table.awayEntryId}`),
+    check(
+      "match_scores_non_negative",
+      sql`(${table.homeScore} is null or ${table.homeScore} >= 0) and (${table.awayScore} is null or ${table.awayScore} >= 0)`
+    )
+  ]
+);

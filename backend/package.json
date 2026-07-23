@@ -6,17 +6,25 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.build.json",
+    "db:generate": "dotenv -e .env -- drizzle-kit generate",
+    "db:migrate": "dotenv -e .env -- drizzle-kit migrate",
+    "db:studio": "dotenv -e .env -- drizzle-kit studio",
     "lint": "eslint src test",
     "test": "vitest run",
     "test:watch": "vitest"
   },
   "dependencies": {
+    "drizzle-orm": "^0.45.2",
     "fastify": "^5.10.0",
+    "pg": "^8.22.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.1.1",
+    "@types/pg": "^8.20.0",
+    "dotenv-cli": "^11.0.0",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^10.7.0",
     "tsx": "^4.23.1",
     "typescript": "^6.0.3",
