@@ -1,6 +1,6 @@
 # ArenaX — planejamento inicial
 
-Status: proposta aguardando aprovação  
+Status: aprovado; Fase 0 em andamento
 Última atualização: 23 de julho de 2026
 
 ## 1. Proposta curta do produto
@@ -416,3 +416,4 @@ Se o Docker Desktop não puder ser instalado ou for pesado demais para a máquin
 | 23/07/2026 | Planejamento inicial | Aguardando aprovação | Nenhum código ou dependência criado |
 | 23/07/2026 | Diagnóstico do ambiente | Concluído | Node, npm, pnpm e Git disponíveis; Docker, PostgreSQL e GitHub CLI ausentes |
 | 23/07/2026 | Decisões técnicas iniciais | Propostas | pnpm, PostgreSQL em Docker e commits por progresso coerente |
+| 23/07/2026 | Primeiro commit | Concluído | Planejamento registrado no commit `b656abb` |

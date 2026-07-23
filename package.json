@@ -1,0 +1,17 @@
+{
+  "name": "arenax",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plataforma para criar e acompanhar campeonatos amadores.",
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./frontend\" --filter \"./backend\" dev",
+    "build": "pnpm --recursive --if-present build",
+    "lint": "pnpm --recursive --if-present lint",
+    "test": "pnpm --recursive --if-present test"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.0.0"
+  }
+}

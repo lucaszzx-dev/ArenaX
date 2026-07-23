@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build and test output
+dist/
+coverage/
+*.tsbuildinfo
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+pnpm-debug.log*
+
+# Editor and operating system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local database and Docker data
+*.sqlite
+.docker-data/
