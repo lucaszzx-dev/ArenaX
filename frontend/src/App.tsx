@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { PublicLayout } from "./components/PublicLayout/PublicLayout";
 import { ChampionshipPage } from "./pages/ChampionshipPage/ChampionshipPage";
+import { DashboardPage } from "./pages/DashboardPage/DashboardPage";
 import { HomePage } from "./pages/HomePage/HomePage";
 import { LoginPage } from "./pages/LoginPage/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage/NotFoundPage";
@@ -14,6 +15,7 @@ export function App() {
         <Route index element={<HomePage />} />
         <Route path="entrar" element={<LoginPage />} />
         <Route path="cadastro" element={<RegisterPage />} />
+        <Route path="painel" element={<DashboardPage />} />
         <Route
           path="campeonatos/demo"
           element={<ChampionshipPage />}

@@ -4,7 +4,7 @@ Plataforma web para criar, administrar e acompanhar campeonatos amadores de espo
 
 ## Estado atual
 
-O projeto está na fase inicial de preparação. O escopo e as decisões estão documentados em [docs/PLANEJAMENTO.md](docs/PLANEJAMENTO.md).
+A fundação full-stack e a primeira fatia de autenticação estão implementadas. O escopo e as decisões estão documentados em [docs/PLANEJAMENTO.md](docs/PLANEJAMENTO.md).
 
 ## Estrutura
 
@@ -22,7 +22,49 @@ arenax/
 - pnpm 11 ou superior
 - Docker Desktop (será usado para o PostgreSQL)
 
-As instruções de instalação e execução serão adicionadas conforme cada parte for implementada.
+## Preparação
+
+1. Instale o Docker Desktop e mantenha-o aberto.
+2. Instale as dependências:
+
+   ```bash
+   pnpm install
+   ```
+
+3. Crie os arquivos locais de ambiente:
+
+   ```powershell
+   Copy-Item backend/.env.example backend/.env
+   Copy-Item frontend/.env.example frontend/.env
+   ```
+
+4. Inicie o PostgreSQL:
+
+   ```bash
+   docker compose up -d
+   ```
+
+5. Execute a migração:
+
+   ```bash
+   pnpm --dir backend db:migrate
+   ```
+
+6. Inicie frontend e backend:
+
+   ```bash
+   pnpm dev
+   ```
+
+O frontend ficará em `http://localhost:5173` e a API em `http://localhost:3333`.
+
+## Verificações
+
+```bash
+pnpm build
+pnpm lint
+pnpm test
+```
 
 ## Segurança
 

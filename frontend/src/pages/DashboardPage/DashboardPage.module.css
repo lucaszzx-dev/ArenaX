@@ -1,0 +1,85 @@
+.page {
+  width: min(960px, calc(100% - 2rem));
+  min-height: calc(100vh - 4.5rem);
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+
+.welcome > span {
+  color: var(--color-primary-dark);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.welcome h1 {
+  margin: 0.75rem 0 0.5rem;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  letter-spacing: -0.065em;
+}
+
+.welcome p,
+.emptyState p {
+  color: var(--color-text-muted);
+}
+
+.emptyState {
+  margin-top: 3rem;
+  padding: 3.5rem 1.5rem;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 1rem;
+  background: var(--color-surface-elevated);
+  text-align: center;
+}
+
+.emptyState > span {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1.2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+  font-size: 1.4rem;
+}
+
+.emptyState h2 {
+  margin-bottom: 0.5rem;
+}
+
+.emptyState button,
+.state button {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  border: 0;
+  border-radius: 0.6rem;
+  background: var(--color-primary);
+  color: #07110e;
+  font-weight: 800;
+}
+
+.emptyState button:disabled {
+  opacity: 0.55;
+}
+
+.logout {
+  margin-top: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  text-decoration: underline;
+}
+
+.state {
+  display: grid;
+  min-height: calc(100vh - 4.5rem);
+  padding: 2rem;
+  place-content: center;
+  text-align: center;
+}

@@ -421,3 +421,4 @@ Se o Docker Desktop não puder ser instalado ou for pesado demais para a máquin
 | 23/07/2026 | Backend mínimo | Concluído | Fastify com TypeScript, rota `GET /health` e primeiro teste de integração |
 | 23/07/2026 | Frontend base | Concluído | React, rotas, TanStack Query e identidade visual responsiva inicial |
 | 23/07/2026 | Schema do banco | Parcialmente concluído | Oito tabelas e migração Drizzle geradas; execução aguarda Docker/PostgreSQL |
+| 23/07/2026 | Autenticação | Implementação inicial concluída | Cadastro, login, logout, sessão segura e integração React prontos; teste real aguarda PostgreSQL |
