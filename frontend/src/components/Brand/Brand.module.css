@@ -1,0 +1,23 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--color-text-strong);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+}
+
+.symbol {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 0.55rem 0.55rem 0.15rem;
+  background: var(--color-primary);
+  color: #07110e;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  transform: skew(-6deg);
+}

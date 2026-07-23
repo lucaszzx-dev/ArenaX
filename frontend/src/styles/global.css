@@ -1,0 +1,67 @@
+:root {
+  color: #20272b;
+  background: #f5f7f6;
+  font-family:
+    Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+
+  --color-background: #f5f7f6;
+  --color-surface: #fbfcfb;
+  --color-surface-elevated: #ffffff;
+  --color-text: #20272b;
+  --color-text-strong: #0b1215;
+  --color-text-muted: #687278;
+  --color-border: #e1e6e3;
+  --color-border-strong: #cad2ce;
+  --color-primary: #53f2a5;
+  --color-primary-dark: #087c4c;
+  --color-primary-soft: rgba(83, 242, 165, 0.14);
+  --color-danger: #d54242;
+  --shadow-medium: 0 16px 40px rgba(20, 40, 31, 0.08);
+  --shadow-large: 0 30px 80px rgba(20, 40, 31, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: var(--color-background);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary-dark) 40%, transparent);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+::selection {
+  background: var(--color-primary);
+  color: #07110e;
+}
