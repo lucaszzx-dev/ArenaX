@@ -1,5 +1,14 @@
 # Backend
 
-API Node.js responsável por autenticação, validação, regras de negócio, permissões e acesso ao PostgreSQL.
+API do ArenaX construída com Node.js, TypeScript e Fastify.
 
-O scaffold com Fastify será criado em uma etapa própria.
+## Comandos
+
+```bash
+pnpm dev
+pnpm build
+pnpm lint
+pnpm test
+```
+
+O servidor usa a porta `3333` por padrão. A rota `GET /health` informa se a API está respondendo.

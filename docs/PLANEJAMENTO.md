@@ -417,3 +417,5 @@ Se o Docker Desktop não puder ser instalado ou for pesado demais para a máquin
 | 23/07/2026 | Diagnóstico do ambiente | Concluído | Node, npm, pnpm e Git disponíveis; Docker, PostgreSQL e GitHub CLI ausentes |
 | 23/07/2026 | Decisões técnicas iniciais | Propostas | pnpm, PostgreSQL em Docker e commits por progresso coerente |
 | 23/07/2026 | Primeiro commit | Concluído | Planejamento registrado no commit `b656abb` |
+| 23/07/2026 | Repositório GitHub | Concluído | Repositório público criado em `lucaszzx-dev/ArenaX` |
+| 23/07/2026 | Backend mínimo | Concluído | Fastify com TypeScript, rota `GET /health` e primeiro teste de integração |
