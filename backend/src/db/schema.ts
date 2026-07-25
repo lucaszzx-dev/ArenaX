@@ -165,6 +165,7 @@ export const championshipEntries = pgTable(
     championshipId: uuid("championship_id")
       .notNull()
       .references(() => championships.id, { onDelete: "cascade" }),
+    kind: championshipEntryType("kind").notNull(),
     displayName: text("display_name").notNull(),
     userId: uuid("user_id").references(() => users.id, {
       onDelete: "set null"
@@ -177,9 +178,13 @@ export const championshipEntries = pgTable(
       .defaultNow()
   },
   (table) => [
+    unique("championship_entries_name_unique").on(
+      table.championshipId,
+      table.displayName
+    ),
     check(
-      "championship_entry_exactly_one_subject",
-      sql`((${table.userId} is not null)::integer + (${table.teamId} is not null)::integer) = 1`
+      "championship_entry_subject_matches_kind",
+      sql`(${table.kind} = 'TEAM' and ${table.teamId} is not null and ${table.userId} is null) or (${table.kind} = 'INDIVIDUAL' and ${table.teamId} is null)`
     )
   ]
 );

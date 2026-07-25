@@ -4,16 +4,19 @@ import Fastify, { type FastifyInstance } from "fastify";
 
 import type { AuthService } from "./auth/auth-service.js";
 import type { ChampionshipService } from "./championships/championship-service.js";
+import type { ParticipantService } from "./participants/participant-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
 import { healthRoutes } from "./routes/health.js";
 import { profileRoutes } from "./routes/profile.js";
 import { championshipRoutes } from "./routes/championships.js";
+import { participantRoutes } from "./routes/participants.js";
 
 type BuildAppOptions = {
   authService?: AuthService;
   championshipService?: ChampionshipService;
+  participantService?: ParticipantService;
   env?: Env;
 };
 
@@ -51,6 +54,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       prefix: "/api",
       authService: options.authService,
       championshipService: options.championshipService,
+      env: options.env
+    });
+  }
+
+  if (options.authService && options.participantService && options.env) {
+    app.register(participantRoutes, {
+      prefix: "/api",
+      authService: options.authService,
+      participantService: options.participantService,
       env: options.env
     });
   }

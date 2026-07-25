@@ -7,6 +7,8 @@ import { ChampionshipService } from "./championships/championship-service.js";
 import { DrizzleChampionshipRepository } from "./championships/drizzle-championship-repository.js";
 import { parseEnv } from "./config/env.js";
 import { createDatabase } from "./db/client.js";
+import { DrizzleParticipantRepository } from "./participants/drizzle-participant-repository.js";
+import { ParticipantService } from "./participants/participant-service.js";
 
 try {
   loadEnvFile();
@@ -20,9 +22,15 @@ const authRepository = new DrizzleAuthRepository(database.db);
 const authService = new AuthService(authRepository, env.SESSION_TTL_DAYS);
 const championshipRepository = new DrizzleChampionshipRepository(database.db);
 const championshipService = new ChampionshipService(championshipRepository);
+const participantRepository = new DrizzleParticipantRepository(database.db);
+const participantService = new ParticipantService(
+  participantRepository,
+  championshipService
+);
 const app = buildApp({
   authService,
   championshipService,
+  participantService,
   env
 });
 
