@@ -34,3 +34,7 @@ As rotas de autenticação disponíveis são:
 - `GET /api/auth/google/callback`
 - `GET /api/profile`
 - `PUT /api/profile`
+- `POST /api/championships`
+- `GET /api/championships`
+- `GET /api/championships/:id`
+- `PUT /api/championships/:id`

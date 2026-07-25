@@ -427,3 +427,4 @@ Se o Docker Desktop não puder ser instalado ou for pesado demais para a máquin
 | 25/07/2026 | Ambiente local completo | Verificado | WSL 2, Docker, PostgreSQL, migrações, sessão real e redirecionamento Google validados |
 | 25/07/2026 | Perfil e rotas privadas | Concluído | Perfil editável, proteção de páginas, navbar autenticada e persistência real verificadas |
 | 25/07/2026 | Autoria dos commits | Corrigida | Repositório configurado com o e-mail primário verificado de `lucaszzx-dev` |
+| 25/07/2026 | Criação de arenas | Concluída | API, permissões, formulário, listagem e persistência PostgreSQL verificadas |
