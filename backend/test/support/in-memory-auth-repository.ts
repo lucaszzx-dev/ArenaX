@@ -4,6 +4,7 @@ import type {
   CreateUserInput,
   OAuthProfile,
   PublicUser,
+  UpdateProfileInput,
   UserWithPassword
 } from "../../src/auth/auth-repository.js";
 
@@ -104,6 +105,23 @@ export class InMemoryAuthRepository implements AuthRepository {
     if (index >= 0) {
       this.sessions.splice(index, 1);
     }
+  }
+
+  async updateProfile(
+    userId: string,
+    input: UpdateProfileInput
+  ): Promise<PublicUser> {
+    const user = this.users.find((item) => item.id === userId);
+
+    if (!user) {
+      throw new Error("Perfil não encontrado.");
+    }
+
+    user.displayName = input.displayName;
+    user.avatarUrl = input.avatarUrl;
+    user.bio = input.bio;
+
+    return this.toPublicUser(user);
   }
 
   private toPublicUser(user: UserWithPassword): PublicUser {

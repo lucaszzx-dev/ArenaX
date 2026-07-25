@@ -6,6 +6,7 @@ import type {
   CreateUserInput,
   OAuthProfile,
   PublicUser,
+  UpdateProfileInput,
   UserWithPassword
 } from "./auth-repository.js";
 import type { Database } from "../db/client.js";
@@ -154,6 +155,40 @@ export class DrizzleAuthRepository implements AuthRepository {
       provider: profile.provider,
       providerAccountId: profile.providerAccountId
     });
+  }
+
+  async updateProfile(
+    userId: string,
+    input: UpdateProfileInput
+  ): Promise<PublicUser> {
+    await this.db
+      .update(profiles)
+      .set({
+        displayName: input.displayName,
+        avatarUrl: input.avatarUrl,
+        bio: input.bio,
+        updatedAt: new Date()
+      })
+      .where(eq(profiles.userId, userId));
+
+    const [result] = await this.db
+      .select({
+        id: users.id,
+        email: users.email,
+        displayName: profiles.displayName,
+        avatarUrl: profiles.avatarUrl,
+        bio: profiles.bio
+      })
+      .from(users)
+      .innerJoin(profiles, eq(profiles.userId, users.id))
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!result) {
+      throw new Error("Perfil não encontrado após a atualização.");
+    }
+
+    return result;
   }
 
   async findUserBySessionTokenHash(

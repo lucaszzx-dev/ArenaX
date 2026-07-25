@@ -1,7 +1,8 @@
 import type {
   AuthRepository,
   OAuthProfile,
-  PublicUser
+  PublicUser,
+  UpdateProfileInput
 } from "./auth-repository.js";
 import { hashPassword, verifyPassword } from "./password.js";
 import { createSessionToken, hashSessionToken } from "./session-token.js";
@@ -98,6 +99,17 @@ export class AuthService {
     return this.repository.findUserBySessionTokenHash(
       hashSessionToken(sessionToken)
     );
+  }
+
+  async updateProfile(
+    userId: string,
+    input: UpdateProfileInput
+  ): Promise<PublicUser> {
+    return this.repository.updateProfile(userId, {
+      displayName: input.displayName.trim(),
+      avatarUrl: input.avatarUrl,
+      bio: input.bio?.trim() || null
+    });
   }
 
   private async createSession(user: PublicUser): Promise<AuthResult> {

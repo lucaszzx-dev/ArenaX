@@ -32,3 +32,5 @@ As rotas de autenticação disponíveis são:
 - `GET /api/auth/me`
 - `GET /api/auth/google`
 - `GET /api/auth/google/callback`
+- `GET /api/profile`
+- `PUT /api/profile`

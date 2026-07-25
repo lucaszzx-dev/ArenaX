@@ -7,6 +7,7 @@ import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
 import { healthRoutes } from "./routes/health.js";
+import { profileRoutes } from "./routes/profile.js";
 
 type BuildAppOptions = {
   authService?: AuthService;
@@ -31,6 +32,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   if (options.authService && options.env) {
     app.register(authRoutes, {
+      prefix: "/api",
+      authService: options.authService,
+      env: options.env
+    });
+    app.register(profileRoutes, {
       prefix: "/api",
       authService: options.authService,
       env: options.env

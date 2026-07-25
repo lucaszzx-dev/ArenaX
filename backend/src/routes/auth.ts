@@ -4,6 +4,7 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 
 import type { AuthService } from "../auth/auth-service.js";
+import { requireUser } from "../auth/require-user.js";
 import {
   createGoogleAuthorizationUrl,
   getGoogleProfile,
@@ -120,21 +121,11 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
   });
 
   app.get("/auth/me", async (request) => {
-    const sessionToken = request.cookies[options.env.SESSION_COOKIE_NAME];
-
-    if (!sessionToken) {
-      throw new AppError("Você precisa entrar.", 401, "UNAUTHENTICATED");
-    }
-
-    const user = await options.authService.getCurrentUser(sessionToken);
-
-    if (!user) {
-      throw new AppError(
-        "Sua sessão expirou. Entre novamente.",
-        401,
-        "SESSION_EXPIRED"
-      );
-    }
+    const user = await requireUser(
+      request,
+      options.authService,
+      options.env.SESSION_COOKIE_NAME
+    );
 
     return { user };
   });
