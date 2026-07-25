@@ -13,8 +13,11 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function verifyPassword(
   password: string,
-  storedHash: string
+  storedHash: string | null
 ): Promise<boolean> {
+  if (!storedHash) {
+    return false;
+  }
   const [algorithm, saltEncoded, hashEncoded] = storedHash.split(":");
 
   if (algorithm !== "scrypt" || !saltEncoded || !hashEncoded) {

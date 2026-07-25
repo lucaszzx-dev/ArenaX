@@ -9,7 +9,10 @@ const envSchema = z.object({
   DATABASE_URL: z.url().startsWith("postgresql://"),
   FRONTEND_URL: z.url(),
   SESSION_COOKIE_NAME: z.string().min(1).default("arenax_session"),
-  SESSION_TTL_DAYS: z.coerce.number().int().positive().default(7)
+  SESSION_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  GOOGLE_REDIRECT_URI: z.url().optional()
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -7,7 +7,7 @@ export type PublicUser = {
 };
 
 export type UserWithPassword = PublicUser & {
-  passwordHash: string;
+  passwordHash: string | null;
 };
 
 export type CreateUserInput = {
@@ -22,9 +22,23 @@ export type CreateSessionInput = {
   expiresAt: Date;
 };
 
+export type OAuthProfile = {
+  provider: "google";
+  providerAccountId: string;
+  email: string;
+  displayName: string;
+  avatarUrl: string | null;
+};
+
 export interface AuthRepository {
   createUser(input: CreateUserInput): Promise<PublicUser>;
   findUserByEmail(email: string): Promise<UserWithPassword | null>;
+  findUserByOAuthAccount(
+    provider: OAuthProfile["provider"],
+    providerAccountId: string
+  ): Promise<PublicUser | null>;
+  createUserFromOAuth(profile: OAuthProfile): Promise<PublicUser>;
+  linkOAuthAccount(userId: string, profile: OAuthProfile): Promise<void>;
   findUserBySessionTokenHash(tokenHash: string): Promise<PublicUser | null>;
   createSession(input: CreateSessionInput): Promise<void>;
   deleteSession(tokenHash: string): Promise<void>;

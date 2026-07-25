@@ -422,3 +422,5 @@ Se o Docker Desktop não puder ser instalado ou for pesado demais para a máquin
 | 23/07/2026 | Frontend base | Concluído | React, rotas, TanStack Query e identidade visual responsiva inicial |
 | 23/07/2026 | Schema do banco | Parcialmente concluído | Oito tabelas e migração Drizzle geradas; execução aguarda Docker/PostgreSQL |
 | 23/07/2026 | Autenticação | Implementação inicial concluída | Cadastro, login, logout, sessão segura e integração React prontos; teste real aguarda PostgreSQL |
+| 25/07/2026 | Identidade visual | Reformulada | Azul como cor de marca, composição editorial, assinatura `lucaszzx-dev` e temas claro/escuro |
+| 25/07/2026 | Login com Google | Implementado | OAuth 2.0/OpenID Connect pronto; ativação local depende das credenciais do Google Cloud |

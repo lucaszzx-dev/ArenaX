@@ -7,6 +7,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -40,9 +41,30 @@ const timestamps = {
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
+  passwordHash: text("password_hash"),
   ...timestamps
 });
+
+export const oauthAccounts = pgTable(
+  "oauth_accounts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    uniqueIndex("oauth_provider_account_unique").on(
+      table.provider,
+      table.providerAccountId
+    )
+  ]
+);
 
 export const profiles = pgTable("profiles", {
   userId: uuid("user_id")

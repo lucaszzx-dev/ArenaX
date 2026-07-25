@@ -2,6 +2,7 @@ import type {
   AuthRepository,
   CreateSessionInput,
   CreateUserInput,
+  OAuthProfile,
   PublicUser,
   UserWithPassword
 } from "../../src/auth/auth-repository.js";
@@ -11,6 +12,11 @@ type StoredSession = CreateSessionInput;
 export class InMemoryAuthRepository implements AuthRepository {
   readonly users: UserWithPassword[] = [];
   readonly sessions: StoredSession[] = [];
+  readonly oauthAccounts: Array<{
+    userId: string;
+    provider: OAuthProfile["provider"];
+    providerAccountId: string;
+  }> = [];
 
   async createUser(input: CreateUserInput): Promise<PublicUser> {
     const user: UserWithPassword = {
@@ -29,6 +35,50 @@ export class InMemoryAuthRepository implements AuthRepository {
 
   async findUserByEmail(email: string): Promise<UserWithPassword | null> {
     return this.users.find((user) => user.email === email) ?? null;
+  }
+
+  async findUserByOAuthAccount(
+    provider: OAuthProfile["provider"],
+    providerAccountId: string
+  ): Promise<PublicUser | null> {
+    const account = this.oauthAccounts.find(
+      (item) =>
+        item.provider === provider &&
+        item.providerAccountId === providerAccountId
+    );
+    const user = this.users.find((item) => item.id === account?.userId);
+
+    return user ? this.toPublicUser(user) : null;
+  }
+
+  async createUserFromOAuth(profile: OAuthProfile): Promise<PublicUser> {
+    const user: UserWithPassword = {
+      id: crypto.randomUUID(),
+      email: profile.email,
+      passwordHash: null,
+      displayName: profile.displayName,
+      avatarUrl: profile.avatarUrl,
+      bio: null
+    };
+    this.users.push(user);
+    this.oauthAccounts.push({
+      userId: user.id,
+      provider: profile.provider,
+      providerAccountId: profile.providerAccountId
+    });
+
+    return this.toPublicUser(user);
+  }
+
+  async linkOAuthAccount(
+    userId: string,
+    profile: OAuthProfile
+  ): Promise<void> {
+    this.oauthAccounts.push({
+      userId,
+      provider: profile.provider,
+      providerAccountId: profile.providerAccountId
+    });
   }
 
   async findUserBySessionTokenHash(

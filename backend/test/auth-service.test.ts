@@ -64,4 +64,41 @@ describe("AuthService", () => {
       service.getCurrentUser(registrationResult.sessionToken)
     ).resolves.toBeNull();
   });
+
+  it("creates a user and session from a verified OAuth profile", async () => {
+    const { repository, service } = createSubject();
+
+    const result = await service.loginWithOAuth({
+      provider: "google",
+      providerAccountId: "google-user-123",
+      email: "oauth@arenax.test",
+      displayName: "Pessoa OAuth",
+      avatarUrl: "https://example.com/avatar.png"
+    });
+
+    expect(result.user).toMatchObject({
+      email: "oauth@arenax.test",
+      displayName: "Pessoa OAuth"
+    });
+    expect(repository.users[0]?.passwordHash).toBeNull();
+    expect(repository.oauthAccounts).toHaveLength(1);
+    expect(repository.sessions).toHaveLength(1);
+  });
+
+  it("links Google to an existing account with the same verified email", async () => {
+    const { repository, service } = createSubject();
+    const passwordAccount = await service.register(registration);
+
+    const result = await service.loginWithOAuth({
+      provider: "google",
+      providerAccountId: "google-existing-123",
+      email: registration.email,
+      displayName: registration.displayName,
+      avatarUrl: null
+    });
+
+    expect(result.user.id).toBe(passwordAccount.user.id);
+    expect(repository.users).toHaveLength(1);
+    expect(repository.oauthAccounts).toHaveLength(1);
+  });
 });

@@ -71,4 +71,19 @@ describe("auth routes", () => {
       }
     });
   });
+
+  it("explains when Google login credentials are not configured", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/auth/google"
+    });
+
+    expect(response.statusCode).toBe(503);
+    expect(response.json()).toEqual({
+      error: {
+        code: "GOOGLE_AUTH_NOT_CONFIGURED",
+        message: "O login com Google ainda não foi configurado."
+      }
+    });
+  });
 });

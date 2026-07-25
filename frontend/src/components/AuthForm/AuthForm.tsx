@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { login, register } from "../../features/auth/auth-api";
-import { ApiError } from "../../lib/api";
+import { ApiError, getApiUrl } from "../../lib/api";
 import styles from "./AuthForm.module.css";
 
 type AuthFormProps = {
@@ -13,6 +13,7 @@ type AuthFormProps = {
 export function AuthForm({ mode }: AuthFormProps) {
   const isRegister = mode === "register";
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const mutation = useMutation({
@@ -46,6 +47,9 @@ export function AuthForm({ mode }: AuthFormProps) {
       );
     }
   });
+  const googleError = searchParams.has("erro")
+    ? "Não foi possível entrar com o Google. Tente novamente."
+    : null;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,6 +73,15 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      <a className={styles.googleButton} href={getApiUrl("/auth/google")}>
+        <span aria-hidden="true">G</span>
+        Continuar com Google
+      </a>
+
+      <div className={styles.divider}>
+        <span>ou use seu e-mail</span>
+      </div>
+
       {isRegister && (
         <label>
           Nome público
@@ -104,9 +117,9 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </label>
 
-      {errorMessage && (
+      {(errorMessage || googleError) && (
         <p className={styles.error} role="alert">
-          {errorMessage}
+          {errorMessage ?? googleError}
         </p>
       )}
 

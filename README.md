@@ -58,6 +58,8 @@ arenax/
 
 O frontend ficará em `http://localhost:5173` e a API em `http://localhost:3333`.
 
+Para ativar o Login com Google, siga [docs/GOOGLE_LOGIN.md](docs/GOOGLE_LOGIN.md).
+
 ## Verificações
 
 ```bash

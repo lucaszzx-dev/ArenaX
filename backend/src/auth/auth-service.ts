@@ -1,4 +1,8 @@
-import type { AuthRepository, PublicUser } from "./auth-repository.js";
+import type {
+  AuthRepository,
+  OAuthProfile,
+  PublicUser
+} from "./auth-repository.js";
 import { hashPassword, verifyPassword } from "./password.js";
 import { createSessionToken, hashSessionToken } from "./session-token.js";
 import { AppError } from "../errors/app-error.js";
@@ -60,6 +64,29 @@ export class AuthService {
       );
     }
 
+    return this.createSession(user);
+  }
+
+  async loginWithOAuth(profile: OAuthProfile): Promise<AuthResult> {
+    const email = profile.email.trim().toLowerCase();
+    const normalizedProfile = { ...profile, email };
+    const oauthUser = await this.repository.findUserByOAuthAccount(
+      profile.provider,
+      profile.providerAccountId
+    );
+
+    if (oauthUser) {
+      return this.createSession(oauthUser);
+    }
+
+    const existingUser = await this.repository.findUserByEmail(email);
+
+    if (existingUser) {
+      await this.repository.linkOAuthAccount(existingUser.id, normalizedProfile);
+      return this.createSession(existingUser);
+    }
+
+    const user = await this.repository.createUserFromOAuth(normalizedProfile);
     return this.createSession(user);
   }
 
