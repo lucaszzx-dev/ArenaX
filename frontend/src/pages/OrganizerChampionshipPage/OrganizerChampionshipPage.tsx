@@ -51,7 +51,12 @@ export function OrganizerChampionshipPage() {
           <span>02</span>
           <h2>Participantes</h2>
           <p>Cadastre equipes ou competidores na próxima fase.</p>
-          <button disabled type="button">Em breve</button>
+          <Link
+            className={styles.stepLink}
+            to={`/painel/campeonatos/${championship.id}/participantes`}
+          >
+            Gerenciar participantes
+          </Link>
         </article>
         <article>
           <span>03</span>

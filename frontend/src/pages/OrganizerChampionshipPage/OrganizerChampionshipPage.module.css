@@ -88,7 +88,8 @@
 }
 
 .steps strong,
-.steps button {
+.steps button,
+.stepLink {
   width: fit-content;
   margin-top: auto;
   font-size: 0.7rem;
@@ -103,6 +104,12 @@
   border: 0;
   background: transparent;
   color: var(--color-text-muted);
+}
+
+.stepLink {
+  color: var(--color-primary-dark);
+  font-weight: 800;
+  text-underline-offset: 0.2rem;
 }
 
 .state {
