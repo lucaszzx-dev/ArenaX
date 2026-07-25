@@ -23,6 +23,12 @@ export type LoginInput = {
   password: string;
 };
 
+export type UpdateProfileInput = {
+  displayName: string;
+  avatarUrl: string | null;
+  bio: string | null;
+};
+
 export function register(input: RegisterInput) {
   return apiRequest<AuthResponse>("/auth/register", {
     method: "POST",
@@ -45,4 +51,11 @@ export function logout() {
 
 export function getCurrentUser() {
   return apiRequest<AuthResponse>("/auth/me");
+}
+
+export function updateProfile(input: UpdateProfileInput) {
+  return apiRequest<AuthResponse>("/profile", {
+    method: "PUT",
+    body: JSON.stringify(input)
+  });
 }
