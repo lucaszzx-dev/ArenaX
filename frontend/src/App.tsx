@@ -11,6 +11,7 @@ import { LoginPage } from "./pages/LoginPage/LoginPage";
 import { NotFoundPage } from "./pages/NotFoundPage/NotFoundPage";
 import { ProfilePage } from "./pages/ProfilePage/ProfilePage";
 import { OrganizerChampionshipPage } from "./pages/OrganizerChampionshipPage/OrganizerChampionshipPage";
+import { EditChampionshipPage } from "./pages/EditChampionshipPage/EditChampionshipPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
 
 export function App() {
@@ -32,6 +33,10 @@ export function App() {
           <Route
             path="painel/campeonatos/:id"
             element={<OrganizerChampionshipPage />}
+          />
+          <Route
+            path="painel/campeonatos/:id/editar"
+            element={<EditChampionshipPage />}
           />
         </Route>
         <Route

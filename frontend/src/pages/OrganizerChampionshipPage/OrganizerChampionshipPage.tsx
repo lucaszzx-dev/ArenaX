@@ -33,6 +33,12 @@ export function OrganizerChampionshipPage() {
         </div>
         <b>Rascunho</b>
       </header>
+      <Link
+        className={styles.editLink}
+        to={`/painel/campeonatos/${championship.id}/editar`}
+      >
+        Editar configurações
+      </Link>
 
       <div className={styles.steps}>
         <article>

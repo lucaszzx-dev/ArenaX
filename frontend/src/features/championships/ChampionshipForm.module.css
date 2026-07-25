@@ -1,0 +1,129 @@
+.form {
+  display: grid;
+  margin-top: 3.5rem;
+  gap: 1rem;
+}
+
+.form fieldset {
+  margin: 0;
+  padding: clamp(1.3rem, 4vw, 2rem);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+}
+
+.form legend {
+  padding: 0 0.5rem;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fields,
+.scoreFields {
+  display: grid;
+  gap: 1.2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.scoreFields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.form label {
+  display: grid;
+  color: var(--color-text-strong);
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.form input,
+.form select,
+.form textarea {
+  width: 100%;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.2rem;
+  outline: none;
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  font: inherit;
+}
+
+.form input:focus,
+.form select:focus,
+.form textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.form .checkbox {
+  display: flex;
+  margin-top: 1.3rem;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.checkbox input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.actions {
+  display: flex;
+  padding-top: 1rem;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.2rem;
+}
+
+.actions a {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.actions button {
+  padding: 0.9rem 1rem;
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.error {
+  margin: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--color-danger);
+  color: var(--color-danger);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 620px) {
+  .fields,
+  .scoreFields {
+    grid-template-columns: 1fr;
+  }
+
+  .full {
+    grid-column: auto;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+    text-align: center;
+  }
+}

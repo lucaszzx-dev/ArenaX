@@ -57,3 +57,10 @@ export function listChampionships() {
 export function getChampionship(id: string) {
   return apiRequest<ChampionshipResponse>(`/championships/${id}`);
 }
+
+export function updateChampionship(id: string, input: ChampionshipInput) {
+  return apiRequest<ChampionshipResponse>(`/championships/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(input)
+  });
+}

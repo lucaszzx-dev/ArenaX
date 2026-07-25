@@ -45,6 +45,15 @@
   font-size: 0.68rem;
 }
 
+.editLink {
+  display: inline-block;
+  margin-top: 1.25rem;
+  color: var(--color-primary-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-underline-offset: 0.25rem;
+}
+
 .steps {
   display: grid;
   margin-top: 4rem;
