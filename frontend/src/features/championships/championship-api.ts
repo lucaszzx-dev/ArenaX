@@ -1,0 +1,59 @@
+import { apiRequest } from "../../lib/api";
+
+export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
+export type ChampionshipStatus = "DRAFT" | "PUBLISHED" | "FINISHED";
+
+export type Championship = {
+  id: string;
+  organizerId: string;
+  name: string;
+  slug: string;
+  sport: string;
+  description: string | null;
+  entryType: ChampionshipEntryType;
+  status: ChampionshipStatus;
+  winPoints: number;
+  drawPoints: number;
+  lossPoints: number;
+  allowsDraw: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ChampionshipInput = {
+  name: string;
+  sport: string;
+  description: string | null;
+  entryType: ChampionshipEntryType;
+  winPoints: number;
+  drawPoints: number;
+  lossPoints: number;
+  allowsDraw: boolean;
+  startsAt: string | null;
+  endsAt: string | null;
+};
+
+type ChampionshipResponse = {
+  championship: Championship;
+};
+
+type ChampionshipListResponse = {
+  championships: Championship[];
+};
+
+export function createChampionship(input: ChampionshipInput) {
+  return apiRequest<ChampionshipResponse>("/championships", {
+    method: "POST",
+    body: JSON.stringify(input)
+  });
+}
+
+export function listChampionships() {
+  return apiRequest<ChampionshipListResponse>("/championships");
+}
+
+export function getChampionship(id: string) {
+  return apiRequest<ChampionshipResponse>(`/championships/${id}`);
+}
