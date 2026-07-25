@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 
 import { Brand } from "../Brand/Brand";
+import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
 import styles from "./PublicLayout.module.css";
 
 export function PublicLayout() {
@@ -9,11 +10,13 @@ export function PublicLayout() {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <Brand />
+          <span className={styles.productName}>ArenaX / competition OS</span>
           <nav className={styles.navigation} aria-label="Navegação principal">
             <NavLink to="/campeonatos/demo">Campeonatos</NavLink>
             <NavLink to="/entrar">Entrar</NavLink>
+            <ThemeToggle />
             <NavLink className={styles.primaryLink} to="/cadastro">
-              Criar conta
+              Começar
             </NavLink>
           </nav>
         </div>
@@ -26,7 +29,7 @@ export function PublicLayout() {
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <Brand />
-          <p>Campeonatos amadores com organização de profissional.</p>
+          <p>ArenaX © 2026 — construído para a competição real.</p>
         </div>
       </footer>
     </div>
