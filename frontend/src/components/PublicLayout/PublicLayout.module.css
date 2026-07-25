@@ -71,6 +71,12 @@
   font-size: 0.85rem;
 }
 
+.footerContent p a {
+  color: var(--color-text-strong);
+  font-weight: 700;
+  text-underline-offset: 0.2rem;
+}
+
 @media (max-width: 640px) {
   .productName {
     display: none;

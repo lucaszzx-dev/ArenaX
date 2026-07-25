@@ -10,7 +10,7 @@ export function PublicLayout() {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <Brand />
-          <span className={styles.productName}>ArenaX / competition OS</span>
+          <span className={styles.productName}>competition operating system</span>
           <nav className={styles.navigation} aria-label="Navegação principal">
             <NavLink to="/campeonatos/demo">Campeonatos</NavLink>
             <NavLink to="/entrar">Entrar</NavLink>
@@ -29,7 +29,10 @@ export function PublicLayout() {
       <footer className={styles.footer}>
         <div className={styles.footerContent}>
           <Brand />
-          <p>ArenaX © 2026 — construído para a competição real.</p>
+          <p>
+            ArenaX © 2026 — desenvolvido por{" "}
+            <a href="https://github.com/lucaszzx-dev">lucaszzx-dev</a>
+          </p>
         </div>
       </footer>
     </div>
