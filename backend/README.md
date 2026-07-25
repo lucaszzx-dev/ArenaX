@@ -38,3 +38,10 @@ As rotas de autenticação disponíveis são:
 - `GET /api/championships`
 - `GET /api/championships/:id`
 - `PUT /api/championships/:id`
+- `GET /api/championships/:id/participants`
+- `POST /api/championships/:id/participants`
+- `DELETE /api/championships/:id/participants/:participantId`
+- `POST /api/championships/:id/teams`
+- `DELETE /api/championships/:id/teams/:teamId`
+- `POST /api/championships/:id/teams/:teamId/members`
+- `DELETE /api/championships/:id/teams/:teamId/members/:memberId`

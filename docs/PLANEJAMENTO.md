@@ -408,6 +408,20 @@ Se o Docker Desktop não puder ser instalado ou for pesado demais para a máquin
 - Confirmar se o Docker Desktop pode ser instalado e executado nesta máquina.
 - Criar ou indicar o repositório do GitHub antes do primeiro `push`.
 
+## Atualização da fase 6
+
+Concluída em 25 de julho de 2026:
+
+- criação e edição das configurações da arena;
+- cadastro manual de participantes individuais sem exigir conta;
+- criação e remoção de equipes;
+- inclusão e remoção de jogadores nas equipes;
+- validação do formato da inscrição e da permissão do organizador no backend;
+- migração PostgreSQL com o campo `kind` nas inscrições;
+- telas administrativas responsivas com estados vazios e mensagens de erro.
+
+Próxima fase: criação manual de partidas e registro de placares.
+
 ## Registro de andamento
 
 | Data | Etapa | Estado | Observação |
