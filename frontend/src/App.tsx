@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { PublicLayout } from "./components/PublicLayout/PublicLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
+import { GuestOnlyRoute } from "./components/GuestOnlyRoute/GuestOnlyRoute";
 import { ChampionshipPage } from "./pages/ChampionshipPage/ChampionshipPage";
 import { DashboardPage } from "./pages/DashboardPage/DashboardPage";
 import { HomePage } from "./pages/HomePage/HomePage";
@@ -15,8 +16,10 @@ export function App() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="entrar" element={<LoginPage />} />
-        <Route path="cadastro" element={<RegisterPage />} />
+        <Route element={<GuestOnlyRoute />}>
+          <Route path="entrar" element={<LoginPage />} />
+          <Route path="cadastro" element={<RegisterPage />} />
+        </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="painel" element={<DashboardPage />} />
           <Route path="perfil" element={<ProfilePage />} />

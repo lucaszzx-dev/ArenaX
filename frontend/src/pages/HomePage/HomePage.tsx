@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+import { useCurrentUser } from "../../features/auth/auth-query";
 import styles from "./HomePage.module.css";
 
 const ranking = [
@@ -9,6 +10,9 @@ const ranking = [
 ];
 
 export function HomePage() {
+  const userQuery = useCurrentUser();
+  const isAuthenticated = Boolean(userQuery.data?.user);
+
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -26,8 +30,11 @@ export function HomePage() {
             em uma experiência feita para quem organiza e para quem acompanha.
           </p>
           <div className={styles.actions}>
-            <Link className={styles.primaryAction} to="/cadastro">
-              Abrir uma arena
+            <Link
+              className={styles.primaryAction}
+              to={isAuthenticated ? "/painel" : "/cadastro"}
+            >
+              {isAuthenticated ? "Ir para meu painel" : "Abrir uma arena"}
               <span aria-hidden="true">↗</span>
             </Link>
             <Link className={styles.textAction} to="/campeonatos/demo">
@@ -106,7 +113,9 @@ export function HomePage() {
           Da quadra do bairro ao servidor da comunidade, cada disputa ganha um
           endereço próprio.
         </p>
-        <Link to="/cadastro">Criar conta gratuita →</Link>
+        <Link to={isAuthenticated ? "/painel" : "/cadastro"}>
+          {isAuthenticated ? "Acessar minhas arenas →" : "Criar conta gratuita →"}
+        </Link>
       </section>
     </div>
   );
