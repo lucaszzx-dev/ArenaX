@@ -3,14 +3,17 @@ import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance } from "fastify";
 
 import type { AuthService } from "./auth/auth-service.js";
+import type { ChampionshipService } from "./championships/championship-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
 import { healthRoutes } from "./routes/health.js";
 import { profileRoutes } from "./routes/profile.js";
+import { championshipRoutes } from "./routes/championships.js";
 
 type BuildAppOptions = {
   authService?: AuthService;
+  championshipService?: ChampionshipService;
   env?: Env;
 };
 
@@ -39,6 +42,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     app.register(profileRoutes, {
       prefix: "/api",
       authService: options.authService,
+      env: options.env
+    });
+  }
+
+  if (options.authService && options.championshipService && options.env) {
+    app.register(championshipRoutes, {
+      prefix: "/api",
+      authService: options.authService,
+      championshipService: options.championshipService,
       env: options.env
     });
   }
