@@ -53,5 +53,11 @@ export interface MatchRepository {
     homeScore: number,
     awayScore: number
   ): Promise<Match>;
+  updateSchedule(matchId: string, scheduledAt: Date | null): Promise<Match>;
+  updateStatus(
+    matchId: string,
+    status: MatchStatus,
+    clearScore: boolean
+  ): Promise<Match>;
   delete(championshipId: string, matchId: string): Promise<boolean>;
 }

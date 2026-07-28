@@ -83,3 +83,29 @@ export const listStandings = (championshipId: string) =>
   apiRequest<{ standings: Standing[] }>(
     `/championships/${championshipId}/standings`
   );
+
+export const updateMatchSchedule = (
+  championshipId: string,
+  matchId: string,
+  scheduledAt: string | null
+) =>
+  apiRequest<{ match: ArenaMatch }>(
+    `/championships/${championshipId}/matches/${matchId}/schedule`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ scheduledAt })
+    }
+  );
+
+export const changeMatchStatus = (
+  championshipId: string,
+  matchId: string,
+  action: "CANCEL" | "REOPEN"
+) =>
+  apiRequest<{ match: ArenaMatch }>(
+    `/championships/${championshipId}/matches/${matchId}/status`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ action })
+    }
+  );

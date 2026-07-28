@@ -24,6 +24,10 @@ const scoreSchema = z.object({
 const statusSchema = z.object({
   status: z.enum(["DRAFT", "PUBLISHED", "FINISHED"])
 });
+const matchActionSchema = z.object({
+  action: z.enum(["CANCEL", "REOPEN"])
+});
+const scheduleSchema = z.object({ scheduledAt: nullableDate });
 
 type MatchRoutesOptions = {
   authService: AuthService;
@@ -110,6 +114,34 @@ export const matchRoutes: FastifyPluginAsync<MatchRoutesOptions> = async (
       input.data.status
     );
     return { championship };
+  });
+
+  app.put("/championships/:id/matches/:matchId/schedule", async (request) => {
+    const user = await getUser(request);
+    const params = matchParams.safeParse(request.params);
+    const input = scheduleSchema.safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+    const match = await options.matchService.updateSchedule(
+      user.id,
+      params.data.id,
+      params.data.matchId,
+      input.data.scheduledAt
+    );
+    return { match };
+  });
+
+  app.put("/championships/:id/matches/:matchId/status", async (request) => {
+    const user = await getUser(request);
+    const params = matchParams.safeParse(request.params);
+    const input = matchActionSchema.safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+    const match = await options.matchService.changeMatchStatus(
+      user.id,
+      params.data.id,
+      params.data.matchId,
+      input.data.action
+    );
+    return { match };
   });
 };
 

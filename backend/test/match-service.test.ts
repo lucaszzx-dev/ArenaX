@@ -196,4 +196,53 @@ describe("MatchService", () => {
     );
     expect(published.status).toBe("PUBLISHED");
   });
+
+  it("cancels a match and removes it from the standings", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    const match = await service.create("organizer-1", arena.id, {
+      homeEntryId: "entry-1",
+      awayEntryId: "entry-2",
+      scheduledAt: null
+    });
+    await service.recordScore("organizer-1", arena.id, match.id, 2, 0);
+    await service.changeMatchStatus(
+      "organizer-1",
+      arena.id,
+      match.id,
+      "CANCEL"
+    );
+
+    const standings = await service.standings("organizer-1", arena.id);
+    expect(standings.every((row) => row.played === 0)).toBe(true);
+  });
+
+  it("reopens a finished match and clears its score", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    const match = await service.create("organizer-1", arena.id, {
+      homeEntryId: "entry-1",
+      awayEntryId: "entry-2",
+      scheduledAt: null
+    });
+    await service.recordScore("organizer-1", arena.id, match.id, 2, 0);
+    const reopened = await service.changeMatchStatus(
+      "organizer-1",
+      arena.id,
+      match.id,
+      "REOPEN"
+    );
+
+    expect(reopened).toMatchObject({
+      status: "SCHEDULED",
+      homeScore: null,
+      awayScore: null
+    });
+  });
 });

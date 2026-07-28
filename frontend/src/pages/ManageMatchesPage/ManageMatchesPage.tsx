@@ -5,11 +5,13 @@ import { Link, useParams } from "react-router-dom";
 import { getChampionship } from "../../features/championships/championship-api";
 import {
   createMatch,
+  changeMatchStatus,
   deleteMatch,
   listStandings,
   listMatches,
   matchQueryKey,
-  recordScore
+  recordScore,
+  updateMatchSchedule
 } from "../../features/matches/match-api";
 import { ApiError } from "../../lib/api";
 import styles from "./ManageMatchesPage.module.css";
@@ -18,6 +20,7 @@ export function ManageMatchesPage() {
   const { id = "" } = useParams();
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const championshipQuery = useQuery({
     queryKey: ["championships", "detail", id],
     queryFn: () => getChampionship(id),
@@ -63,8 +66,20 @@ export function ManageMatchesPage() {
     onSuccess: refresh,
     onError: showError
   });
+  const actionMutation = useMutation({
+    mutationFn: (input: {
+      request: () => Promise<unknown>;
+      successMessage: string;
+    }) => input.request(),
+    onSuccess: async (_data, input) => {
+      await refresh();
+      setSuccessMessage(input.successMessage);
+    },
+    onError: showError
+  });
 
   function showError(error: Error) {
+    setSuccessMessage(null);
     setErrorMessage(
       error instanceof ApiError ? error.message : "Não foi possível concluir a ação."
     );
@@ -114,6 +129,9 @@ export function ManageMatchesPage() {
       </header>
 
       {errorMessage && <p className={styles.error} role="alert">{errorMessage}</p>}
+      {successMessage && (
+        <p className={styles.success} role="status">{successMessage}</p>
+      )}
 
       <div className={styles.workspace}>
         <form className={styles.createForm} onSubmit={submitMatch}>
@@ -162,34 +180,84 @@ export function ManageMatchesPage() {
                     timeStyle: "short"
                   }).format(new Date(match.scheduledAt))
                   : "Data a definir"}</span>
-                <b>{match.status === "FINISHED" ? "Finalizada" : "Agendada"}</b>
+                <b>{matchStatusLabel(match.status)}</b>
               </div>
               <div className={styles.scoreline}>
                 <strong>{match.homeEntry.displayName}</strong>
                 <span>{match.homeScore ?? "–"} : {match.awayScore ?? "–"}</span>
                 <strong>{match.awayEntry.displayName}</strong>
               </div>
-              <ScoreForm
-                awayName={match.awayEntry.displayName}
-                defaultAway={match.awayScore}
-                defaultHome={match.homeScore}
-                disabled={scoreMutation.isPending}
-                homeName={match.homeEntry.displayName}
-                onSave={(homeScore, awayScore) => scoreMutation.mutate({
-                  matchId: match.id,
-                  homeScore,
-                  awayScore
-                })}
-              />
-              {match.status !== "FINISHED" && (
-                <button
-                  disabled={deleteMutation.isPending}
-                  onClick={() => deleteMutation.mutate(match.id)}
-                  type="button"
-                >
-                  Excluir
-                </button>
+              {match.status !== "CANCELED" && (
+                <ScoreForm
+                  awayName={match.awayEntry.displayName}
+                  defaultAway={match.awayScore}
+                  defaultHome={match.homeScore}
+                  disabled={scoreMutation.isPending}
+                  homeName={match.homeEntry.displayName}
+                  onSave={(homeScore, awayScore) => scoreMutation.mutate({
+                    matchId: match.id,
+                    homeScore,
+                    awayScore
+                  })}
+                />
               )}
+              <div className={styles.matchActions}>
+                {match.status === "SCHEDULED" && (
+                  <ScheduleForm
+                    defaultValue={toLocalDateTime(match.scheduledAt)}
+                    disabled={actionMutation.isPending}
+                    onSave={(scheduledAt) => actionMutation.mutate({
+                      request: () => updateMatchSchedule(id, match.id, scheduledAt),
+                      successMessage: "Agendamento atualizado."
+                    })}
+                  />
+                )}
+                {match.status !== "CANCELED" && (
+                  <button
+                    disabled={actionMutation.isPending}
+                    onClick={() => {
+                      if (window.confirm("Cancelar esta partida?")) {
+                        actionMutation.mutate({
+                          request: () => changeMatchStatus(id, match.id, "CANCEL"),
+                          successMessage: "Partida cancelada."
+                        });
+                      }
+                    }}
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                )}
+                {match.status !== "SCHEDULED" && (
+                  <button
+                    disabled={actionMutation.isPending}
+                    onClick={() => {
+                      if (window.confirm("Reabrir a partida e limpar o placar?")) {
+                        actionMutation.mutate({
+                          request: () => changeMatchStatus(id, match.id, "REOPEN"),
+                          successMessage: "Partida reaberta."
+                        });
+                      }
+                    }}
+                    type="button"
+                  >
+                    Reabrir
+                  </button>
+                )}
+                {match.status === "SCHEDULED" && (
+                  <button
+                    disabled={deleteMutation.isPending}
+                    onClick={() => {
+                      if (window.confirm("Excluir esta partida definitivamente?")) {
+                        deleteMutation.mutate(match.id);
+                      }
+                    }}
+                    type="button"
+                  >
+                    Excluir
+                  </button>
+                )}
+              </div>
             </article>
           ))}
           {!matches.length && (
@@ -228,6 +296,40 @@ export function ManageMatchesPage() {
       </section>
     </section>
   );
+}
+
+function ScheduleForm({
+  defaultValue,
+  disabled,
+  onSave
+}: {
+  defaultValue: string;
+  disabled: boolean;
+  onSave: (scheduledAt: string | null) => void;
+}) {
+  return (
+    <form className={styles.scheduleForm} onSubmit={(event) => {
+      event.preventDefault();
+      const value = String(new FormData(event.currentTarget).get("schedule") ?? "");
+      onSave(value ? new Date(value).toISOString() : null);
+    }}>
+      <input defaultValue={defaultValue} name="schedule" type="datetime-local" />
+      <button disabled={disabled}>Alterar data</button>
+    </form>
+  );
+}
+
+function matchStatusLabel(status: "SCHEDULED" | "FINISHED" | "CANCELED") {
+  if (status === "FINISHED") return "Finalizada";
+  if (status === "CANCELED") return "Cancelada";
+  return "Agendada";
+}
+
+function toLocalDateTime(value: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
 
 function ScoreForm({

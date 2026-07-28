@@ -111,6 +111,40 @@ export class MatchService {
     return this.repository.updateScore(matchId, homeScore, awayScore);
   }
 
+  async updateSchedule(
+    organizerId: string,
+    championshipId: string,
+    matchId: string,
+    scheduledAt: Date | null
+  ) {
+    await this.championships.getMine(organizerId, championshipId);
+    const match = await this.requireMatch(championshipId, matchId);
+    if (match.status !== "SCHEDULED") {
+      throw new AppError(
+        "Reabra a partida antes de alterar o agendamento.",
+        409,
+        "MATCH_NOT_SCHEDULED"
+      );
+    }
+    return this.repository.updateSchedule(matchId, scheduledAt);
+  }
+
+  async changeMatchStatus(
+    organizerId: string,
+    championshipId: string,
+    matchId: string,
+    action: "CANCEL" | "REOPEN"
+  ) {
+    await this.championships.getMine(organizerId, championshipId);
+    const match = await this.requireMatch(championshipId, matchId);
+    if (action === "CANCEL") {
+      if (match.status === "CANCELED") return match;
+      return this.repository.updateStatus(matchId, "CANCELED", false);
+    }
+    if (match.status === "SCHEDULED") return match;
+    return this.repository.updateStatus(matchId, "SCHEDULED", true);
+  }
+
   async standings(
     organizerId: string,
     championshipId: string
@@ -241,5 +275,13 @@ export class MatchService {
         a.displayName.localeCompare(b.displayName, "pt-BR")
       )
       .map((row, index) => ({ ...row, position: index + 1 }));
+  }
+
+  private async requireMatch(championshipId: string, matchId: string) {
+    const match = await this.repository.findById(matchId);
+    if (!match || match.championshipId !== championshipId) {
+      throw new AppError("Partida não encontrada.", 404, "MATCH_NOT_FOUND");
+    }
+    return match;
   }
 }

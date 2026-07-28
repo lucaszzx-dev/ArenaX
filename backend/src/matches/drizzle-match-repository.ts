@@ -77,6 +77,34 @@ export class DrizzleMatchRepository implements MatchRepository {
     return this.withEntries(match);
   }
 
+  async updateSchedule(matchId: string, scheduledAt: Date | null) {
+    const [match] = await this.db
+      .update(matches)
+      .set({ scheduledAt, updatedAt: new Date() })
+      .where(eq(matches.id, matchId))
+      .returning();
+    if (!match) throw new Error("Não foi possível alterar o agendamento.");
+    return this.withEntries(match);
+  }
+
+  async updateStatus(
+    matchId: string,
+    status: Match["status"],
+    clearScore: boolean
+  ) {
+    const [match] = await this.db
+      .update(matches)
+      .set({
+        status,
+        ...(clearScore ? { homeScore: null, awayScore: null } : {}),
+        updatedAt: new Date()
+      })
+      .where(eq(matches.id, matchId))
+      .returning();
+    if (!match) throw new Error("Não foi possível alterar a partida.");
+    return this.withEntries(match);
+  }
+
   async delete(championshipId: string, matchId: string) {
     const deleted = await this.db
       .delete(matches)
