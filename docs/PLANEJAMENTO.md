@@ -422,6 +422,23 @@ Concluída em 25 de julho de 2026:
 
 Próxima fase: criação manual de partidas e registro de placares.
 
+## Atualização das fases 7 e 8
+
+Concluídas em 28 de julho de 2026:
+
+- criação e remoção manual de partidas;
+- seleção segura de dois adversários inscritos na mesma arena;
+- calendário com data e horário opcionais;
+- registro e correção do placar final;
+- validação de empate conforme as regras da arena;
+- classificação calculada a partir das partidas finalizadas;
+- desempate por pontos, vitórias, saldo, pontos marcados e nome;
+- página pública por `slug`, sem exigir autenticação;
+- exibição pública de inscritos, partidas, resultados e classificação.
+
+Próximas prioridades: publicação formal da arena, edição do agendamento,
+confirmações de ações destrutivas e ampliação dos testes de integração.
+
 ## Registro de andamento
 
 | Data | Etapa | Estado | Observação |
