@@ -33,6 +33,16 @@ export function OrganizerChampionshipPage() {
     )
   });
 
+  function confirmStatus(
+    confirmation: string,
+    status: ChampionshipStatus
+  ) {
+    if (window.confirm(confirmation)) {
+      setMessage(null);
+      statusMutation.mutate(status);
+    }
+  }
+
   if (championshipQuery.isPending) {
     return <div className={styles.state}>Carregando arena...</div>;
   }
@@ -73,7 +83,10 @@ export function OrganizerChampionshipPage() {
         {championship.status === "DRAFT" && (
           <button
             disabled={statusMutation.isPending}
-            onClick={() => statusMutation.mutate("PUBLISHED")}
+            onClick={() => confirmStatus(
+              "Publicar esta arena e liberar a página pública?",
+              "PUBLISHED"
+            )}
             type="button"
           >
             Publicar arena
@@ -83,14 +96,20 @@ export function OrganizerChampionshipPage() {
           <>
             <button
               disabled={statusMutation.isPending}
-              onClick={() => statusMutation.mutate("DRAFT")}
+              onClick={() => confirmStatus(
+                "Voltar para rascunho e ocultar a página pública?",
+                "DRAFT"
+              )}
               type="button"
             >
               Voltar para rascunho
             </button>
             <button
               disabled={statusMutation.isPending}
-              onClick={() => statusMutation.mutate("FINISHED")}
+              onClick={() => confirmStatus(
+                "Encerrar este campeonato?",
+                "FINISHED"
+              )}
               type="button"
             >
               Encerrar campeonato
@@ -100,7 +119,10 @@ export function OrganizerChampionshipPage() {
         {championship.status === "FINISHED" && (
           <button
             disabled={statusMutation.isPending}
-            onClick={() => statusMutation.mutate("PUBLISHED")}
+            onClick={() => confirmStatus(
+              "Reabrir este campeonato?",
+              "PUBLISHED"
+            )}
             type="button"
           >
             Reabrir campeonato

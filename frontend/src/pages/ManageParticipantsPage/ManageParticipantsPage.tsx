@@ -20,6 +20,7 @@ export function ManageParticipantsPage() {
   const { id = "" } = useParams();
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const championshipQuery = useQuery({
     queryKey: ["championships", "detail", id],
     queryFn: () => getChampionship(id),
@@ -39,18 +40,30 @@ export function ManageParticipantsPage() {
   );
   const individualMutation = useMutation({
     mutationFn: (name: string) => createParticipant(id, name),
-    onSuccess: refresh,
+    onSuccess: async () => {
+      await refresh();
+      setSuccessMessage("Participante adicionado.");
+    },
     onError: showError
   });
   const teamMutation = useMutation({
     mutationFn: (input: { name: string; shortName: string | null }) =>
       createTeam(id, input),
-    onSuccess: refresh,
+    onSuccess: async () => {
+      await refresh();
+      setSuccessMessage("Equipe criada.");
+    },
     onError: showError
   });
   const actionMutation = useMutation({
-    mutationFn: (action: () => Promise<unknown>) => action(),
-    onSuccess: refresh,
+    mutationFn: (input: {
+      action: () => Promise<unknown>;
+      successMessage: string;
+    }) => input.action(),
+    onSuccess: async (_data, input) => {
+      await refresh();
+      setSuccessMessage(input.successMessage);
+    },
     onError: showError
   });
 
@@ -83,6 +96,16 @@ export function ManageParticipantsPage() {
     }, { onSuccess: () => form.reset() });
   }
 
+  function confirmAction(
+    confirmation: string,
+    successMessage: string,
+    action: () => Promise<unknown>
+  ) {
+    if (window.confirm(confirmation)) {
+      actionMutation.mutate({ action, successMessage });
+    }
+  }
+
   return (
     <section className={styles.page}>
       <Link className={styles.back} to={`/painel/campeonatos/${id}`}>← Voltar à arena</Link>
@@ -94,6 +117,7 @@ export function ManageParticipantsPage() {
           : "Monte as equipes e organize seus jogadores."}</p>
       </header>
       {errorMessage && <p className={styles.error} role="alert">{errorMessage}</p>}
+      {successMessage && <p className={styles.success} role="status">{successMessage}</p>}
 
       {registrations.entryType === "INDIVIDUAL" ? (
         <div className={styles.workspace}>
@@ -107,9 +131,17 @@ export function ManageParticipantsPage() {
               <article key={participant.id}>
                 <span>{String(index + 1).padStart(2, "0")}</span>
                 <strong>{participant.displayName}</strong>
-                <button onClick={() => actionMutation.mutate(
-                  () => deleteParticipant(id, participant.id)
-                )} type="button">Remover</button>
+                <button
+                  disabled={actionMutation.isPending}
+                  onClick={() => confirmAction(
+                    `Remover ${participant.displayName}?`,
+                    "Participante removido.",
+                    () => deleteParticipant(id, participant.id)
+                  )}
+                  type="button"
+                >
+                  Remover
+                </button>
               </article>
             ))}
             {!registrations.participants.length && <p className={styles.empty}>Nenhum participante cadastrado.</p>}
@@ -127,20 +159,35 @@ export function ManageParticipantsPage() {
               <article className={styles.team} key={team.id}>
                 <header>
                   <div><span>{team.shortName || "TIME"}</span><h2>{team.name}</h2></div>
-                  <button onClick={() => actionMutation.mutate(
-                    () => deleteTeam(id, team.id)
-                  )} type="button">Remover equipe</button>
+                  <button
+                    disabled={actionMutation.isPending}
+                    onClick={() => confirmAction(
+                      `Remover a equipe ${team.name} e seus jogadores?`,
+                      "Equipe removida.",
+                      () => deleteTeam(id, team.id)
+                    )}
+                    type="button"
+                  >
+                    Remover equipe
+                  </button>
                 </header>
                 <ul>{team.members.map((member) => (
                   <li key={member.id}>
                     <span>{member.displayName}</span>
                     <button aria-label={`Remover ${member.displayName}`} onClick={() =>
-                      actionMutation.mutate(() => deleteTeamMember(id, team.id, member.id))
+                      confirmAction(
+                        `Remover ${member.displayName} da equipe?`,
+                        "Jogador removido.",
+                        () => deleteTeamMember(id, team.id, member.id)
+                      )
                     } type="button">×</button>
                   </li>
                 ))}</ul>
                 <MemberForm disabled={actionMutation.isPending} onAdd={(name) =>
-                  actionMutation.mutate(() => addTeamMember(id, team.id, name))
+                  actionMutation.mutate({
+                    action: () => addTeamMember(id, team.id, name),
+                    successMessage: "Jogador adicionado."
+                  })
                 } />
               </article>
             ))}

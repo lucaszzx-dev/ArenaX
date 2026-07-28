@@ -22,6 +22,7 @@
 .team li button { font-size: 1rem; }
 .memberForm { display: grid; gap: .6rem; grid-template-columns: 1fr auto; }
 .error { padding: .9rem; border-left: 3px solid #ef4444; color: #ef4444; }
+.success { padding: .9rem; border-left: 3px solid var(--color-primary); color: var(--color-primary-dark); }
 .state { display: grid; min-height: calc(100vh - 4rem); place-items: center; color: var(--color-text-muted); }
 @media (max-width: 720px) {
   .workspace { grid-template-columns: 1fr; }
