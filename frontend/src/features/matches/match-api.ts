@@ -24,6 +24,20 @@ export type MatchList = {
   matches: ArenaMatch[];
 };
 
+export type Standing = {
+  entryId: string;
+  position: number;
+  displayName: string;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  scoreFor: number;
+  scoreAgainst: number;
+  scoreDifference: number;
+  points: number;
+};
+
 export const matchQueryKey = (championshipId: string) => [
   "championships",
   championshipId,
@@ -50,3 +64,22 @@ export const deleteMatch = (championshipId: string, matchId: string) =>
   apiRequest<void>(`/championships/${championshipId}/matches/${matchId}`, {
     method: "DELETE"
   });
+
+export const recordScore = (
+  championshipId: string,
+  matchId: string,
+  homeScore: number,
+  awayScore: number
+) =>
+  apiRequest<{ match: ArenaMatch }>(
+    `/championships/${championshipId}/matches/${matchId}/score`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ homeScore, awayScore })
+    }
+  );
+
+export const listStandings = (championshipId: string) =>
+  apiRequest<{ standings: Standing[] }>(
+    `/championships/${championshipId}/standings`
+  );

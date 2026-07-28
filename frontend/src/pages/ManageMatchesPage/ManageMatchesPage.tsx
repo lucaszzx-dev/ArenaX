@@ -6,8 +6,10 @@ import { getChampionship } from "../../features/championships/championship-api";
 import {
   createMatch,
   deleteMatch,
+  listStandings,
   listMatches,
-  matchQueryKey
+  matchQueryKey,
+  recordScore
 } from "../../features/matches/match-api";
 import { ApiError } from "../../lib/api";
 import styles from "./ManageMatchesPage.module.css";
@@ -26,9 +28,17 @@ export function ManageMatchesPage() {
     queryFn: () => listMatches(id),
     enabled: Boolean(id)
   });
+  const standingsQuery = useQuery({
+    queryKey: ["championships", id, "standings"],
+    queryFn: () => listStandings(id),
+    enabled: Boolean(id)
+  });
   const refresh = async () => {
     setErrorMessage(null);
     await queryClient.invalidateQueries({ queryKey: matchQueryKey(id) });
+    await queryClient.invalidateQueries({
+      queryKey: ["championships", id, "standings"]
+    });
   };
   const createMutation = useMutation({
     mutationFn: (input: {
@@ -44,6 +54,15 @@ export function ManageMatchesPage() {
     onSuccess: refresh,
     onError: showError
   });
+  const scoreMutation = useMutation({
+    mutationFn: (input: {
+      matchId: string;
+      homeScore: number;
+      awayScore: number;
+    }) => recordScore(id, input.matchId, input.homeScore, input.awayScore),
+    onSuccess: refresh,
+    onError: showError
+  });
 
   function showError(error: Error) {
     setErrorMessage(
@@ -51,15 +70,24 @@ export function ManageMatchesPage() {
     );
   }
 
-  if (championshipQuery.isPending || matchesQuery.isPending) {
+  if (
+    championshipQuery.isPending ||
+    matchesQuery.isPending ||
+    standingsQuery.isPending
+  ) {
     return <div className={styles.state}>Carregando partidas...</div>;
   }
-  if (championshipQuery.isError || matchesQuery.isError) {
+  if (
+    championshipQuery.isError ||
+    matchesQuery.isError ||
+    standingsQuery.isError
+  ) {
     return <div className={styles.state}>Não foi possível abrir as partidas.</div>;
   }
 
   const championship = championshipQuery.data.championship;
   const { entries, matches } = matchesQuery.data;
+  const { standings } = standingsQuery.data;
 
   function submitMatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -141,6 +169,18 @@ export function ManageMatchesPage() {
                 <span>{match.homeScore ?? "–"} : {match.awayScore ?? "–"}</span>
                 <strong>{match.awayEntry.displayName}</strong>
               </div>
+              <ScoreForm
+                awayName={match.awayEntry.displayName}
+                defaultAway={match.awayScore}
+                defaultHome={match.homeScore}
+                disabled={scoreMutation.isPending}
+                homeName={match.homeEntry.displayName}
+                onSave={(homeScore, awayScore) => scoreMutation.mutate({
+                  matchId: match.id,
+                  homeScore,
+                  awayScore
+                })}
+              />
               {match.status !== "FINISHED" && (
                 <button
                   disabled={deleteMutation.isPending}
@@ -157,6 +197,80 @@ export function ManageMatchesPage() {
           )}
         </div>
       </div>
+
+      <section className={styles.standings}>
+        <div className={styles.listHeading}>
+          <h2>Classificação</h2>
+          <span>Atualizada pelos placares finalizados</span>
+        </div>
+        <div className={styles.tableScroll}>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Participante</th><th>J</th><th>V</th>
+                <th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>PTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              {standings.map((row) => (
+                <tr key={row.entryId}>
+                  <td>{row.position}</td>
+                  <th>{row.displayName}</th>
+                  <td>{row.played}</td><td>{row.wins}</td>
+                  <td>{row.draws}</td><td>{row.losses}</td>
+                  <td>{row.scoreFor}</td><td>{row.scoreAgainst}</td>
+                  <td>{row.scoreDifference}</td><td><b>{row.points}</b></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </section>
+  );
+}
+
+function ScoreForm({
+  awayName,
+  defaultAway,
+  defaultHome,
+  disabled,
+  homeName,
+  onSave
+}: {
+  awayName: string;
+  defaultAway: number | null;
+  defaultHome: number | null;
+  disabled: boolean;
+  homeName: string;
+  onSave: (homeScore: number, awayScore: number) => void;
+}) {
+  return (
+    <form className={styles.scoreForm} onSubmit={(event) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      onSave(Number(data.get("homeScore")), Number(data.get("awayScore")));
+    }}>
+      <input
+        aria-label={`Placar de ${homeName}`}
+        defaultValue={defaultHome ?? ""}
+        min={0}
+        name="homeScore"
+        required
+        type="number"
+      />
+      <span>×</span>
+      <input
+        aria-label={`Placar de ${awayName}`}
+        defaultValue={defaultAway ?? ""}
+        min={0}
+        name="awayScore"
+        required
+        type="number"
+      />
+      <button disabled={disabled}>
+        {defaultHome === null ? "Finalizar" : "Corrigir"}
+      </button>
+    </form>
   );
 }
