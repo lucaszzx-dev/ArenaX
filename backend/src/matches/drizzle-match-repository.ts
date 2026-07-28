@@ -62,6 +62,21 @@ export class DrizzleMatchRepository implements MatchRepository {
     return this.withEntries(match);
   }
 
+  async updateScore(matchId: string, homeScore: number, awayScore: number) {
+    const [match] = await this.db
+      .update(matches)
+      .set({
+        homeScore,
+        awayScore,
+        status: "FINISHED",
+        updatedAt: new Date()
+      })
+      .where(eq(matches.id, matchId))
+      .returning();
+    if (!match) throw new Error("Não foi possível registrar o placar.");
+    return this.withEntries(match);
+  }
+
   async delete(championshipId: string, matchId: string) {
     const deleted = await this.db
       .delete(matches)

@@ -28,11 +28,30 @@ export type CreateMatchInput = {
   scheduledAt: Date | null;
 };
 
+export type Standing = {
+  entryId: string;
+  position: number;
+  displayName: string;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  scoreFor: number;
+  scoreAgainst: number;
+  scoreDifference: number;
+  points: number;
+};
+
 export interface MatchRepository {
   listEntries(championshipId: string): Promise<MatchEntry[]>;
   findEntry(entryId: string): Promise<MatchEntry | null>;
   listByChampionship(championshipId: string): Promise<Match[]>;
   findById(matchId: string): Promise<Match | null>;
   create(input: CreateMatchInput): Promise<Match>;
+  updateScore(
+    matchId: string,
+    homeScore: number,
+    awayScore: number
+  ): Promise<Match>;
   delete(championshipId: string, matchId: string): Promise<boolean>;
 }

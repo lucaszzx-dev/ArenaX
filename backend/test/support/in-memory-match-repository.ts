@@ -45,6 +45,18 @@ export class InMemoryMatchRepository implements MatchRepository {
     return match;
   }
 
+  async updateScore(matchId: string, homeScore: number, awayScore: number) {
+    const match = this.matches.find((item) => item.id === matchId);
+    if (!match) throw new Error("Partida não encontrada.");
+    Object.assign(match, {
+      homeScore,
+      awayScore,
+      status: "FINISHED" as const,
+      updatedAt: new Date()
+    });
+    return match;
+  }
+
   async delete(championshipId: string, matchId: string) {
     const index = this.matches.findIndex(
       (match) => match.id === matchId && match.championshipId === championshipId

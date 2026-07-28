@@ -17,6 +17,10 @@ const createMatchSchema = z.object({
   awayEntryId: z.uuid(),
   scheduledAt: nullableDate
 });
+const scoreSchema = z.object({
+  homeScore: z.number().int().min(0).max(9999),
+  awayScore: z.number().int().min(0).max(9999)
+});
 
 type MatchRoutesOptions = {
   authService: AuthService;
@@ -63,6 +67,33 @@ export const matchRoutes: FastifyPluginAsync<MatchRoutesOptions> = async (
       params.data.matchId
     );
     return reply.status(204).send();
+  });
+
+  app.put("/championships/:id/matches/:matchId/score", async (request) => {
+    const user = await getUser(request);
+    const params = matchParams.safeParse(request.params);
+    const input = scoreSchema.safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+
+    const match = await options.matchService.recordScore(
+      user.id,
+      params.data.id,
+      params.data.matchId,
+      input.data.homeScore,
+      input.data.awayScore
+    );
+    return { match };
+  });
+
+  app.get("/championships/:id/standings", async (request) => {
+    const user = await getUser(request);
+    const params = championshipParams.safeParse(request.params);
+    if (!params.success) throw validationError();
+    const standings = await options.matchService.standings(
+      user.id,
+      params.data.id
+    );
+    return { standings };
   });
 };
 

@@ -3,7 +3,8 @@ import { AppError } from "../errors/app-error.js";
 import type {
   CreateMatchInput,
   Match,
-  MatchRepository
+  MatchRepository,
+  Standing
 } from "./match-repository.js";
 
 export type ScheduleMatchInput = Omit<CreateMatchInput, "championshipId">;
@@ -80,5 +81,111 @@ export class MatchService {
     }
 
     await this.repository.delete(championshipId, matchId);
+  }
+
+  async recordScore(
+    organizerId: string,
+    championshipId: string,
+    matchId: string,
+    homeScore: number,
+    awayScore: number
+  ) {
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
+    const match = await this.repository.findById(matchId);
+
+    if (!match || match.championshipId !== championshipId) {
+      throw new AppError("Partida não encontrada.", 404, "MATCH_NOT_FOUND");
+    }
+    if (!championship.allowsDraw && homeScore === awayScore) {
+      throw new AppError(
+        "Esta arena não permite partidas empatadas.",
+        400,
+        "DRAW_NOT_ALLOWED"
+      );
+    }
+
+    return this.repository.updateScore(matchId, homeScore, awayScore);
+  }
+
+  async standings(
+    organizerId: string,
+    championshipId: string
+  ): Promise<Standing[]> {
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
+    const [entries, matches] = await Promise.all([
+      this.repository.listEntries(championshipId),
+      this.repository.listByChampionship(championshipId)
+    ]);
+    const table = new Map(entries.map((entry) => [
+      entry.id,
+      {
+        entryId: entry.id,
+        position: 0,
+        displayName: entry.displayName,
+        played: 0,
+        wins: 0,
+        draws: 0,
+        losses: 0,
+        scoreFor: 0,
+        scoreAgainst: 0,
+        scoreDifference: 0,
+        points: 0
+      } satisfies Standing
+    ]));
+
+    for (const match of matches) {
+      if (
+        match.status !== "FINISHED" ||
+        match.homeScore === null ||
+        match.awayScore === null
+      ) continue;
+
+      const home = table.get(match.homeEntryId);
+      const away = table.get(match.awayEntryId);
+      if (!home || !away) continue;
+      home.played += 1;
+      away.played += 1;
+      home.scoreFor += match.homeScore;
+      home.scoreAgainst += match.awayScore;
+      away.scoreFor += match.awayScore;
+      away.scoreAgainst += match.homeScore;
+
+      if (match.homeScore > match.awayScore) {
+        home.wins += 1;
+        away.losses += 1;
+        home.points += championship.winPoints;
+        away.points += championship.lossPoints;
+      } else if (match.homeScore < match.awayScore) {
+        away.wins += 1;
+        home.losses += 1;
+        away.points += championship.winPoints;
+        home.points += championship.lossPoints;
+      } else {
+        home.draws += 1;
+        away.draws += 1;
+        home.points += championship.drawPoints;
+        away.points += championship.drawPoints;
+      }
+    }
+
+    return [...table.values()]
+      .map((row) => ({
+        ...row,
+        scoreDifference: row.scoreFor - row.scoreAgainst
+      }))
+      .sort((a, b) =>
+        b.points - a.points ||
+        b.wins - a.wins ||
+        b.scoreDifference - a.scoreDifference ||
+        b.scoreFor - a.scoreFor ||
+        a.displayName.localeCompare(b.displayName, "pt-BR")
+      )
+      .map((row, index) => ({ ...row, position: index + 1 }));
   }
 }
