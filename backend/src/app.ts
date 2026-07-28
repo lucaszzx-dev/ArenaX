@@ -34,7 +34,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   if (options.env) {
     app.register(cors, {
       origin: options.env.FRONTEND_URL,
-      credentials: true
+      credentials: true,
+      methods: ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"]
     });
   }
 
