@@ -87,5 +87,11 @@ describe("public championship routes", () => {
     expect(matchResponse.json<{ match: { id: string } }>().match.id).toBe(
       match.id
     );
+
+    const missingResponse = await app.inject({
+      method: "GET",
+      url: `/api/public/championships/${championship.slug}/matches/00000000-0000-4000-8000-000000000000`
+    });
+    expect(missingResponse.statusCode).toBe(404);
   });
 });

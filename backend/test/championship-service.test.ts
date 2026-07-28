@@ -61,4 +61,15 @@ describe("ChampionshipService", () => {
       code: "CHAMPIONSHIP_NOT_FOUND"
     });
   });
+
+  it("does not expose a draft championship publicly", async () => {
+    const repository = new InMemoryChampionshipRepository();
+    const service = new ChampionshipService(repository);
+    const championship = await service.create("organizer-1", validInput);
+
+    await expect(service.getPublic(championship.slug)).rejects.toMatchObject({
+      statusCode: 404,
+      code: "CHAMPIONSHIP_NOT_FOUND"
+    });
+  });
 });

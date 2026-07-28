@@ -51,3 +51,7 @@ As rotas de autenticação disponíveis são:
 - `PUT /api/championships/:id/matches/:matchId/score`
 - `GET /api/championships/:id/standings`
 - `GET /api/public/championships/:slug`
+- `PUT /api/championships/:id/status`
+- `PUT /api/championships/:id/matches/:matchId/schedule`
+- `PUT /api/championships/:id/matches/:matchId/status`
+- `GET /api/public/championships/:slug/matches/:matchId`

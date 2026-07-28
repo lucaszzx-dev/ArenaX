@@ -439,6 +439,24 @@ Concluídas em 28 de julho de 2026:
 Próximas prioridades: publicação formal da arena, edição do agendamento,
 confirmações de ações destrutivas e ampliação dos testes de integração.
 
+## Atualização do ciclo de publicação
+
+Concluída em 28 de julho de 2026:
+
+- rascunhos privados e indisponíveis na API pública;
+- publicação condicionada a dois inscritos e uma partida;
+- ações para publicar, despublicar, encerrar e reabrir campeonatos;
+- edição da data e horário de partidas agendadas;
+- cancelamento de partida sem apagar seu histórico;
+- reabertura de partida com limpeza do placar anterior;
+- confirmações para ações destrutivas;
+- mensagens de sucesso e bloqueio de cliques repetidos;
+- detalhe público responsivo de cada partida;
+- ampliação dos testes para regras de privacidade e ciclo da partida.
+
+Próximas prioridades: auditoria de acessibilidade, dados de demonstração,
+testes reais de navegador e preparação do deploy.
+
 ## Registro de andamento
 
 | Data | Etapa | Estado | Observação |

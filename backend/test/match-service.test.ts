@@ -245,4 +245,25 @@ describe("MatchService", () => {
       awayScore: null
     });
   });
+
+  it("requires reopening before changing a finished match schedule", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    const match = await service.create("organizer-1", arena.id, {
+      homeEntryId: "entry-1",
+      awayEntryId: "entry-2",
+      scheduledAt: null
+    });
+    await service.recordScore("organizer-1", arena.id, match.id, 1, 0);
+
+    await expect(service.updateSchedule(
+      "organizer-1",
+      arena.id,
+      match.id,
+      new Date()
+    )).rejects.toMatchObject({ code: "MATCH_NOT_SCHEDULED" });
+  });
 });
