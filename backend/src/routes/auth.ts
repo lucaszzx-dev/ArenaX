@@ -40,7 +40,9 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
 ) => {
   const cookieOptions = {
     httpOnly: true,
-    sameSite: "lax" as const,
+    sameSite: options.env.NODE_ENV === "production"
+      ? "none" as const
+      : "lax" as const,
     secure: options.env.NODE_ENV === "production",
     path: "/"
   };

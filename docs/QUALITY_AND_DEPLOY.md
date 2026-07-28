@@ -9,7 +9,7 @@
 - 38 testes automatizados do backend.
 - 4 testes Playwright em desktop e viewport móvel.
 - Seed demonstrativo executado duas vezes sem duplicar dados.
-- Cookie de sessão `HttpOnly`, `SameSite=Lax` e `Secure` em produção.
+- Cookie de sessão `HttpOnly`, `SameSite=None` e `Secure` em produção.
 - CORS restrito à URL configurada do frontend.
 - Rate limit global e limites menores nas rotas de autenticação.
 - Rascunhos indisponíveis nas rotas públicas.
@@ -63,6 +63,21 @@ VITE_API_URL=https://<domínio-do-backend>/api
 ```
 
 Variáveis `VITE_` são públicas. Nunca colocar segredos nelas.
+
+## Plataformas escolhidas
+
+- Banco: Neon PostgreSQL. O plano gratuito não expira, embora possua limites
+  de armazenamento e processamento adequados para o MVP.
+- Backend: Render Web Service. O plano gratuito pode suspender o serviço após
+  um período sem acessos; a primeira requisição após a suspensão pode demorar.
+- Frontend: hospedagem estática do Codex Sites.
+
+O arquivo `render.yaml` descreve o backend sem incluir credenciais. As
+variáveis marcadas como segredo devem ser preenchidas diretamente no painel
+do Render.
+
+Em produção, frontend e backend ficam em domínios diferentes. Por isso, o
+cookie usa `SameSite=None` e `Secure`; o navegador só o envia por HTTPS.
 
 ## Checklist do deploy
 

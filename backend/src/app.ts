@@ -27,7 +27,8 @@ type BuildAppOptions = {
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const app = Fastify({
-    logger: process.env.NODE_ENV !== "test"
+    logger: process.env.NODE_ENV !== "test",
+    trustProxy: options.env?.NODE_ENV === "production"
   });
 
   app.register(cookie);
