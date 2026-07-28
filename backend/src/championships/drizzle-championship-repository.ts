@@ -45,6 +45,15 @@ export class DrizzleChampionshipRepository
     return championship ?? null;
   }
 
+  async findBySlug(slug: string): Promise<Championship | null> {
+    const [championship] = await this.db
+      .select()
+      .from(championships)
+      .where(eq(championships.slug, slug))
+      .limit(1);
+    return championship ?? null;
+  }
+
   async update(
     id: string,
     input: UpdateChampionshipInput

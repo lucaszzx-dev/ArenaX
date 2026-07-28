@@ -14,6 +14,7 @@ import { profileRoutes } from "./routes/profile.js";
 import { championshipRoutes } from "./routes/championships.js";
 import { participantRoutes } from "./routes/participants.js";
 import { matchRoutes } from "./routes/matches.js";
+import { publicChampionshipRoutes } from "./routes/public-championships.js";
 
 type BuildAppOptions = {
   authService?: AuthService;
@@ -76,6 +77,14 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       authService: options.authService,
       matchService: options.matchService,
       env: options.env
+    });
+  }
+
+  if (options.championshipService && options.matchService) {
+    app.register(publicChampionshipRoutes, {
+      prefix: "/api",
+      championshipService: options.championshipService,
+      matchService: options.matchService
     });
   }
 

@@ -34,6 +34,7 @@ export interface ChampionshipRepository {
   create(input: SaveChampionshipInput): Promise<Championship>;
   listByOrganizer(organizerId: string): Promise<Championship[]>;
   findById(id: string): Promise<Championship | null>;
+  findBySlug(slug: string): Promise<Championship | null>;
   update(
     id: string,
     input: UpdateChampionshipInput

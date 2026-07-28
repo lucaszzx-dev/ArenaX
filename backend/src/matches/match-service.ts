@@ -1,4 +1,5 @@
 import type { ChampionshipService } from "../championships/championship-service.js";
+import type { Championship } from "../championships/championship-repository.js";
 import { AppError } from "../errors/app-error.js";
 import type {
   CreateMatchInput,
@@ -118,9 +119,24 @@ export class MatchService {
       organizerId,
       championshipId
     );
+    return this.calculateStandings(championship);
+  }
+
+  async publicOverview(championship: Championship) {
+    const [entries, matches, standings] = await Promise.all([
+      this.repository.listEntries(championship.id),
+      this.repository.listByChampionship(championship.id),
+      this.calculateStandings(championship)
+    ]);
+    return { entries, matches, standings };
+  }
+
+  private async calculateStandings(
+    championship: Championship
+  ): Promise<Standing[]> {
     const [entries, matches] = await Promise.all([
-      this.repository.listEntries(championshipId),
-      this.repository.listByChampionship(championshipId)
+      this.repository.listEntries(championship.id),
+      this.repository.listByChampionship(championship.id)
     ]);
     const table = new Map(entries.map((entry) => [
       entry.id,

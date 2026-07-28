@@ -54,6 +54,14 @@
   text-underline-offset: 0.25rem;
 }
 
+.publicLink {
+  display: inline-block;
+  margin-left: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  text-underline-offset: 0.25rem;
+}
+
 .steps {
   display: grid;
   margin-top: 4rem;

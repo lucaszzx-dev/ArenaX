@@ -50,6 +50,18 @@ export class ChampionshipService {
     return championship;
   }
 
+  async getPublic(slug: string): Promise<Championship> {
+    const championship = await this.repository.findBySlug(slug);
+    if (!championship) {
+      throw new AppError(
+        "Campeonato não encontrado.",
+        404,
+        "CHAMPIONSHIP_NOT_FOUND"
+      );
+    }
+    return championship;
+  }
+
   async update(
     organizerId: string,
     championshipId: string,

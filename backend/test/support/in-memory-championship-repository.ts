@@ -33,6 +33,10 @@ export class InMemoryChampionshipRepository
     return this.championships.find((item) => item.id === id) ?? null;
   }
 
+  async findBySlug(slug: string): Promise<Championship | null> {
+    return this.championships.find((item) => item.slug === slug) ?? null;
+  }
+
   async update(
     id: string,
     input: UpdateChampionshipInput

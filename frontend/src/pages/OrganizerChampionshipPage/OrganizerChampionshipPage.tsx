@@ -39,6 +39,13 @@ export function OrganizerChampionshipPage() {
       >
         Editar configurações
       </Link>
+      <Link
+        className={styles.publicLink}
+        target="_blank"
+        to={`/campeonatos/${championship.slug}`}
+      >
+        Abrir página pública ↗
+      </Link>
 
       <div className={styles.steps}>
         <article>

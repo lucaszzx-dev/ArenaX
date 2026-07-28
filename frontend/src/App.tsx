@@ -49,10 +49,7 @@ export function App() {
             element={<ManageMatchesPage />}
           />
         </Route>
-        <Route
-          path="campeonatos/demo"
-          element={<ChampionshipPage />}
-        />
+        <Route path="campeonatos/:slug" element={<ChampionshipPage />} />
         <Route path="inicio" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
