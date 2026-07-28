@@ -457,6 +457,21 @@ Concluída em 28 de julho de 2026:
 Próximas prioridades: auditoria de acessibilidade, dados de demonstração,
 testes reais de navegador e preparação do deploy.
 
+## Atualização de qualidade pré-deploy
+
+Concluída em 28 de julho de 2026:
+
+- seed idempotente com conta, equipes, partidas e classificação demo;
+- testes Playwright em Chromium desktop e viewport móvel;
+- cobertura real de login, sessão, arena pública e detalhe da partida;
+- mensagens específicas quando a API está inacessível;
+- rate limit global e limites menores na autenticação;
+- atualização das ferramentas de lint e correção de dependência transitiva;
+- auditoria de dependências com exceção RSC documentada;
+- checklist de variáveis, OAuth, migração, validação e rollback.
+
+Próximo marco: escolher as hospedagens e executar o primeiro deploy.
+
 ## Registro de andamento
 
 | Data | Etapa | Estado | Observação |

@@ -66,7 +66,20 @@ Para ativar o Login com Google, siga [docs/GOOGLE_LOGIN.md](docs/GOOGLE_LOGIN.md
 pnpm build
 pnpm lint
 pnpm test
+pnpm test:e2e
 ```
+
+## Dados demonstrativos
+
+Com Docker e PostgreSQL ligados:
+
+```bash
+pnpm --dir backend db:seed
+```
+
+O comando recria somente a conta e a arena demonstrativas. Consulte
+[docs/QUALITY_AND_DEPLOY.md](docs/QUALITY_AND_DEPLOY.md) para o checklist de
+qualidade, auditoria e deploy.
 
 ## Segurança
 
