@@ -13,6 +13,7 @@ import { ProfilePage } from "./pages/ProfilePage/ProfilePage";
 import { OrganizerChampionshipPage } from "./pages/OrganizerChampionshipPage/OrganizerChampionshipPage";
 import { EditChampionshipPage } from "./pages/EditChampionshipPage/EditChampionshipPage";
 import { ManageParticipantsPage } from "./pages/ManageParticipantsPage/ManageParticipantsPage";
+import { ManageMatchesPage } from "./pages/ManageMatchesPage/ManageMatchesPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
 
 export function App() {
@@ -42,6 +43,10 @@ export function App() {
           <Route
             path="painel/campeonatos/:id/participantes"
             element={<ManageParticipantsPage />}
+          />
+          <Route
+            path="painel/campeonatos/:id/partidas"
+            element={<ManageMatchesPage />}
           />
         </Route>
         <Route

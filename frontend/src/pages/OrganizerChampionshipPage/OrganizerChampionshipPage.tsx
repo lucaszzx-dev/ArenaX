@@ -62,7 +62,12 @@ export function OrganizerChampionshipPage() {
           <span>03</span>
           <h2>Partidas</h2>
           <p>Monte os confrontos depois de adicionar participantes.</p>
-          <button disabled type="button">Bloqueado</button>
+          <Link
+            className={styles.stepLink}
+            to={`/painel/campeonatos/${championship.id}/partidas`}
+          >
+            Gerenciar partidas
+          </Link>
         </article>
       </div>
     </section>
