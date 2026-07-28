@@ -1,5 +1,6 @@
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyInstance } from "fastify";
 
 import type { AuthService } from "./auth/auth-service.js";
@@ -30,6 +31,16 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   });
 
   app.register(cookie);
+  app.register(rateLimit, {
+    max: 180,
+    timeWindow: "1 minute",
+    errorResponseBuilder: () => ({
+      error: {
+        code: "RATE_LIMIT_EXCEEDED",
+        message: "Muitas tentativas. Aguarde um minuto e tente novamente."
+      }
+    })
+  });
 
   if (options.env) {
     app.register(cors, {
