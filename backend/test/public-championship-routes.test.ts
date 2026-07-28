@@ -39,6 +39,15 @@ describe("public championship routes", () => {
       id: "entry-1",
       championshipId: championship.id,
       displayName: "Lucas"
+    }, {
+      id: "entry-2",
+      championshipId: championship.id,
+      displayName: "Rafael"
+    });
+    const match = await matchService.create("organizer-1", championship.id, {
+      homeEntryId: "entry-1",
+      awayEntryId: "entry-2",
+      scheduledAt: null
     });
     const app = buildApp({ championshipService, matchService });
     apps.push(app);
@@ -59,9 +68,24 @@ describe("public championship routes", () => {
         name: "Copa Pública",
         slug: championship.slug
       },
-      entries: [{ displayName: "Lucas" }],
-      standings: [{ displayName: "Lucas", position: 1 }]
+      entries: [
+        { displayName: "Lucas" },
+        { displayName: "Rafael" }
+      ],
+      standings: [
+        { displayName: "Lucas", position: 1 },
+        { displayName: "Rafael", position: 2 }
+      ]
     });
     expect(body.championship).not.toHaveProperty("organizerId");
+
+    const matchResponse = await app.inject({
+      method: "GET",
+      url: `/api/public/championships/${championship.slug}/matches/${match.id}`
+    });
+    expect(matchResponse.statusCode).toBe(200);
+    expect(matchResponse.json<{ match: { id: string } }>().match.id).toBe(
+      match.id
+    );
   });
 });

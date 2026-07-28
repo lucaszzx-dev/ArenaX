@@ -16,3 +16,9 @@ export type PublicChampionshipOverview = {
 
 export const getPublicChampionship = (slug: string) =>
   apiRequest<PublicChampionshipOverview>(`/public/championships/${slug}`);
+
+export const getPublicMatch = (slug: string, matchId: string) =>
+  apiRequest<{
+    championship: Pick<PublicChampionship, "id" | "name" | "slug" | "sport">;
+    match: ArenaMatch;
+  }>(`/public/championships/${slug}/matches/${matchId}`);

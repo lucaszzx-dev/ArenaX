@@ -14,6 +14,7 @@ import { OrganizerChampionshipPage } from "./pages/OrganizerChampionshipPage/Org
 import { EditChampionshipPage } from "./pages/EditChampionshipPage/EditChampionshipPage";
 import { ManageParticipantsPage } from "./pages/ManageParticipantsPage/ManageParticipantsPage";
 import { ManageMatchesPage } from "./pages/ManageMatchesPage/ManageMatchesPage";
+import { PublicMatchPage } from "./pages/PublicMatchPage/PublicMatchPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
 
 export function App() {
@@ -50,6 +51,10 @@ export function App() {
           />
         </Route>
         <Route path="campeonatos/:slug" element={<ChampionshipPage />} />
+        <Route
+          path="campeonatos/:slug/partidas/:matchId"
+          element={<PublicMatchPage />}
+        />
         <Route path="inicio" element={<Navigate to="/" replace />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>

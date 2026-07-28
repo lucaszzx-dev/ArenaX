@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import { getPublicChampionship } from "../../features/championships/public-championship-api";
 import styles from "./ChampionshipPage.module.css";
@@ -75,7 +75,11 @@ export function ChampionshipPage() {
           <div><span>Calendário</span><h2>Partidas e resultados</h2></div>
         </div>
         {matches.map((match) => (
-          <article className={styles.fixture} key={match.id}>
+          <Link
+            className={styles.fixture}
+            key={match.id}
+            to={`/campeonatos/${championship.slug}/partidas/${match.id}`}
+          >
             <span>{match.scheduledAt
               ? new Intl.DateTimeFormat("pt-BR", {
                 dateStyle: "short",
@@ -85,7 +89,7 @@ export function ChampionshipPage() {
             <strong>{match.homeEntry.displayName}</strong>
             <b>{match.homeScore ?? "–"} × {match.awayScore ?? "–"}</b>
             <strong>{match.awayEntry.displayName}</strong>
-          </article>
+          </Link>
         ))}
         {!matches.length && <p className={styles.empty}>Nenhuma partida criada.</p>}
       </section>
