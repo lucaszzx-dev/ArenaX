@@ -3,7 +3,7 @@ services:
     name: arenax-api
     runtime: node
     plan: free
-    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --dir backend build
+    buildCommand: pnpm install --frozen-lockfile && pnpm --dir backend build
     startCommand: pnpm --dir backend db:migrate && node backend/dist/server.js
     healthCheckPath: /health
     autoDeployTrigger: commit
