@@ -9,6 +9,8 @@ import { parseEnv } from "./config/env.js";
 import { createDatabase } from "./db/client.js";
 import { DrizzleParticipantRepository } from "./participants/drizzle-participant-repository.js";
 import { ParticipantService } from "./participants/participant-service.js";
+import { DrizzleMatchRepository } from "./matches/drizzle-match-repository.js";
+import { MatchService } from "./matches/match-service.js";
 
 try {
   loadEnvFile();
@@ -27,10 +29,13 @@ const participantService = new ParticipantService(
   participantRepository,
   championshipService
 );
+const matchRepository = new DrizzleMatchRepository(database.db);
+const matchService = new MatchService(matchRepository, championshipService);
 const app = buildApp({
   authService,
   championshipService,
   participantService,
+  matchService,
   env
 });
 
