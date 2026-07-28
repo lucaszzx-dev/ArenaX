@@ -39,4 +39,5 @@ export interface ChampionshipRepository {
     id: string,
     input: UpdateChampionshipInput
   ): Promise<Championship>;
+  updateStatus(id: string, status: ChampionshipStatus): Promise<Championship>;
 }

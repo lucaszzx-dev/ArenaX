@@ -64,3 +64,13 @@ export function updateChampionship(id: string, input: ChampionshipInput) {
     body: JSON.stringify(input)
   });
 }
+
+export function updateChampionshipStatus(
+  id: string,
+  status: ChampionshipStatus
+) {
+  return apiRequest<ChampionshipResponse>(`/championships/${id}/status`, {
+    method: "PUT",
+    body: JSON.stringify({ status })
+  });
+}

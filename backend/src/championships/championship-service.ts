@@ -52,7 +52,7 @@ export class ChampionshipService {
 
   async getPublic(slug: string): Promise<Championship> {
     const championship = await this.repository.findBySlug(slug);
-    if (!championship) {
+    if (!championship || championship.status === "DRAFT") {
       throw new AppError(
         "Campeonato não encontrado.",
         404,
@@ -60,6 +60,15 @@ export class ChampionshipService {
       );
     }
     return championship;
+  }
+
+  async setStatus(
+    organizerId: string,
+    championshipId: string,
+    status: Championship["status"]
+  ) {
+    await this.getMine(organizerId, championshipId);
+    return this.repository.updateStatus(championshipId, status);
   }
 
   async update(

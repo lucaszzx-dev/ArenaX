@@ -131,6 +131,44 @@ export class MatchService {
     return { entries, matches, standings };
   }
 
+  async changeChampionshipStatus(
+    organizerId: string,
+    championshipId: string,
+    status: "DRAFT" | "PUBLISHED" | "FINISHED"
+  ) {
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
+
+    if (status === "PUBLISHED" && championship.status === "DRAFT") {
+      const [entries, matches] = await Promise.all([
+        this.repository.listEntries(championshipId),
+        this.repository.listByChampionship(championshipId)
+      ]);
+      if (entries.length < 2) {
+        throw new AppError(
+          "Cadastre pelo menos dois participantes antes de publicar.",
+          409,
+          "CHAMPIONSHIP_NEEDS_ENTRIES"
+        );
+      }
+      if (matches.length < 1) {
+        throw new AppError(
+          "Crie pelo menos uma partida antes de publicar.",
+          409,
+          "CHAMPIONSHIP_NEEDS_MATCH"
+        );
+      }
+    }
+
+    return this.championships.setStatus(
+      organizerId,
+      championshipId,
+      status
+    );
+  }
+
   private async calculateStandings(
     championship: Championship
   ): Promise<Standing[]> {

@@ -161,4 +161,39 @@ describe("MatchService", () => {
       "Fênix"
     ]);
   });
+
+  it("requires two entries and one match before publishing", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    await expect(
+      service.changeChampionshipStatus("organizer-1", arena.id, "PUBLISHED")
+    ).rejects.toMatchObject({ code: "CHAMPIONSHIP_NEEDS_ENTRIES" });
+
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    await expect(
+      service.changeChampionshipStatus("organizer-1", arena.id, "PUBLISHED")
+    ).rejects.toMatchObject({ code: "CHAMPIONSHIP_NEEDS_MATCH" });
+  });
+
+  it("publishes a ready championship", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    await service.create("organizer-1", arena.id, {
+      homeEntryId: "entry-1",
+      awayEntryId: "entry-2",
+      scheduledAt: null
+    });
+
+    const published = await service.changeChampionshipStatus(
+      "organizer-1",
+      arena.id,
+      "PUBLISHED"
+    );
+    expect(published.status).toBe("PUBLISHED");
+  });
 });

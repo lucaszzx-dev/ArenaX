@@ -50,4 +50,15 @@ export class InMemoryChampionshipRepository
     Object.assign(championship, input, { updatedAt: new Date() });
     return championship;
   }
+
+  async updateStatus(
+    id: string,
+    status: Championship["status"]
+  ): Promise<Championship> {
+    const championship = this.championships.find((item) => item.id === id);
+    if (!championship) throw new Error("Campeonato não encontrado.");
+    championship.status = status;
+    championship.updatedAt = new Date();
+    return championship;
+  }
 }

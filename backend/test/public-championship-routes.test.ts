@@ -29,12 +29,12 @@ afterEach(async () => {
 
 describe("public championship routes", () => {
   it("returns an arena overview without authentication", async () => {
-    const championshipService = new ChampionshipService(
-      new InMemoryChampionshipRepository()
-    );
+    const championshipRepository = new InMemoryChampionshipRepository();
+    const championshipService = new ChampionshipService(championshipRepository);
     const matchRepository = new InMemoryMatchRepository();
     const matchService = new MatchService(matchRepository, championshipService);
     const championship = await championshipService.create("organizer-1", input);
+    await championshipRepository.updateStatus(championship.id, "PUBLISHED");
     matchRepository.entries.push({
       id: "entry-1",
       championshipId: championship.id,

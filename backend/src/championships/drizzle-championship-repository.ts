@@ -73,4 +73,17 @@ export class DrizzleChampionshipRepository
 
     return championship;
   }
+
+  async updateStatus(
+    id: string,
+    status: Championship["status"]
+  ): Promise<Championship> {
+    const [championship] = await this.db
+      .update(championships)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(championships.id, id))
+      .returning();
+    if (!championship) throw new Error("Não foi possível alterar o status.");
+    return championship;
+  }
 }

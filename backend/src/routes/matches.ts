@@ -21,6 +21,9 @@ const scoreSchema = z.object({
   homeScore: z.number().int().min(0).max(9999),
   awayScore: z.number().int().min(0).max(9999)
 });
+const statusSchema = z.object({
+  status: z.enum(["DRAFT", "PUBLISHED", "FINISHED"])
+});
 
 type MatchRoutesOptions = {
   authService: AuthService;
@@ -94,6 +97,19 @@ export const matchRoutes: FastifyPluginAsync<MatchRoutesOptions> = async (
       params.data.id
     );
     return { standings };
+  });
+
+  app.put("/championships/:id/status", async (request) => {
+    const user = await getUser(request);
+    const params = championshipParams.safeParse(request.params);
+    const input = statusSchema.safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+    const championship = await options.matchService.changeChampionshipStatus(
+      user.id,
+      params.data.id,
+      input.data.status
+    );
+    return { championship };
   });
 };
 
