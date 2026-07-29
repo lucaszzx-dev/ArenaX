@@ -97,7 +97,9 @@ export class ParticipantService {
     organizerId: string,
     championshipId: string,
     teamId: string,
-    displayName: string
+    displayName: string,
+    jerseyNumber: number | null = null,
+    position: string | null = null
   ): Promise<TeamMember> {
     await this.requireEntryType(organizerId, championshipId, "TEAM");
     const team = await this.requireTeam(championshipId, teamId);
@@ -110,7 +112,12 @@ export class ParticipantService {
       );
     }
 
-    return this.repository.addTeamMember(teamId, displayName);
+    return this.repository.addTeamMember(
+      teamId,
+      displayName,
+      jerseyNumber,
+      position
+    );
   }
 
   async deleteTeamMember(

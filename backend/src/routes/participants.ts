@@ -14,6 +14,15 @@ const participantParamsSchema = championshipParamsSchema.extend({
 });
 const memberParamsSchema = teamParamsSchema.extend({ memberId: z.uuid() });
 const personSchema = z.object({ displayName: z.string().trim().min(2).max(80) });
+const memberSchema = personSchema.extend({
+  jerseyNumber: z
+    .union([z.number().int().min(0).max(999), z.null()])
+    .default(null),
+  position: z
+    .union([z.string().trim().max(40), z.null()])
+    .transform((value) => value || null)
+    .default(null)
+});
 const teamSchema = z.object({
   name: z.string().trim().min(2).max(80),
   shortName: z
@@ -106,7 +115,7 @@ export const participantRoutes: FastifyPluginAsync<
   app.post("/championships/:id/teams/:teamId/members", async (request, reply) => {
     const user = await getUser(request);
     const params = teamParamsSchema.safeParse(request.params);
-    const input = personSchema.safeParse(request.body);
+    const input = memberSchema.safeParse(request.body);
     if (!params.success) throw identifierError();
     if (!input.success) throw validationError();
 
@@ -114,7 +123,9 @@ export const participantRoutes: FastifyPluginAsync<
       user.id,
       params.data.id,
       params.data.teamId,
-      input.data.displayName
+      input.data.displayName,
+      input.data.jerseyNumber,
+      input.data.position
     );
     return reply.status(201).send({ member });
   });

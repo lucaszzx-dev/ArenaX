@@ -10,6 +10,8 @@ export type TeamMember = {
   id: string;
   teamId: string;
   displayName: string;
+  jerseyNumber: number | null;
+  position: string | null;
 };
 
 export type Team = {
@@ -63,11 +65,15 @@ export const deleteTeam = (id: string, teamId: string) =>
 export const addTeamMember = (
   id: string,
   teamId: string,
-  displayName: string
+  input: {
+    displayName: string;
+    jerseyNumber: number | null;
+    position: string | null;
+  }
 ) =>
   apiRequest<{ member: TeamMember }>(
     `/championships/${id}/teams/${teamId}/members`,
-    { method: "POST", body: JSON.stringify({ displayName }) }
+    { method: "POST", body: JSON.stringify(input) }
   );
 
 export const deleteTeamMember = (

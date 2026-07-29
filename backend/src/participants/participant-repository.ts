@@ -40,6 +40,11 @@ export interface ParticipantRepository {
     shortName: string | null
   ): Promise<Team>;
   deleteTeam(championshipId: string, teamId: string): Promise<boolean>;
-  addTeamMember(teamId: string, displayName: string): Promise<TeamMember>;
+  addTeamMember(
+    teamId: string,
+    displayName: string,
+    jerseyNumber?: number | null,
+    position?: string | null
+  ): Promise<TeamMember>;
   deleteTeamMember(teamId: string, memberId: string): Promise<boolean>;
 }

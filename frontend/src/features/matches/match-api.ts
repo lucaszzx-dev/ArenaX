@@ -4,6 +4,8 @@ export type MatchEntry = {
   id: string;
   championshipId: string;
   displayName: string;
+  kind?: "INDIVIDUAL" | "TEAM";
+  teamId?: string | null;
 };
 
 export type ArenaMatch = {

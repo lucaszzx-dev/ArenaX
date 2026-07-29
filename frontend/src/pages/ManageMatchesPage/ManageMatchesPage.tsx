@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getChampionship } from "../../features/championships/championship-api";
+import { MatchEventsPanel } from "../../components/MatchEventsPanel/MatchEventsPanel";
 import {
   createMatch,
   changeMatchStatus,
@@ -13,6 +14,10 @@ import {
   recordScore,
   updateMatchSchedule
 } from "../../features/matches/match-api";
+import {
+  listRegistrations,
+  registrationQueryKey
+} from "../../features/participants/participant-api";
 import { ApiError } from "../../lib/api";
 import styles from "./ManageMatchesPage.module.css";
 
@@ -34,6 +39,11 @@ export function ManageMatchesPage() {
   const standingsQuery = useQuery({
     queryKey: ["championships", id, "standings"],
     queryFn: () => listStandings(id),
+    enabled: Boolean(id)
+  });
+  const registrationsQuery = useQuery({
+    queryKey: registrationQueryKey(id),
+    queryFn: () => listRegistrations(id),
     enabled: Boolean(id)
   });
   const refresh = async () => {
@@ -88,14 +98,16 @@ export function ManageMatchesPage() {
   if (
     championshipQuery.isPending ||
     matchesQuery.isPending ||
-    standingsQuery.isPending
+    standingsQuery.isPending ||
+    registrationsQuery.isPending
   ) {
     return <div className={styles.state}>Carregando partidas...</div>;
   }
   if (
     championshipQuery.isError ||
     matchesQuery.isError ||
-    standingsQuery.isError
+    standingsQuery.isError ||
+    registrationsQuery.isError
   ) {
     return <div className={styles.state}>Não foi possível abrir as partidas.</div>;
   }
@@ -103,6 +115,9 @@ export function ManageMatchesPage() {
   const championship = championshipQuery.data.championship;
   const { entries, matches } = matchesQuery.data;
   const { standings } = standingsQuery.data;
+  const { teams } = registrationsQuery.data;
+  const supportsEvents =
+    championship.sport === "Futebol" || championship.sport === "Futsal";
 
   function submitMatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -187,6 +202,13 @@ export function ManageMatchesPage() {
                 <span>{match.homeScore ?? "–"} : {match.awayScore ?? "–"}</span>
                 <strong>{match.awayEntry.displayName}</strong>
               </div>
+              {supportsEvents && (
+                <MatchEventsPanel
+                  championshipId={id}
+                  match={match}
+                  teams={teams}
+                />
+              )}
               {match.status !== "CANCELED" && (
                 <ScoreForm
                   awayName={match.awayEntry.displayName}

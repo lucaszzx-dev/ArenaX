@@ -29,3 +29,24 @@ test("organizer signs in and opens the demo arena panel", async ({ page }) => {
   await expect(page.getByText("Publicado", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Gerenciar partidas" })).toBeVisible();
 });
+
+test("organizer records a football event for a player", async ({ page }) => {
+  await page.goto("/entrar");
+  await page.getByLabel("E-mail").fill("demo@arenax.local");
+  await page.getByLabel("Senha").fill("ArenaXDemo2026!");
+  await page.getByRole("button", { name: "Entrar na ArenaX" }).click();
+
+  await page.getByRole("link", { name: /Copa ArenaX Demo/ }).click();
+  await page.getByRole("link", { name: "Gerenciar partidas" }).click();
+
+  await page.getByLabel("Jogador").selectOption({ label: "Jogador 1" });
+  await page.getByLabel("Tempo").selectOption("1");
+  await page.getByLabel("Minuto").fill("12");
+  await page.getByRole("button", { name: "Adicionar evento" }).click();
+
+  const eventRow = page.locator("p", {
+    hasText: "Jogador 1"
+  }).filter({ hasText: /^Jogador 1$/ }).locator("..");
+  await expect(eventRow.getByText("Gol", { exact: true })).toBeVisible();
+  await expect(eventRow.getByText("Jogador 1", { exact: true })).toBeVisible();
+});

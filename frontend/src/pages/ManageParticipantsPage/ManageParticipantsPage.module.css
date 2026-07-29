@@ -20,7 +20,10 @@
 .team ul { margin: 1.2rem 0; padding: 0; list-style: none; }
 .team li { display: flex; padding: .65rem 0; border-top: 1px solid var(--color-border); justify-content: space-between; }
 .team li button { font-size: 1rem; }
-.memberForm { display: grid; gap: .6rem; grid-template-columns: 1fr auto; }
+.memberForm { display: grid; gap: .6rem; grid-template-columns: minmax(130px, 1fr) 5rem minmax(100px, .7fr) auto; }
+.team li span { display: flex; align-items: baseline; gap: .35rem; }
+.team li span b { color: var(--color-primary-dark); font-family: var(--font-mono); font-size: .68rem; }
+.team li span small { color: var(--color-text-muted); font-size: .68rem; }
 .error { padding: .9rem; border-left: 3px solid #ef4444; color: #ef4444; }
 .success { padding: .9rem; border-left: 3px solid var(--color-primary); color: var(--color-primary-dark); }
 .state { display: grid; min-height: calc(100vh - 4rem); place-items: center; color: var(--color-text-muted); }

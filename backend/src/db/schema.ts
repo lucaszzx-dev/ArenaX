@@ -228,7 +228,7 @@ export const matchEvents = pgTable(
       .references(() => matches.id, { onDelete: "cascade" }),
     entryId: uuid("entry_id")
       .notNull()
-      .references(() => championshipEntries.id, { onDelete: "restrict" }),
+      .references(() => championshipEntries.id, { onDelete: "cascade" }),
     teamMemberId: uuid("team_member_id").references(() => teamMembers.id, {
       onDelete: "set null"
     }),

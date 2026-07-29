@@ -105,10 +105,15 @@ export class DrizzleParticipantRepository implements ParticipantRepository {
     return deleted.length > 0;
   }
 
-  async addTeamMember(teamId: string, displayName: string): Promise<TeamMember> {
+  async addTeamMember(
+    teamId: string,
+    displayName: string,
+    jerseyNumber: number | null = null,
+    position: string | null = null
+  ): Promise<TeamMember> {
     const [member] = await this.db
       .insert(teamMembers)
-      .values({ teamId, displayName })
+      .values({ teamId, displayName, jerseyNumber, position })
       .returning();
 
     if (!member) throw new Error("Não foi possível cadastrar o jogador.");

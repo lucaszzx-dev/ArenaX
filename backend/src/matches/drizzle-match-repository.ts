@@ -17,7 +17,9 @@ export class DrizzleMatchRepository implements MatchRepository {
       .select({
         id: championshipEntries.id,
         championshipId: championshipEntries.championshipId,
-        displayName: championshipEntries.displayName
+        displayName: championshipEntries.displayName,
+        kind: championshipEntries.kind,
+        teamId: championshipEntries.teamId
       })
       .from(championshipEntries)
       .where(eq(championshipEntries.championshipId, championshipId))
@@ -29,7 +31,9 @@ export class DrizzleMatchRepository implements MatchRepository {
       .select({
         id: championshipEntries.id,
         championshipId: championshipEntries.championshipId,
-        displayName: championshipEntries.displayName
+        displayName: championshipEntries.displayName,
+        kind: championshipEntries.kind,
+        teamId: championshipEntries.teamId
       })
       .from(championshipEntries)
       .where(eq(championshipEntries.id, entryId));

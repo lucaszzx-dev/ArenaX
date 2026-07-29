@@ -105,6 +105,12 @@ O painel ainda não expõe os novos controles; isso pertence à Etapa B.
 - escolher equipe, jogador, tipo, período e minuto;
 - conferir o placar antes de finalizar.
 
+Status em 29 de julho de 2026: primeira versão concluída. O cadastro de
+jogadores aceita camisa e posição, e partidas de futebol/futsal permitem
+adicionar e remover gols, gols contra e cartões. A conferência automática
+entre gols e placar continuará em uma entrega própria para não mudar o
+resultado oficial sem uma regra explícita.
+
 ### Etapa C — experiência pública
 
 - exibir autores dos gols e cartões;

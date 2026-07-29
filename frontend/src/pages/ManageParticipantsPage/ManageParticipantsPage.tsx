@@ -173,7 +173,13 @@ export function ManageParticipantsPage() {
                 </header>
                 <ul>{team.members.map((member) => (
                   <li key={member.id}>
-                    <span>{member.displayName}</span>
+                    <span>
+                      {member.jerseyNumber !== null && (
+                        <b>#{member.jerseyNumber}</b>
+                      )}{" "}
+                      {member.displayName}
+                      {member.position && <small>{member.position}</small>}
+                    </span>
                     <button aria-label={`Remover ${member.displayName}`} onClick={() =>
                       confirmAction(
                         `Remover ${member.displayName} da equipe?`,
@@ -183,9 +189,9 @@ export function ManageParticipantsPage() {
                     } type="button">×</button>
                   </li>
                 ))}</ul>
-                <MemberForm disabled={actionMutation.isPending} onAdd={(name) =>
+                <MemberForm disabled={actionMutation.isPending} onAdd={(input) =>
                   actionMutation.mutate({
-                    action: () => addTeamMember(id, team.id, name),
+                    action: () => addTeamMember(id, team.id, input),
                     successMessage: "Jogador adicionado."
                   })
                 } />
@@ -201,16 +207,28 @@ export function ManageParticipantsPage() {
 
 function MemberForm({ disabled, onAdd }: {
   disabled: boolean;
-  onAdd: (name: string) => void;
+  onAdd: (input: {
+    displayName: string;
+    jerseyNumber: number | null;
+    position: string | null;
+  }) => void;
 }) {
   return (
     <form className={styles.memberForm} onSubmit={(event) => {
       event.preventDefault();
       const form = event.currentTarget;
-      onAdd(String(new FormData(form).get("memberName") ?? ""));
+      const data = new FormData(form);
+      const jerseyNumber = String(data.get("jerseyNumber") ?? "");
+      onAdd({
+        displayName: String(data.get("memberName") ?? ""),
+        jerseyNumber: jerseyNumber ? Number(jerseyNumber) : null,
+        position: String(data.get("position") ?? "") || null
+      });
       form.reset();
     }}>
       <input aria-label="Nome do jogador" minLength={2} name="memberName" placeholder="Nome do jogador" required />
+      <input aria-label="Número da camisa" max={999} min={0} name="jerseyNumber" placeholder="Camisa" type="number" />
+      <input aria-label="Posição do jogador" maxLength={40} name="position" placeholder="Posição" />
       <button disabled={disabled}>Adicionar jogador</button>
     </form>
   );

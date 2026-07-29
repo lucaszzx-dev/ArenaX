@@ -1,0 +1,162 @@
+.panel {
+  grid-column: 1 / -1;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 84%, var(--color-primary-soft));
+}
+
+.panel > header,
+.event {
+  display: flex;
+  align-items: center;
+}
+
+.panel > header {
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.panel header span {
+  color: var(--color-primary-dark);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.panel h3 {
+  margin: 0.25rem 0 0;
+  color: var(--color-text-strong);
+  font-size: 1rem;
+}
+
+.panel header b {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.form {
+  display: grid;
+  margin-bottom: 1rem;
+  align-items: end;
+  gap: 0.65rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.form label {
+  display: grid;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+  gap: 0.3rem;
+}
+
+.form input,
+.form select {
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.2rem;
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+}
+
+.form .notes {
+  grid-column: span 4;
+}
+
+.form button {
+  min-height: 2.4rem;
+  border: 0;
+  border-radius: 0.2rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.event {
+  min-height: 3.8rem;
+  border-top: 1px solid var(--color-border);
+  gap: 1rem;
+}
+
+.event > span {
+  width: 4rem;
+  color: var(--color-primary-dark);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.event div {
+  min-width: 10rem;
+}
+
+.event strong,
+.event p {
+  margin: 0;
+}
+
+.event strong {
+  color: var(--color-text-strong);
+  font-size: 0.82rem;
+}
+
+.event p {
+  margin-top: 0.15rem;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.event > b {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
+.event button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-danger);
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.empty,
+.error {
+  margin: 0.75rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+@media (max-width: 800px) {
+  .form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .form .notes {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 520px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+
+  .event {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 0.8rem 0;
+  }
+
+  .event > b {
+    width: calc(100% - 5rem);
+    margin-left: 5rem;
+  }
+}
