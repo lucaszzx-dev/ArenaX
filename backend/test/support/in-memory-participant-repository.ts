@@ -49,6 +49,7 @@ export class InMemoryParticipantRepository implements ParticipantRepository {
       name,
       shortName,
       logoUrl,
+      sourceClubId: null,
       createdAt: new Date(),
       members: []
     };

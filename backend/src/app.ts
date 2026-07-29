@@ -10,6 +10,7 @@ import type { MatchService } from "./matches/match-service.js";
 import type { MatchEventService } from "./match-events/match-event-service.js";
 import type { MatchPeriodService } from "./match-periods/match-period-service.js";
 import type { MatchAuditService } from "./match-audit/match-audit-service.js";
+import type { ClubService } from "./clubs/club-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
@@ -21,6 +22,7 @@ import { matchRoutes } from "./routes/matches.js";
 import { matchEventRoutes } from "./routes/match-events.js";
 import { matchPeriodRoutes } from "./routes/match-periods.js";
 import { publicChampionshipRoutes } from "./routes/public-championships.js";
+import { clubRoutes } from "./routes/clubs.js";
 
 type BuildAppOptions = {
   authService?: AuthService;
@@ -30,6 +32,7 @@ type BuildAppOptions = {
   matchEventService?: MatchEventService;
   matchPeriodService?: MatchPeriodService;
   matchAuditService?: MatchAuditService | undefined;
+  clubService?: ClubService;
   env?: Env;
 };
 
@@ -88,6 +91,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       prefix: "/api",
       authService: options.authService,
       participantService: options.participantService,
+      env: options.env
+    });
+  }
+
+  if (options.authService && options.clubService && options.env) {
+    app.register(clubRoutes, {
+      prefix: "/api",
+      authService: options.authService,
+      clubService: options.clubService,
       env: options.env
     });
   }

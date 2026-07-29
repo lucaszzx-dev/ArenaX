@@ -23,6 +23,7 @@ export type Team = {
   name: string;
   shortName: string | null;
   logoUrl: string | null;
+  sourceClubId: string | null;
   createdAt: Date;
   members: TeamMember[];
 };

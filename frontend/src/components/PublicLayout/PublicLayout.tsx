@@ -46,6 +46,7 @@ export function PublicLayout() {
                   <span>{user.displayName}</span>
                 </NavLink>
                 <NavLink to="/painel">Painel</NavLink>
+                <NavLink to="/painel/clubes">Clubes</NavLink>
                 <button
                   disabled={logoutMutation.isPending}
                   onClick={() => logoutMutation.mutate()}

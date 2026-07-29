@@ -18,6 +18,7 @@ import { PublicMatchPage } from "./pages/PublicMatchPage/PublicMatchPage";
 import { ExploreChampionshipsPage } from "./pages/ExploreChampionshipsPage/ExploreChampionshipsPage";
 import { PublicTeamPage } from "./pages/PublicTeamPage/PublicTeamPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
+import { ClubsPage } from "./pages/ClubsPage/ClubsPage";
 
 export function App() {
   return (
@@ -31,6 +32,7 @@ export function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="painel" element={<DashboardPage />} />
           <Route path="perfil" element={<ProfilePage />} />
+          <Route path="painel/clubes" element={<ClubsPage />} />
           <Route
             path="painel/campeonatos/novo"
             element={<CreateChampionshipPage />}

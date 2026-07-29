@@ -124,6 +124,37 @@ export const championships = pgTable(
   ]
 );
 
+export const clubs = pgTable(
+  "clubs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    ownerId: uuid("owner_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    shortName: text("short_name"),
+    logoUrl: text("logo_url"),
+    ...timestamps
+  },
+  (table) => [
+    unique("clubs_owner_name_unique").on(table.ownerId, table.name)
+  ]
+);
+
+export const clubMembers = pgTable("club_members", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  clubId: uuid("club_id")
+    .notNull()
+    .references(() => clubs.id, { onDelete: "cascade" }),
+  displayName: text("display_name").notNull(),
+  jerseyNumber: integer("jersey_number"),
+  position: text("position"),
+  isCaptain: boolean("is_captain").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+});
+
 export const teams = pgTable(
   "teams",
   {
@@ -134,6 +165,9 @@ export const teams = pgTable(
     name: text("name").notNull(),
     shortName: text("short_name"),
     logoUrl: text("logo_url"),
+    sourceClubId: uuid("source_club_id").references(() => clubs.id, {
+      onDelete: "set null"
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow()
@@ -142,6 +176,10 @@ export const teams = pgTable(
     unique("teams_championship_name_unique").on(
       table.championshipId,
       table.name
+    ),
+    unique("teams_championship_source_club_unique").on(
+      table.championshipId,
+      table.sourceClubId
     )
   ]
 );

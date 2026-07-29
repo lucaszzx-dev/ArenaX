@@ -16,6 +16,11 @@ import {
   ,updateTeam
 } from "../../features/participants/participant-api";
 import { ApiError } from "../../lib/api";
+import {
+  clubsQueryKey,
+  importClub,
+  listClubs
+} from "../../features/clubs/club-api";
 import styles from "./ManageParticipantsPage.module.css";
 
 export function ManageParticipantsPage() {
@@ -32,6 +37,10 @@ export function ManageParticipantsPage() {
     queryKey: registrationQueryKey(id),
     queryFn: () => listRegistrations(id),
     enabled: Boolean(id)
+  });
+  const clubsQuery = useQuery({
+    queryKey: clubsQueryKey,
+    queryFn: listClubs
   });
   const refresh = async () => {
     setErrorMessage(null);
@@ -153,6 +162,36 @@ export function ManageParticipantsPage() {
       ) : (
         <div className={styles.workspace}>
           <form className={styles.createForm} onSubmit={submitTeam}>
+            <div className={styles.importBlock}>
+              <strong>Importar da biblioteca</strong>
+              <p>Cria uma cópia do clube e do elenco nesta arena.</p>
+              <select defaultValue="" name="clubId">
+                <option disabled value="">Selecione um clube</option>
+                {(clubsQuery.data?.clubs ?? []).map((club) => (
+                  <option key={club.id} value={club.id}>{club.name}</option>
+                ))}
+              </select>
+              <button
+                disabled={actionMutation.isPending || !clubsQuery.data?.clubs.length}
+                onClick={(event) => {
+                  const form = event.currentTarget.form;
+                  const clubId = String(new FormData(form ?? undefined).get("clubId") ?? "");
+                  if (!clubId) {
+                    setErrorMessage("Selecione um clube para importar.");
+                    return;
+                  }
+                  actionMutation.mutate({
+                    action: () => importClub(clubId, id),
+                    successMessage: "Clube e elenco importados para a arena."
+                  });
+                }}
+                type="button"
+              >
+                Importar clube
+              </button>
+              <Link to="/painel/clubes">Gerenciar biblioteca de clubes</Link>
+            </div>
+            <span className={styles.divider}>ou crie uma equipe somente nesta arena</span>
             <label>Nome da equipe<input minLength={2} name="name" required /></label>
             <label>Sigla<input maxLength={12} name="shortName" placeholder="Ex.: RAI" /></label>
             <label>URL do escudo<input name="logoUrl" placeholder="https://..." type="url" /></label>
