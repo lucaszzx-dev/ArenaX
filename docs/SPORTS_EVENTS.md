@@ -13,9 +13,11 @@ a mesma base em fases posteriores.
 
 ## Esportes priorizados
 
-1. Futebol e futsal: gols, gol contra e cartões.
-2. Basquete: lances livres, cestas de dois e três pontos e períodos.
-3. Vôlei: sets e pontuação por set.
+1. Futebol e futsal: gols, gol contra e cartões. Implementado.
+2. Basquete: lances livres, cestas de dois e três pontos e quartos.
+   Implementado no painel do organizador.
+3. Vôlei: pontos, aces, bloqueios e sets. Implementado no painel do
+   organizador.
 4. eSports: mapas ou rounds configuráveis, depois que os esportes físicos
    estiverem estáveis.
 
@@ -120,10 +122,26 @@ resultado oficial sem uma regra explícita.
 
 ### Etapa D — novos esportes
 
-- períodos e pontuações do basquete;
-- sets do vôlei;
+- conferência entre eventos e placar do basquete;
+- placar detalhado de cada set do vôlei;
 - mapas/rounds de eSports;
 - estatísticas individuais derivadas dos eventos.
+
+## Catálogo reservado para jogos futuros
+
+O banco usa `type` textual validado no backend, em vez de um enum PostgreSQL.
+Isso permite acrescentar modalidades sem reconstruir a tabela. Os tipos
+abaixo estão planejados, mas ainda não são aceitos pela API:
+
+- eSports: `MAP_WIN`, `ROUND_WIN`, `ELIMINATION`, `OBJECTIVE`;
+- tênis e beach tennis: `SET_WIN`, `GAME_WIN`, `ACE`, `DOUBLE_FAULT`;
+- handebol: `GOAL`, `TWO_MINUTE_SUSPENSION`, `YELLOW_CARD`, `RED_CARD`;
+- hóquei: `GOAL`, `ASSIST`, `PENALTY`;
+- jogos de luta: `ROUND_WIN`, `KNOCKDOWN`, `KNOCKOUT`.
+
+Cada grupo somente será ativado quando também possuir regras, nomes
+compreensíveis, períodos adequados e testes. A API não aceitará tipos
+arbitrários enviados pelo frontend.
 
 ## Fora desta fase
 

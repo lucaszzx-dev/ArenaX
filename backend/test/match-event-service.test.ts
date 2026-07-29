@@ -182,7 +182,7 @@ describe("MatchEventService", () => {
     });
   });
 
-  it("does not enable football events for basketball yet", async () => {
+  it("records a three-point shot in basketball", async () => {
     const arena = await championships.create("organizer-1", {
       ...arenaInput,
       sport: "Basquete"
@@ -197,20 +197,95 @@ describe("MatchEventService", () => {
       scheduledAt: null
     });
 
-    await expect(service.create(
+    events.entries.push({
+      id: "entry-home",
+      championshipId: arena.id,
+      teamId: "team-home"
+    });
+
+    const event = await service.create(
       "organizer-1",
       arena.id,
       match.id,
       {
         entryId: "entry-home",
         teamMemberId: null,
-        type: "GOAL",
+        type: "THREE_POINT_SHOT",
         periodNumber: 1,
         clockSeconds: 60,
         notes: null
       }
-    )).rejects.toMatchObject({
-      code: "MATCH_EVENTS_NOT_SUPPORTED_FOR_SPORT"
+    );
+
+    expect(event).toMatchObject({
+      type: "THREE_POINT_SHOT",
+      value: 3
+    });
+  });
+
+  it("rejects a football event in basketball", async () => {
+    const arena = await championships.create("organizer-1", {
+      ...arenaInput,
+      sport: "Basquete"
+    });
+    matches.entries.push(
+      { id: "entry-home", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-away", championshipId: arena.id, displayName: "Raio" }
+    );
+    events.entries.push({
+      id: "entry-home",
+      championshipId: arena.id,
+      teamId: "team-home"
+    });
+    const match = await matchService.create("organizer-1", arena.id, {
+      homeEntryId: "entry-home",
+      awayEntryId: "entry-away",
+      scheduledAt: null
+    });
+
+    await expect(service.create("organizer-1", arena.id, match.id, {
+      entryId: "entry-home",
+      teamMemberId: null,
+      type: "GOAL",
+      periodNumber: 1,
+      clockSeconds: null,
+      notes: null
+    })).rejects.toMatchObject({ code: "INVALID_MATCH_EVENT_TYPE" });
+  });
+
+  it("records an ace in a volleyball set", async () => {
+    const arena = await championships.create("organizer-1", {
+      ...arenaInput,
+      sport: "Vôlei"
+    });
+    matches.entries.push(
+      { id: "entry-home", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-away", championshipId: arena.id, displayName: "Raio" }
+    );
+    events.entries.push({
+      id: "entry-home",
+      championshipId: arena.id,
+      teamId: "team-home"
+    });
+    const match = await matchService.create("organizer-1", arena.id, {
+      homeEntryId: "entry-home",
+      awayEntryId: "entry-away",
+      scheduledAt: null
+    });
+
+    const event = await service.create("organizer-1", arena.id, match.id, {
+      entryId: "entry-home",
+      teamMemberId: null,
+      type: "ACE",
+      periodNumber: 3,
+      clockSeconds: null,
+      notes: null
+    });
+
+    expect(event).toMatchObject({
+      type: "ACE",
+      periodNumber: 3,
+      value: 1
     });
   });
 

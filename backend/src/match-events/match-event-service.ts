@@ -2,21 +2,39 @@ import type { ChampionshipService } from "../championships/championship-service.
 import { AppError } from "../errors/app-error.js";
 import type { MatchRepository } from "../matches/match-repository.js";
 import type {
-  FootballMatchEventType,
+  MatchEventType,
   MatchEventRepository
 } from "./match-event-repository.js";
 
-const footballEventTypes = new Set<FootballMatchEventType>([
-  "GOAL",
-  "OWN_GOAL",
-  "YELLOW_CARD",
-  "RED_CARD"
-]);
+const eventRules: Record<string, Partial<Record<MatchEventType, number>>> = {
+  Futebol: {
+    GOAL: 1,
+    OWN_GOAL: 1,
+    YELLOW_CARD: 1,
+    RED_CARD: 1
+  },
+  Futsal: {
+    GOAL: 1,
+    OWN_GOAL: 1,
+    YELLOW_CARD: 1,
+    RED_CARD: 1
+  },
+  Basquete: {
+    FREE_THROW: 1,
+    TWO_POINT_SHOT: 2,
+    THREE_POINT_SHOT: 3
+  },
+  "Vôlei": {
+    VOLLEYBALL_POINT: 1,
+    ACE: 1,
+    BLOCK: 1
+  }
+};
 
 export type AddMatchEventInput = {
   entryId: string;
   teamMemberId: string | null;
-  type: FootballMatchEventType;
+  type: MatchEventType;
   periodNumber: number | null;
   clockSeconds: number | null;
   notes: string | null;
@@ -49,13 +67,14 @@ export class MatchEventService {
       organizerId,
       championshipId
     );
-    this.requireFootballSport(championship.sport);
+    const rules = this.requireSupportedSport(championship.sport);
 
     const match = await this.requireEditableMatch(championshipId, matchId);
 
-    if (!footballEventTypes.has(input.type)) {
+    const eventValue = rules[input.type];
+    if (eventValue === undefined) {
       throw new AppError(
-        "Esse tipo de evento não é aceito no futebol ou futsal.",
+        "Esse tipo de evento não é aceito para o esporte da arena.",
         400,
         "INVALID_MATCH_EVENT_TYPE"
       );
@@ -93,7 +112,7 @@ export class MatchEventService {
       teamMemberId: input.teamMemberId,
       actorName,
       type: input.type,
-      value: 1,
+      value: eventValue,
       periodNumber: input.periodNumber,
       clockSeconds: input.clockSeconds,
       notes: input.notes
@@ -121,14 +140,16 @@ export class MatchEventService {
     await this.repository.delete(eventId);
   }
 
-  private requireFootballSport(sport: string) {
-    if (sport !== "Futebol" && sport !== "Futsal") {
+  private requireSupportedSport(sport: string) {
+    const rules = eventRules[sport];
+    if (!rules) {
       throw new AppError(
-        "A súmula detalhada está disponível primeiro para futebol e futsal.",
+        "A súmula detalhada ainda não está disponível para este esporte.",
         409,
         "MATCH_EVENTS_NOT_SUPPORTED_FOR_SPORT"
       );
     }
+    return rules;
   }
 
   private async requireMatch(championshipId: string, matchId: string) {

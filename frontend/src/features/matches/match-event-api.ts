@@ -1,10 +1,16 @@
 import { apiRequest } from "../../lib/api";
 
-export type FootballMatchEventType =
+export type MatchEventType =
   | "GOAL"
   | "OWN_GOAL"
   | "YELLOW_CARD"
-  | "RED_CARD";
+  | "RED_CARD"
+  | "FREE_THROW"
+  | "TWO_POINT_SHOT"
+  | "THREE_POINT_SHOT"
+  | "VOLLEYBALL_POINT"
+  | "ACE"
+  | "BLOCK";
 
 export type MatchEvent = {
   id: string;
@@ -12,7 +18,7 @@ export type MatchEvent = {
   entryId: string;
   teamMemberId: string | null;
   actorName: string | null;
-  type: FootballMatchEventType;
+  type: MatchEventType;
   value: number;
   periodNumber: number | null;
   clockSeconds: number | null;
@@ -39,7 +45,7 @@ export const createMatchEvent = (
   input: {
     entryId: string;
     teamMemberId: string | null;
-    type: FootballMatchEventType;
+    type: MatchEventType;
     periodNumber: number | null;
     clockSeconds: number | null;
     notes: string | null;

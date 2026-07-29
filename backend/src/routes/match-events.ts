@@ -15,7 +15,18 @@ const eventParams = matchParams.extend({ eventId: z.uuid() });
 const eventSchema = z.object({
   entryId: z.uuid(),
   teamMemberId: z.union([z.uuid(), z.null()]).default(null),
-  type: z.enum(["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD"]),
+  type: z.enum([
+    "GOAL",
+    "OWN_GOAL",
+    "YELLOW_CARD",
+    "RED_CARD",
+    "FREE_THROW",
+    "TWO_POINT_SHOT",
+    "THREE_POINT_SHOT",
+    "VOLLEYBALL_POINT",
+    "ACE",
+    "BLOCK"
+  ]),
   periodNumber: z.union([z.number().int().min(1).max(20), z.null()]).default(null),
   clockSeconds: z
     .union([z.number().int().min(0).max(24 * 60 * 60), z.null()])

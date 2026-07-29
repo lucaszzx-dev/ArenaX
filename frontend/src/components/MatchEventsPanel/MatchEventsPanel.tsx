@@ -6,35 +6,88 @@ import {
   deleteMatchEvent,
   listMatchEvents,
   matchEventQueryKey,
-  type FootballMatchEventType
+  type MatchEventType
 } from "../../features/matches/match-event-api";
 import type { ArenaMatch } from "../../features/matches/match-api";
 import type { Team } from "../../features/participants/participant-api";
 import { ApiError } from "../../lib/api";
 import styles from "./MatchEventsPanel.module.css";
 
-const eventLabels: Record<FootballMatchEventType, string> = {
+const eventLabels: Record<MatchEventType, string> = {
   GOAL: "Gol",
   OWN_GOAL: "Gol contra",
   YELLOW_CARD: "Cartão amarelo",
-  RED_CARD: "Cartão vermelho"
+  RED_CARD: "Cartão vermelho",
+  FREE_THROW: "Lance livre",
+  TWO_POINT_SHOT: "Cesta de 2 pontos",
+  THREE_POINT_SHOT: "Cesta de 3 pontos",
+  VOLLEYBALL_POINT: "Ponto",
+  ACE: "Ace",
+  BLOCK: "Ponto de bloqueio"
+};
+
+const sportConfigs: Record<string, {
+  eventTypes: MatchEventType[];
+  periodLabel: string;
+  periods: Array<{ value: number; label: string }>;
+  usesClock: boolean;
+}> = {
+  Futebol: {
+    eventTypes: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD"],
+    periodLabel: "Tempo",
+    periods: [
+      { value: 1, label: "1º tempo" },
+      { value: 2, label: "2º tempo" }
+    ],
+    usesClock: true
+  },
+  Futsal: {
+    eventTypes: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD"],
+    periodLabel: "Tempo",
+    periods: [
+      { value: 1, label: "1º tempo" },
+      { value: 2, label: "2º tempo" }
+    ],
+    usesClock: true
+  },
+  Basquete: {
+    eventTypes: ["FREE_THROW", "TWO_POINT_SHOT", "THREE_POINT_SHOT"],
+    periodLabel: "Quarto",
+    periods: [1, 2, 3, 4].map((value) => ({
+      value,
+      label: `${value}º quarto`
+    })),
+    usesClock: true
+  },
+  "Vôlei": {
+    eventTypes: ["VOLLEYBALL_POINT", "ACE", "BLOCK"],
+    periodLabel: "Set",
+    periods: [1, 2, 3, 4, 5].map((value) => ({
+      value,
+      label: `${value}º set`
+    })),
+    usesClock: false
+  }
 };
 
 type MatchEventsPanelProps = {
   championshipId: string;
   match: ArenaMatch;
+  sport: string;
   teams: Team[];
 };
 
 export function MatchEventsPanel({
   championshipId,
   match,
+  sport,
   teams
 }: MatchEventsPanelProps) {
   const queryClient = useQueryClient();
   const [selectedEntryId, setSelectedEntryId] = useState(match.homeEntryId);
   const [message, setMessage] = useState<string | null>(null);
   const queryKey = matchEventQueryKey(championshipId, match.id);
+  const sportConfig = sportConfigs[sport];
   const eventQuery = useQuery({
     queryKey,
     queryFn: () => listMatchEvents(championshipId, match.id)
@@ -78,12 +131,14 @@ export function MatchEventsPanel({
     createMutation.mutate({
       entryId: selectedEntryId,
       teamMemberId: memberId || null,
-      type: String(data.get("type")) as FootballMatchEventType,
+      type: String(data.get("type")) as MatchEventType,
       periodNumber: period ? Number(period) : null,
       clockSeconds: minute ? Number(minute) * 60 : null,
       notes: String(data.get("notes") ?? "") || null
     }, { onSuccess: () => form.reset() });
   }
+
+  if (!sportConfig) return null;
 
   return (
     <section className={styles.panel}>
@@ -116,9 +171,9 @@ export function MatchEventsPanel({
           </label>
           <label>
             Evento
-            <select defaultValue="GOAL" name="type">
-              {Object.entries(eventLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+            <select defaultValue={sportConfig.eventTypes[0]} name="type">
+              {sportConfig.eventTypes.map((value) => (
+                <option key={value} value={value}>{eventLabels[value]}</option>
               ))}
             </select>
           </label>
@@ -134,17 +189,22 @@ export function MatchEventsPanel({
             </select>
           </label>
           <label>
-            Tempo
+            {sportConfig.periodLabel}
             <select defaultValue="" name="periodNumber">
               <option value="">Não informado</option>
-              <option value="1">1º tempo</option>
-              <option value="2">2º tempo</option>
+              {sportConfig.periods.map((period) => (
+                <option key={period.value} value={period.value}>
+                  {period.label}
+                </option>
+              ))}
             </select>
           </label>
-          <label>
-            Minuto
-            <input min="0" max="300" name="minute" type="number" />
-          </label>
+          {sportConfig.usesClock && (
+            <label>
+              Minuto
+              <input min="0" max="300" name="minute" type="number" />
+            </label>
+          )}
           <label className={styles.notes}>
             Observação
             <input maxLength={200} name="notes" placeholder="Opcional" />

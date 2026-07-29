@@ -117,7 +117,10 @@ export function ManageMatchesPage() {
   const { standings } = standingsQuery.data;
   const { teams } = registrationsQuery.data;
   const supportsEvents =
-    championship.sport === "Futebol" || championship.sport === "Futsal";
+    championship.sport === "Futebol" ||
+    championship.sport === "Futsal" ||
+    championship.sport === "Basquete" ||
+    championship.sport === "Vôlei";
 
   function submitMatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -206,6 +209,7 @@ export function ManageMatchesPage() {
                 <MatchEventsPanel
                   championshipId={id}
                   match={match}
+                  sport={championship.sport}
                   teams={teams}
                 />
               )}
