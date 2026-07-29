@@ -111,3 +111,17 @@ export const changeMatchStatus = (
       body: JSON.stringify({ action })
     }
   );
+
+export type MatchAuditLog = {
+  id: string;
+  matchId: string;
+  actorId: string;
+  action: "SCORE_CHANGED" | "MATCH_CANCELED" | "MATCH_REOPENED";
+  details: Record<string, unknown>;
+  createdAt: string;
+};
+
+export const listMatchAudit = (championshipId: string, matchId: string) =>
+  apiRequest<{ logs: MatchAuditLog[] }>(
+    `/championships/${championshipId}/matches/${matchId}/audit`
+  );

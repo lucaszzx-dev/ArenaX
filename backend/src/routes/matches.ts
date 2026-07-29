@@ -6,6 +6,7 @@ import { requireUser } from "../auth/require-user.js";
 import type { Env } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
 import type { MatchService } from "../matches/match-service.js";
+import type { MatchAuditService } from "../match-audit/match-audit-service.js";
 
 const championshipParams = z.object({ id: z.uuid() });
 const matchParams = championshipParams.extend({ matchId: z.uuid() });
@@ -32,6 +33,7 @@ const scheduleSchema = z.object({ scheduledAt: nullableDate });
 type MatchRoutesOptions = {
   authService: AuthService;
   matchService: MatchService;
+  matchAuditService?: MatchAuditService | undefined;
   env: Env;
 };
 
@@ -47,6 +49,19 @@ export const matchRoutes: FastifyPluginAsync<MatchRoutesOptions> = async (
     const params = championshipParams.safeParse(request.params);
     if (!params.success) throw validationError();
     return options.matchService.list(user.id, params.data.id);
+  });
+
+  app.get("/championships/:id/matches/:matchId/audit", async (request) => {
+    const user = await getUser(request);
+    const params = matchParams.safeParse(request.params);
+    if (!params.success) throw validationError();
+    if (!options.matchAuditService) return { logs: [] };
+    const logs = await options.matchAuditService.list(
+      user.id,
+      params.data.id,
+      params.data.matchId
+    );
+    return { logs };
   });
 
   app.post("/championships/:id/matches", async (request, reply) => {

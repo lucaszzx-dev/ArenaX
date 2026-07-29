@@ -7,13 +7,15 @@ import type {
   MatchRepository,
   Standing
 } from "./match-repository.js";
+import type { MatchAuditService } from "../match-audit/match-audit-service.js";
 
 export type ScheduleMatchInput = Omit<CreateMatchInput, "championshipId">;
 
 export class MatchService {
   constructor(
     private readonly repository: MatchRepository,
-    private readonly championships: ChampionshipService
+    private readonly championships: ChampionshipService,
+    private readonly audit?: MatchAuditService
   ) {}
 
   async list(organizerId: string, championshipId: string) {
@@ -108,7 +110,16 @@ export class MatchService {
       );
     }
 
-    return this.repository.updateScore(matchId, homeScore, awayScore);
+    const previousScore = {
+      homeScore: match.homeScore,
+      awayScore: match.awayScore
+    };
+    const updated = await this.repository.updateScore(matchId, homeScore, awayScore);
+    await this.audit?.record(organizerId, matchId, "SCORE_CHANGED", {
+      before: previousScore,
+      after: { homeScore, awayScore }
+    });
+    return updated;
   }
 
   async updateSchedule(
@@ -139,10 +150,28 @@ export class MatchService {
     const match = await this.requireMatch(championshipId, matchId);
     if (action === "CANCEL") {
       if (match.status === "CANCELED") return match;
-      return this.repository.updateStatus(matchId, "CANCELED", false);
+      const previousStatus = match.status;
+      const updated = await this.repository.updateStatus(matchId, "CANCELED", false);
+      await this.audit?.record(organizerId, matchId, "MATCH_CANCELED", {
+        previousStatus
+      });
+      return updated;
     }
     if (match.status === "SCHEDULED") return match;
-    return this.repository.updateStatus(matchId, "SCHEDULED", true);
+    const previousState = {
+      status: match.status,
+      homeScore: match.homeScore,
+      awayScore: match.awayScore
+    };
+    const updated = await this.repository.updateStatus(matchId, "SCHEDULED", true);
+    await this.audit?.record(organizerId, matchId, "MATCH_REOPENED", {
+      previousStatus: previousState.status,
+      clearedScore: {
+        homeScore: previousState.homeScore,
+        awayScore: previousState.awayScore
+      }
+    });
+    return updated;
   }
 
   async standings(

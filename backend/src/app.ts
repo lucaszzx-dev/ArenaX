@@ -9,6 +9,7 @@ import type { ParticipantService } from "./participants/participant-service.js";
 import type { MatchService } from "./matches/match-service.js";
 import type { MatchEventService } from "./match-events/match-event-service.js";
 import type { MatchPeriodService } from "./match-periods/match-period-service.js";
+import type { MatchAuditService } from "./match-audit/match-audit-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
@@ -28,6 +29,7 @@ type BuildAppOptions = {
   matchService?: MatchService;
   matchEventService?: MatchEventService;
   matchPeriodService?: MatchPeriodService;
+  matchAuditService?: MatchAuditService | undefined;
   env?: Env;
 };
 
@@ -95,6 +97,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       prefix: "/api",
       authService: options.authService,
       matchService: options.matchService,
+      matchAuditService: options.matchAuditService,
       env: options.env
     });
   }

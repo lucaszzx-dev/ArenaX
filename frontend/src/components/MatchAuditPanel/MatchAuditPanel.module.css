@@ -1,0 +1,7 @@
+.panel { padding: .9rem; border: 1px solid var(--color-border); color: var(--color-text-muted); grid-column: 1 / -1; }
+.panel summary { cursor: pointer; font-size: .72rem; font-weight: 800; }
+.panel ol { margin: .8rem 0 0; padding: 0; list-style: none; }
+.panel li { display: flex; padding: .65rem 0; border-top: 1px solid var(--color-border); align-items: center; justify-content: space-between; gap: 1rem; }
+.panel li div { display: grid; gap: .2rem; }
+.panel strong { color: var(--color-text-strong); font-size: .72rem; }
+.panel span, .panel time { font-size: .65rem; }

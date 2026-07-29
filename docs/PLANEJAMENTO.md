@@ -510,3 +510,7 @@ Próximo marco: escolher as hospedagens e executar o primeiro deploy.
 
 O fluxo de solicitação pública de inscrição foi retirado do escopo por decisão
 do produto em 29 de julho de 2026.
+
+Auditoria administrativa implementada em 29 de julho de 2026 para alterações
+de placar, cancelamento e reabertura de partidas. O histórico preserva o estado
+anterior e o novo estado e é acessível apenas pelo organizador da arena.

@@ -5,6 +5,7 @@ import { Link, useParams } from "react-router-dom";
 import { getChampionship } from "../../features/championships/championship-api";
 import { MatchEventsPanel } from "../../components/MatchEventsPanel/MatchEventsPanel";
 import { MatchPeriodsPanel } from "../../components/MatchPeriodsPanel/MatchPeriodsPanel";
+import { MatchAuditPanel } from "../../components/MatchAuditPanel/MatchAuditPanel";
 import {
   createMatch,
   changeMatchStatus,
@@ -54,6 +55,7 @@ export function ManageMatchesPage() {
     await queryClient.invalidateQueries({
       queryKey: ["championships", id, "standings"]
     });
+    await queryClient.invalidateQueries({ queryKey: ["match-audit", id] });
   };
   const createMutation = useMutation({
     mutationFn: (input: {
@@ -224,6 +226,7 @@ export function ManageMatchesPage() {
                 matchId={match.id}
                 sport={championship.sport}
               />
+              <MatchAuditPanel championshipId={id} matchId={match.id} />
               {match.status !== "CANCELED" && (
                 <ScoreForm
                   awayName={match.awayEntry.displayName}

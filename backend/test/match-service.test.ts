@@ -1,10 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   ChampionshipService,
   type ChampionshipInput
 } from "../src/championships/championship-service.js";
 import { MatchService } from "../src/matches/match-service.js";
+import type { MatchAuditService } from "../src/match-audit/match-audit-service.js";
 import { InMemoryChampionshipRepository } from "./support/in-memory-championship-repository.js";
 import { InMemoryMatchRepository } from "./support/in-memory-match-repository.js";
 
@@ -112,6 +113,35 @@ describe("MatchService", () => {
       losses: 1,
       points: 0
     });
+  });
+
+  it("audits the previous and new score", async () => {
+    const record = vi.fn();
+    service = new MatchService(repository, championships, {
+      record
+    } as unknown as MatchAuditService);
+    const arena = await championships.create("organizer-1", arenaInput);
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    const match = await service.create("organizer-1", arena.id, {
+      homeEntryId: "entry-1",
+      awayEntryId: "entry-2",
+      scheduledAt: null
+    });
+
+    await service.recordScore("organizer-1", arena.id, match.id, 2, 1);
+
+    expect(record).toHaveBeenCalledWith(
+      "organizer-1",
+      match.id,
+      "SCORE_CHANGED",
+      {
+        before: { homeScore: null, awayScore: null },
+        after: { homeScore: 2, awayScore: 1 }
+      }
+    );
   });
 
   it("rejects a draw when the arena does not allow it", async () => {

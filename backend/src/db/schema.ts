@@ -2,6 +2,7 @@ import {
   boolean,
   check,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -245,6 +246,19 @@ export const matchPeriods = pgTable(
     )
   ]
 );
+
+export const matchAuditLogs = pgTable("match_audit_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  matchId: uuid("match_id").notNull().references(() => matches.id, {
+    onDelete: "cascade"
+  }),
+  actorId: uuid("actor_id").notNull().references(() => users.id, {
+    onDelete: "restrict"
+  }),
+  action: text("action").notNull(),
+  details: jsonb("details").$type<Record<string, unknown>>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});
 
 export const matchEvents = pgTable(
   "match_events",
