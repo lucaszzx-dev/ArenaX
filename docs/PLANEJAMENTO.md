@@ -492,3 +492,6 @@ Próximo marco: escolher as hospedagens e executar o primeiro deploy.
 | 25/07/2026 | Perfil e rotas privadas | Concluído | Perfil editável, proteção de páginas, navbar autenticada e persistência real verificadas |
 | 25/07/2026 | Autoria dos commits | Corrigida | Repositório configurado com o e-mail primário verificado de `lucaszzx-dev` |
 | 25/07/2026 | Criação de arenas | Concluída | API, permissões, formulário, listagem e persistência PostgreSQL verificadas |
+| 28/07/2026 | Deploy do MVP | Concluído | Frontend na Vercel, backend no Render e PostgreSQL no Neon |
+| 29/07/2026 | Resiliência de produção | Concluída | Proxy de mesma origem, rotas SPA e feedback durante a inicialização do servidor |
+| 29/07/2026 | Súmulas esportivas | Em planejamento | Futebol e futsal serão a primeira implementação de eventos por jogador |
