@@ -17,6 +17,8 @@ export type ArenaMatch = {
   status: "SCHEDULED" | "FINISHED" | "CANCELED";
   homeScore: number | null;
   awayScore: number | null;
+  roundNumber: number | null;
+  generated: boolean;
   homeEntry: MatchEntry;
   awayEntry: MatchEntry;
 };
@@ -61,6 +63,14 @@ export const createMatch = (
     `/championships/${championshipId}/matches`,
     { method: "POST", body: JSON.stringify(input) }
   );
+
+export const generateLeagueMatches = (
+  championshipId: string,
+  input: { legs: 1 | 2; startsAt: string | null; intervalDays: number }
+) => apiRequest<{ matches: ArenaMatch[]; rounds: number; total: number }>(
+  `/championships/${championshipId}/matches/generate`,
+  { method: "POST", body: JSON.stringify(input) }
+);
 
 export const deleteMatch = (championshipId: string, matchId: string) =>
   apiRequest<void>(`/championships/${championshipId}/matches/${matchId}`, {

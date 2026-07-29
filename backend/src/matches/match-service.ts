@@ -10,6 +10,11 @@ import type {
 import type { MatchAuditService } from "../match-audit/match-audit-service.js";
 
 export type ScheduleMatchInput = Omit<CreateMatchInput, "championshipId">;
+export type GenerateLeagueInput = {
+  legs: 1 | 2;
+  startsAt: Date | null;
+  intervalDays: number;
+};
 
 export class MatchService {
   constructor(
@@ -62,6 +67,72 @@ export class MatchService {
     }
 
     return this.repository.create({ championshipId, ...input });
+  }
+
+  async generateLeague(
+    organizerId: string,
+    championshipId: string,
+    input: GenerateLeagueInput
+  ) {
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
+    if (championship.status !== "DRAFT") {
+      throw new AppError(
+        "A geração automática só está disponível enquanto a arena é rascunho.",
+        409,
+        "FIXTURES_REQUIRE_DRAFT"
+      );
+    }
+    if (championship.format !== "LEAGUE") {
+      throw new AppError(
+        "A geração do mata-mata será habilitada no próximo ciclo.",
+        409,
+        "FORMAT_GENERATION_NOT_AVAILABLE"
+      );
+    }
+
+    const [entries, existingMatches] = await Promise.all([
+      this.repository.listEntries(championshipId),
+      this.repository.listByChampionship(championshipId)
+    ]);
+    if (entries.length < 2) {
+      throw new AppError(
+        "Cadastre pelo menos dois participantes antes de gerar as rodadas.",
+        409,
+        "FIXTURES_NEED_ENTRIES"
+      );
+    }
+    if (existingMatches.length) {
+      throw new AppError(
+        "O calendário precisa estar vazio para gerar as rodadas automaticamente.",
+        409,
+        "FIXTURES_REQUIRE_EMPTY_CALENDAR"
+      );
+    }
+
+    const rounds = createRoundRobin(entries.map((entry) => entry.id), input.legs);
+    const dayInMilliseconds = 86_400_000;
+    const matches = await this.repository.createMany(
+      rounds.flatMap((round, roundIndex) => round.map(([homeEntryId, awayEntryId]) => ({
+        championshipId,
+        homeEntryId,
+        awayEntryId,
+        scheduledAt: input.startsAt
+          ? new Date(input.startsAt.getTime() +
+            roundIndex * input.intervalDays * dayInMilliseconds)
+          : null,
+        roundNumber: roundIndex + 1,
+        generated: true
+      })))
+    );
+
+    return {
+      matches,
+      rounds: rounds.length,
+      total: matches.length
+    };
   }
 
   async delete(
@@ -313,4 +384,36 @@ export class MatchService {
     }
     return match;
   }
+}
+
+function createRoundRobin(entryIds: string[], legs: 1 | 2) {
+  const participants: Array<string | null> = [...entryIds];
+  if (participants.length % 2 !== 0) participants.push(null);
+  const rounds: Array<Array<[string, string]>> = [];
+  const roundCount = participants.length - 1;
+  const gamesPerRound = participants.length / 2;
+  let rotation = [...participants];
+
+  for (let round = 0; round < roundCount; round += 1) {
+    const games: Array<[string, string]> = [];
+    for (let index = 0; index < gamesPerRound; index += 1) {
+      const first = rotation[index];
+      const second = rotation[rotation.length - 1 - index];
+      if (!first || !second) continue;
+      games.push(round % 2 === 0 ? [first, second] : [second, first]);
+    }
+    rounds.push(games);
+    rotation = [
+      rotation[0] ?? null,
+      rotation[rotation.length - 1] ?? null,
+      ...rotation.slice(1, -1)
+    ];
+  }
+
+  if (legs === 2) {
+    rounds.push(...rounds.map((games) =>
+      games.map(([home, away]): [string, string] => [away, home])
+    ));
+  }
+  return rounds;
 }

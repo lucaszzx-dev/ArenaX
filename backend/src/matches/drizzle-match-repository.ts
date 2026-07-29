@@ -66,6 +66,12 @@ export class DrizzleMatchRepository implements MatchRepository {
     return this.withEntries(match);
   }
 
+  async createMany(inputs: CreateMatchInput[]): Promise<Match[]> {
+    if (!inputs.length) return [];
+    const rows = await this.db.insert(matches).values(inputs).returning();
+    return Promise.all(rows.map((match) => this.withEntries(match)));
+  }
+
   async updateScore(matchId: string, homeScore: number, awayScore: number) {
     const [match] = await this.db
       .update(matches)

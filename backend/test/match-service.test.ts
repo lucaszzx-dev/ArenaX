@@ -53,6 +53,70 @@ describe("MatchService", () => {
     });
   });
 
+  it("generates balanced league rounds for an even number of entries", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" },
+      { id: "entry-3", championshipId: arena.id, displayName: "Fênix" },
+      { id: "entry-4", championshipId: arena.id, displayName: "Norte" }
+    );
+
+    const result = await service.generateLeague("organizer-1", arena.id, {
+      legs: 1,
+      startsAt: new Date("2026-08-01T15:00:00.000Z"),
+      intervalDays: 7
+    });
+
+    expect(result).toMatchObject({ rounds: 3, total: 6 });
+    expect(new Set(result.matches.map((match) => match.roundNumber))).toEqual(
+      new Set([1, 2, 3])
+    );
+    const pairs = result.matches.map((match) =>
+      [match.homeEntryId, match.awayEntryId].sort().join(":")
+    );
+    expect(new Set(pairs)).toHaveLength(6);
+  });
+
+  it("handles byes and return legs without creating fake matches", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" },
+      { id: "entry-3", championshipId: arena.id, displayName: "Fênix" }
+    );
+
+    const result = await service.generateLeague("organizer-1", arena.id, {
+      legs: 2,
+      startsAt: null,
+      intervalDays: 7
+    });
+
+    expect(result).toMatchObject({ rounds: 6, total: 6 });
+    expect(result.matches.every((match) =>
+      match.homeEntryId !== match.awayEntryId && match.generated
+    )).toBe(true);
+  });
+
+  it("does not generate over an existing calendar", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    await service.create("organizer-1", arena.id, {
+      homeEntryId: "entry-1",
+      awayEntryId: "entry-2",
+      scheduledAt: null
+    });
+
+    await expect(service.generateLeague("organizer-1", arena.id, {
+      legs: 1,
+      startsAt: null,
+      intervalDays: 7
+    })).rejects.toMatchObject({ code: "FIXTURES_REQUIRE_EMPTY_CALENDAR" });
+  });
+
   it("rejects a participant facing itself", async () => {
     const arena = await championships.create("organizer-1", arenaInput);
 

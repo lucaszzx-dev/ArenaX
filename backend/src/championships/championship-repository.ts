@@ -1,5 +1,6 @@
 export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
 export type ChampionshipStatus = "DRAFT" | "PUBLISHED" | "FINISHED";
+export type TournamentFormat = "LEAGUE" | "KNOCKOUT";
 
 export type Championship = {
   id: string;
@@ -10,6 +11,7 @@ export type Championship = {
   description: string | null;
   entryType: ChampionshipEntryType;
   status: ChampionshipStatus;
+  format: TournamentFormat;
   winPoints: number;
   drawPoints: number;
   lossPoints: number;
@@ -22,12 +24,12 @@ export type Championship = {
 
 export type SaveChampionshipInput = Omit<
   Championship,
-  "id" | "status" | "createdAt" | "updatedAt"
->;
+  "id" | "status" | "format" | "createdAt" | "updatedAt"
+> & { format?: TournamentFormat };
 
 export type UpdateChampionshipInput = Omit<
   SaveChampionshipInput,
-  "organizerId" | "slug"
+  "organizerId" | "slug" | "format"
 >;
 
 export type PublicChampionshipFilters = {

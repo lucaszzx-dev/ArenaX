@@ -25,6 +25,7 @@ export class ChampionshipService {
 
     return this.repository.create({
       ...input,
+      format: input.format ?? "LEAGUE",
       organizerId,
       slug: this.createSlug(input.name)
     });

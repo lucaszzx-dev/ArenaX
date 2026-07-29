@@ -43,6 +43,7 @@ export function ChampionshipForm({
       description: String(formData.get("description") ?? "") || null,
       entryType:
         formData.get("entryType") === "INDIVIDUAL" ? "INDIVIDUAL" : "TEAM",
+      format: formData.get("format") === "KNOCKOUT" ? "KNOCKOUT" : "LEAGUE",
       winPoints: Number(formData.get("winPoints")),
       drawPoints: Number(formData.get("drawPoints")),
       lossPoints: Number(formData.get("lossPoints")),
@@ -84,6 +85,19 @@ export function ChampionshipForm({
               <option value="TEAM">Por equipes</option>
               <option value="INDIVIDUAL">Individual</option>
             </select>
+          </label>
+
+          <label>
+            Formato
+            <select
+              defaultValue={initial?.format ?? "LEAGUE"}
+              disabled={Boolean(initial)}
+              name={initial ? undefined : "format"}
+            >
+              <option value="LEAGUE">Pontos corridos</option>
+              <option value="KNOCKOUT">Mata-mata</option>
+            </select>
+            {initial && <input name="format" type="hidden" value={initial.format} />}
           </label>
 
           <label className={styles.full}>

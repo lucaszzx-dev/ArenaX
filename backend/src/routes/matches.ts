@@ -29,6 +29,11 @@ const matchActionSchema = z.object({
   action: z.enum(["CANCEL", "REOPEN"])
 });
 const scheduleSchema = z.object({ scheduledAt: nullableDate });
+const generateSchema = z.object({
+  legs: z.union([z.literal(1), z.literal(2)]).default(1),
+  startsAt: nullableDate,
+  intervalDays: z.number().int().min(1).max(30).default(7)
+});
 
 type MatchRoutesOptions = {
   authService: AuthService;
@@ -76,6 +81,19 @@ export const matchRoutes: FastifyPluginAsync<MatchRoutesOptions> = async (
       input.data
     );
     return reply.status(201).send({ match });
+  });
+
+  app.post("/championships/:id/matches/generate", async (request, reply) => {
+    const user = await getUser(request);
+    const params = championshipParams.safeParse(request.params);
+    const input = generateSchema.safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+    const result = await options.matchService.generateLeague(
+      user.id,
+      params.data.id,
+      input.data
+    );
+    return reply.status(201).send(result);
   });
 
   app.delete("/championships/:id/matches/:matchId", async (request, reply) => {

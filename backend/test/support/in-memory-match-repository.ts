@@ -36,6 +36,8 @@ export class InMemoryMatchRepository implements MatchRepository {
       status: "SCHEDULED",
       homeScore: null,
       awayScore: null,
+      roundNumber: input.roundNumber ?? null,
+      generated: input.generated ?? false,
       createdAt: now,
       updatedAt: now,
       homeEntry,
@@ -43,6 +45,10 @@ export class InMemoryMatchRepository implements MatchRepository {
     };
     this.matches.push(match);
     return match;
+  }
+
+  async createMany(inputs: CreateMatchInput[]) {
+    return Promise.all(inputs.map((input) => this.create(input)));
   }
 
   async updateScore(matchId: string, homeScore: number, awayScore: number) {

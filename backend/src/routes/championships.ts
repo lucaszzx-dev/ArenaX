@@ -18,6 +18,7 @@ const championshipInputSchema = z.object({
     .union([z.string().trim().max(500), z.null()])
     .transform((value) => value || null),
   entryType: z.enum(["INDIVIDUAL", "TEAM"]),
+  format: z.enum(["LEAGUE", "KNOCKOUT"]).default("LEAGUE"),
   winPoints: z.number().int().min(0).max(20),
   drawPoints: z.number().int().min(0).max(20),
   lossPoints: z.number().int().min(0).max(20),
@@ -25,6 +26,7 @@ const championshipInputSchema = z.object({
   startsAt: nullableDate,
   endsAt: nullableDate
 });
+const championshipUpdateSchema = championshipInputSchema.omit({ format: true });
 
 const idParamsSchema = z.object({
   id: z.uuid()
@@ -97,7 +99,7 @@ export const championshipRoutes: FastifyPluginAsync<
   app.put("/championships/:id", async (request) => {
     const user = await getUser(request);
     const params = idParamsSchema.safeParse(request.params);
-    const input = championshipInputSchema.safeParse(request.body);
+    const input = championshipUpdateSchema.safeParse(request.body);
 
     if (!params.success || !input.success) {
       throw new AppError(

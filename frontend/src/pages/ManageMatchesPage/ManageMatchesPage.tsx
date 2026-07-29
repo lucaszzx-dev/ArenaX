@@ -8,6 +8,7 @@ import { MatchPeriodsPanel } from "../../components/MatchPeriodsPanel/MatchPerio
 import { MatchAuditPanel } from "../../components/MatchAuditPanel/MatchAuditPanel";
 import {
   createMatch,
+  generateLeagueMatches,
   changeMatchStatus,
   deleteMatch,
   listStandings,
@@ -64,6 +65,20 @@ export function ManageMatchesPage() {
       scheduledAt: string | null;
     }) => createMatch(id, input),
     onSuccess: refresh,
+    onError: showError
+  });
+  const generateMutation = useMutation({
+    mutationFn: (input: {
+      legs: 1 | 2;
+      startsAt: string | null;
+      intervalDays: number;
+    }) => generateLeagueMatches(id, input),
+    onSuccess: async (result) => {
+      await refresh();
+      setSuccessMessage(
+        `${result.total} partidas distribuídas em ${result.rounds} rodadas.`
+      );
+    },
     onError: showError
   });
   const deleteMutation = useMutation({
@@ -148,7 +163,11 @@ export function ManageMatchesPage() {
       <header className={styles.heading}>
         <span>03 / partidas</span>
         <h1>{championship.name}</h1>
-        <p>Escolha os adversários e monte o calendário manualmente.</p>
+        <p>
+          {championship.format === "LEAGUE"
+            ? "Gere as rodadas de pontos corridos ou crie confrontos manualmente."
+            : "Organize os confrontos do mata-mata. A geração automática será o próximo ciclo."}
+        </p>
       </header>
 
       {errorMessage && <p className={styles.error} role="alert">{errorMessage}</p>}
@@ -158,6 +177,54 @@ export function ManageMatchesPage() {
 
       <div className={styles.workspace}>
         <form className={styles.createForm} onSubmit={submitMatch}>
+          <section className={styles.generator}>
+            <strong>Gerar calendário</strong>
+            {championship.format === "LEAGUE" ? (
+              <>
+                <label>
+                  Turnos
+                  <select defaultValue="1" name="legs">
+                    <option value="1">Turno único</option>
+                    <option value="2">Ida e volta</option>
+                  </select>
+                </label>
+                <label>
+                  Início opcional
+                  <input name="generationStartsAt" type="datetime-local" />
+                </label>
+                <label>
+                  Dias entre rodadas
+                  <input defaultValue={7} max={30} min={1} name="intervalDays" type="number" />
+                </label>
+                <button
+                  disabled={
+                    generateMutation.isPending ||
+                    entries.length < 2 ||
+                    matches.length > 0 ||
+                    championship.status !== "DRAFT"
+                  }
+                  onClick={(event) => {
+                    const data = new FormData(event.currentTarget.form ?? undefined);
+                    const startsAt = String(data.get("generationStartsAt") ?? "");
+                    generateMutation.mutate({
+                      legs: data.get("legs") === "2" ? 2 : 1,
+                      startsAt: startsAt ? new Date(startsAt).toISOString() : null,
+                      intervalDays: Number(data.get("intervalDays") ?? 7)
+                    });
+                  }}
+                  type="button"
+                >
+                  Gerar todas as rodadas
+                </button>
+                {matches.length > 0 && (
+                  <p>O calendário precisa estar vazio para gerar automaticamente.</p>
+                )}
+              </>
+            ) : (
+              <p>O gerador eliminatório será liberado junto com o chaveamento.</p>
+            )}
+          </section>
+          <span className={styles.divider}>criação manual</span>
           <label>
             Adversário 1
             <select name="homeEntryId" required defaultValue="">
@@ -196,6 +263,9 @@ export function ManageMatchesPage() {
           </div>
           {matches.map((match) => (
             <article className={styles.match} key={match.id}>
+              {match.roundNumber && (
+                <span className={styles.round}>Rodada {match.roundNumber}</span>
+              )}
               <div className={styles.date}>
                 <span>{match.scheduledAt
                   ? new Intl.DateTimeFormat("pt-BR", {

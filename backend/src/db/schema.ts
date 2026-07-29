@@ -24,6 +24,11 @@ export const championshipStatus = pgEnum("championship_status", [
   "FINISHED"
 ]);
 
+export const tournamentFormat = pgEnum("tournament_format", [
+  "LEAGUE",
+  "KNOCKOUT"
+]);
+
 export const matchStatus = pgEnum("match_status", [
   "SCHEDULED",
   "FINISHED",
@@ -104,6 +109,7 @@ export const championships = pgTable(
     description: text("description"),
     entryType: championshipEntryType("entry_type").notNull(),
     status: championshipStatus("status").notNull().default("DRAFT"),
+    format: tournamentFormat("format").notNull().default("LEAGUE"),
     winPoints: integer("win_points").notNull().default(3),
     drawPoints: integer("draw_points").notNull().default(1),
     lossPoints: integer("loss_points").notNull().default(0),
@@ -249,10 +255,16 @@ export const matches = pgTable(
     status: matchStatus("status").notNull().default("SCHEDULED"),
     homeScore: integer("home_score"),
     awayScore: integer("away_score"),
+    roundNumber: integer("round_number"),
+    generated: boolean("generated").notNull().default(false),
     ...timestamps
   },
   (table) => [
     check("match_distinct_entries", sql`${table.homeEntryId} <> ${table.awayEntryId}`),
+    check(
+      "match_round_number_positive",
+      sql`${table.roundNumber} is null or ${table.roundNumber} > 0`
+    ),
     check(
       "match_scores_non_negative",
       sql`(${table.homeScore} is null or ${table.homeScore} >= 0) and (${table.awayScore} is null or ${table.awayScore} >= 0)`

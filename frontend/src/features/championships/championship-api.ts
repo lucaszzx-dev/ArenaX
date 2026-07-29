@@ -2,6 +2,7 @@ import { apiRequest } from "../../lib/api";
 
 export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
 export type ChampionshipStatus = "DRAFT" | "PUBLISHED" | "FINISHED";
+export type TournamentFormat = "LEAGUE" | "KNOCKOUT";
 
 export type Championship = {
   id: string;
@@ -12,6 +13,7 @@ export type Championship = {
   description: string | null;
   entryType: ChampionshipEntryType;
   status: ChampionshipStatus;
+  format: TournamentFormat;
   winPoints: number;
   drawPoints: number;
   lossPoints: number;
@@ -27,6 +29,7 @@ export type ChampionshipInput = {
   sport: string;
   description: string | null;
   entryType: ChampionshipEntryType;
+  format: TournamentFormat;
   winPoints: number;
   drawPoints: number;
   lossPoints: number;

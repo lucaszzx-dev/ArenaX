@@ -16,6 +16,7 @@ export class InMemoryChampionshipRepository
     const now = new Date();
     const championship: Championship = {
       ...input,
+      format: input.format ?? "LEAGUE",
       id: crypto.randomUUID(),
       status: "DRAFT",
       createdAt: now,

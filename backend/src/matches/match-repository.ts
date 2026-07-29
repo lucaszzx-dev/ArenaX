@@ -17,6 +17,8 @@ export type Match = {
   status: MatchStatus;
   homeScore: number | null;
   awayScore: number | null;
+  roundNumber: number | null;
+  generated: boolean;
   createdAt: Date;
   updatedAt: Date;
   homeEntry: MatchEntry;
@@ -28,6 +30,8 @@ export type CreateMatchInput = {
   homeEntryId: string;
   awayEntryId: string;
   scheduledAt: Date | null;
+  roundNumber?: number | null;
+  generated?: boolean;
 };
 
 export type Standing = {
@@ -50,6 +54,7 @@ export interface MatchRepository {
   listByChampionship(championshipId: string): Promise<Match[]>;
   findById(matchId: string): Promise<Match | null>;
   create(input: CreateMatchInput): Promise<Match>;
+  createMany(inputs: CreateMatchInput[]): Promise<Match[]>;
   updateScore(
     matchId: string,
     homeScore: number,
