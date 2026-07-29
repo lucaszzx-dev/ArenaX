@@ -1,0 +1,37 @@
+.page { width: min(1120px, calc(100% - 2rem)); min-height: calc(100vh - 12rem); margin: 0 auto; padding: 4.5rem 0; }
+.heading { max-width: 760px; }
+.heading > span { color: var(--color-primary); font-family: var(--font-mono); font-size: .68rem; font-weight: 900; letter-spacing: .08em; }
+.heading h1 { margin: .7rem 0 1rem; color: var(--color-text-strong); font-size: clamp(2.7rem, 7vw, 5.7rem); letter-spacing: -.065em; line-height: .92; }
+.heading p { max-width: 620px; color: var(--color-text-muted); line-height: 1.7; }
+.filters { display: grid; margin: 3rem 0; padding: 1.2rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); gap: .8rem; grid-template-columns: 1.7fr repeat(3, 1fr) auto; }
+.filters label { display: grid; min-width: 0; color: var(--color-text-muted); font-size: .68rem; gap: .4rem; }
+.filters input, .filters select { width: 100%; min-width: 0; height: 2.7rem; padding: 0 .75rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-strong); }
+.filters button { align-self: end; height: 2.7rem; padding: 0 1rem; border: 0; background: var(--color-primary); color: white; cursor: pointer; font-weight: 800; }
+.resultHeading { display: flex; margin-bottom: 1rem; align-items: baseline; justify-content: space-between; }
+.resultHeading h2 { margin: 0; color: var(--color-text-strong); }
+.resultHeading span { color: var(--color-text-muted); font-family: var(--font-mono); font-size: .68rem; }
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card { display: flex; min-height: 245px; padding: 1.25rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); color: inherit; flex-direction: column; text-decoration: none; transition: border-color .18s ease, transform .18s ease; }
+.card:hover { border-color: var(--color-primary); transform: translateY(-3px); }
+.cardMeta, .card footer { display: flex; align-items: center; justify-content: space-between; }
+.cardMeta span { color: var(--color-primary); font-family: var(--font-mono); font-size: .65rem; font-weight: 900; text-transform: uppercase; }
+.cardMeta b { color: var(--color-text-muted); font-size: .64rem; text-transform: uppercase; }
+.card h3 { margin: 2rem 0 .65rem; color: var(--color-text-strong); font-size: 1.55rem; letter-spacing: -.035em; }
+.card p { margin: 0; color: var(--color-text-muted); font-size: .82rem; line-height: 1.6; }
+.card footer { margin-top: auto; padding-top: 1.5rem; color: var(--color-text-muted); font-size: .72rem; }
+.card footer strong { color: var(--color-primary-dark); }
+.state { padding: 3rem 1rem; border: 1px dashed var(--color-border); color: var(--color-text-muted); text-align: center; }
+.pagination { display: flex; margin-top: 2rem; align-items: center; justify-content: center; gap: 1rem; }
+.pagination button { padding: .65rem .9rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); cursor: pointer; }
+.pagination button:disabled { cursor: not-allowed; opacity: .4; }
+.pagination span { color: var(--color-text-muted); font-size: .75rem; }
+@media (max-width: 920px) {
+  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filters button { grid-column: span 2; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 580px) {
+  .page { padding-top: 3rem; }
+  .filters, .grid { grid-template-columns: 1fr; }
+  .filters button { grid-column: auto; }
+}

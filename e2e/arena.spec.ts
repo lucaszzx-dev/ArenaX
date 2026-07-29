@@ -1,5 +1,20 @@
 import { expect, test } from "@playwright/test";
 
+test("visitor discovers a published arena by sport", async ({ page }) => {
+  await page.goto("/campeonatos");
+
+  await expect(page.getByRole("heading", {
+    name: "Encontre o próximo campeonato."
+  })).toBeVisible();
+  await page.getByLabel("Esporte").selectOption("Futsal");
+  await page.getByRole("button", { name: "Buscar arenas" }).click();
+
+  const arena = page.getByRole("link", { name: /Copa ArenaX Demo/ });
+  await expect(arena).toBeVisible();
+  await arena.click();
+  await expect(page.getByRole("heading", { name: "Copa ArenaX Demo" })).toBeVisible();
+});
+
 test("visitor follows the public arena and match result", async ({ page }) => {
   await page.goto("/campeonatos/copa-arenax-demo");
 

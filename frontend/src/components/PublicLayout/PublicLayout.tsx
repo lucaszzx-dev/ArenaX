@@ -31,7 +31,7 @@ export function PublicLayout() {
           <Brand />
           <span className={styles.productName}>competition operating system</span>
           <nav className={styles.navigation} aria-label="Navegação principal">
-            <NavLink to="/campeonatos/demo">Campeonatos</NavLink>
+            <NavLink to="/campeonatos">Campeonatos</NavLink>
             <ThemeToggle />
             {user ? (
               <div className={styles.account}>

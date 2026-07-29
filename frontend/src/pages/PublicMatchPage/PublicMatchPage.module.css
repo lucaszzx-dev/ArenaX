@@ -9,9 +9,22 @@
 .scoreboard span { font-family: var(--font-mono); font-size: clamp(3rem, 8vw, 6rem); font-weight: 900; }
 .scoreboard b { color: var(--color-primary-dark); }
 .page > footer { display: flex; padding: 1rem; border: 1px solid var(--color-border); border-top: 0; align-items: center; justify-content: space-between; }
+.timeline { margin-top: 1rem; padding: 1.3rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); }
+.timelineHeading { display: flex; margin-bottom: 1rem; align-items: flex-end; justify-content: space-between; }
+.timelineHeading span { color: var(--color-primary); font-family: var(--font-mono); font-size: .62rem; font-weight: 900; letter-spacing: .08em; }
+.timelineHeading h2 { margin: .35rem 0 0; font-size: 1.25rem; }
+.timelineHeading > b { color: var(--color-text-muted); font-size: .72rem; }
+.event { display: grid; min-height: 4.2rem; border-top: 1px solid var(--color-border); align-items: center; gap: 1rem; grid-template-columns: 7.5rem 1fr auto; }
+.event > span { color: var(--color-primary-dark); font-family: var(--font-mono); font-size: .68rem; }
+.event strong, .event p { margin: 0; }
+.event p { margin-top: .15rem; color: var(--color-text-muted); font-size: .72rem; }
+.event > b { font-size: .78rem; text-align: right; }
+.empty { margin: 0; padding: 1.5rem 0; border-top: 1px solid var(--color-border); color: var(--color-text-muted); }
 .state { display: grid; min-height: calc(100vh - 4.5rem); place-items: center; color: var(--color-text-muted); }
 @media (max-width: 620px) {
   .scoreboard { grid-template-columns: 1fr; }
   .scoreboard > div { justify-content: center; grid-row: 2; }
   .page > footer { align-items: flex-start; gap: .5rem; flex-direction: column; }
+  .event { padding: .8rem 0; grid-template-columns: 1fr; gap: .35rem; }
+  .event > b { text-align: left; }
 }

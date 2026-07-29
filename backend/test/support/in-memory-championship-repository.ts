@@ -1,6 +1,8 @@
 import type {
   Championship,
   ChampionshipRepository,
+  PublicChampionshipFilters,
+  PublicChampionshipPage,
   SaveChampionshipInput,
   UpdateChampionshipInput
 } from "../../src/championships/championship-repository.js";
@@ -27,6 +29,29 @@ export class InMemoryChampionshipRepository
     return this.championships.filter(
       (championship) => championship.organizerId === organizerId
     );
+  }
+
+  async listPublic(
+    filters: PublicChampionshipFilters
+  ): Promise<PublicChampionshipPage> {
+    const filtered = this.championships.filter((championship) =>
+      championship.status !== "DRAFT" &&
+      (!filters.status || championship.status === filters.status) &&
+      (!filters.sport || championship.sport === filters.sport) &&
+      (!filters.entryType || championship.entryType === filters.entryType) &&
+      (!filters.search ||
+        championship.name.toLocaleLowerCase("pt-BR").includes(
+          filters.search.toLocaleLowerCase("pt-BR")
+        ))
+    );
+    const start = (filters.page - 1) * filters.limit;
+
+    return {
+      items: filtered.slice(start, start + filters.limit),
+      total: filtered.length,
+      page: filters.page,
+      limit: filters.limit
+    };
   }
 
   async findById(id: string): Promise<Championship | null> {

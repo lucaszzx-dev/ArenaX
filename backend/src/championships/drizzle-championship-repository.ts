@@ -1,8 +1,10 @@
-import { desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, ilike, inArray } from "drizzle-orm";
 
 import type {
   Championship,
   ChampionshipRepository,
+  PublicChampionshipFilters,
+  PublicChampionshipPage,
   SaveChampionshipInput,
   UpdateChampionshipInput
 } from "./championship-repository.js";
@@ -33,6 +35,45 @@ export class DrizzleChampionshipRepository
       .from(championships)
       .where(eq(championships.organizerId, organizerId))
       .orderBy(desc(championships.createdAt));
+  }
+
+  async listPublic(
+    filters: PublicChampionshipFilters
+  ): Promise<PublicChampionshipPage> {
+    const conditions = [
+      filters.status
+        ? eq(championships.status, filters.status)
+        : inArray(championships.status, ["PUBLISHED", "FINISHED"]),
+      filters.search
+        ? ilike(championships.name, `%${filters.search}%`)
+        : undefined,
+      filters.sport ? eq(championships.sport, filters.sport) : undefined,
+      filters.entryType
+        ? eq(championships.entryType, filters.entryType)
+        : undefined
+    ].filter((condition) => condition !== undefined);
+    const where = and(...conditions);
+    const offset = (filters.page - 1) * filters.limit;
+    const [[totalRow], items] = await Promise.all([
+      this.db
+        .select({ value: count() })
+        .from(championships)
+        .where(where),
+      this.db
+        .select()
+        .from(championships)
+        .where(where)
+        .orderBy(desc(championships.updatedAt))
+        .limit(filters.limit)
+        .offset(offset)
+    ]);
+
+    return {
+      items,
+      total: totalRow?.value ?? 0,
+      page: filters.page,
+      limit: filters.limit
+    };
   }
 
   async findById(id: string): Promise<Championship | null> {

@@ -52,6 +52,31 @@ describe("public championship routes", () => {
     const app = buildApp({ championshipService, matchService });
     apps.push(app);
 
+    await championshipService.create("organizer-2", {
+      ...input,
+      name: "Rascunho invisível",
+      sport: "Basquete"
+    });
+    const catalogResponse = await app.inject({
+      method: "GET",
+      url: "/api/public/championships?search=copa&sport=Futsal"
+    });
+    const catalog = catalogResponse.json<{
+      items: Array<{ name: string; organizerId?: string }>;
+      total: number;
+    }>();
+    expect(catalogResponse.statusCode).toBe(200);
+    expect(catalog.total).toBe(1);
+    expect(catalog.items).toHaveLength(1);
+    expect(catalog.items[0]).toMatchObject({ name: "Copa Pública" });
+    expect(catalog.items[0]).not.toHaveProperty("organizerId");
+
+    const draftCatalogResponse = await app.inject({
+      method: "GET",
+      url: "/api/public/championships?search=rascunho"
+    });
+    expect(draftCatalogResponse.json<{ total: number }>().total).toBe(0);
+
     const response = await app.inject({
       method: "GET",
       url: `/api/public/championships/${championship.slug}`

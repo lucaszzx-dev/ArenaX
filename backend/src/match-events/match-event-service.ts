@@ -57,6 +57,11 @@ export class MatchEventService {
     return this.repository.list(matchId);
   }
 
+  async listPublic(championshipId: string, matchId: string) {
+    await this.requireMatch(championshipId, matchId);
+    return this.repository.list(matchId);
+  }
+
   async create(
     organizerId: string,
     championshipId: string,

@@ -495,3 +495,15 @@ Próximo marco: escolher as hospedagens e executar o primeiro deploy.
 | 28/07/2026 | Deploy do MVP | Concluído | Frontend na Vercel, backend no Render e PostgreSQL no Neon |
 | 29/07/2026 | Resiliência de produção | Concluída | Proxy de mesma origem, rotas SPA e feedback durante a inicialização do servidor |
 | 29/07/2026 | Súmulas esportivas | Em planejamento | Futebol e futsal serão a primeira implementação de eventos por jogador |
+| 29/07/2026 | Descoberta pública | Concluída | Busca, filtros, paginação e acesso pela navegação principal |
+| 29/07/2026 | Súmula pública | Concluída | Eventos esportivos exibidos no detalhe público da partida |
+
+## Próximos ciclos após a descoberta pública
+
+1. Placar detalhado por sets no vôlei e por quartos no basquete.
+2. Estatísticas individuais derivadas da súmula, sem duplicar resultados.
+3. Solicitação pública de inscrição com aprovação do organizador.
+4. Equipes reutilizáveis, escudo, capitão e página pública.
+5. Formato eliminatório, geração de confrontos e chaveamento visual.
+6. Auditoria das alterações de placar e eventos.
+7. Atualizações em tempo real e notificações somente depois das regras estáveis.

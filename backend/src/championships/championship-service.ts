@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import type {
   Championship,
   ChampionshipRepository,
+  PublicChampionshipFilters,
   SaveChampionshipInput,
   UpdateChampionshipInput
 } from "./championship-repository.js";
@@ -31,6 +32,10 @@ export class ChampionshipService {
 
   listMine(organizerId: string): Promise<Championship[]> {
     return this.repository.listByOrganizer(organizerId);
+  }
+
+  listPublic(filters: PublicChampionshipFilters) {
+    return this.repository.listPublic(filters);
   }
 
   async getMine(

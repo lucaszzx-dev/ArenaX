@@ -30,9 +30,26 @@ export type UpdateChampionshipInput = Omit<
   "organizerId" | "slug"
 >;
 
+export type PublicChampionshipFilters = {
+  search?: string | undefined;
+  sport?: string | undefined;
+  entryType?: ChampionshipEntryType | undefined;
+  status?: Exclude<ChampionshipStatus, "DRAFT"> | undefined;
+  page: number;
+  limit: number;
+};
+
+export type PublicChampionshipPage = {
+  items: Championship[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
 export interface ChampionshipRepository {
   create(input: SaveChampionshipInput): Promise<Championship>;
   listByOrganizer(organizerId: string): Promise<Championship[]>;
+  listPublic(filters: PublicChampionshipFilters): Promise<PublicChampionshipPage>;
   findById(id: string): Promise<Championship | null>;
   findBySlug(slug: string): Promise<Championship | null>;
   update(

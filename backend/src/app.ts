@@ -109,7 +109,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     app.register(publicChampionshipRoutes, {
       prefix: "/api",
       championshipService: options.championshipService,
-      matchService: options.matchService
+      matchService: options.matchService,
+      matchEventService: options.matchEventService
     });
   }
 
