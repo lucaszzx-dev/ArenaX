@@ -127,6 +127,13 @@ resultado oficial sem uma regra explícita.
 - mapas/rounds de eSports;
 - estatísticas individuais derivadas dos eventos.
 
+Status em 29 de julho de 2026: parciais de basquete e vôlei implementadas.
+A tabela genérica `match_periods` registra até cinco sets no vôlei e quatro
+quartos mais prorrogações no basquete. O organizador pode salvar, corrigir e
+remover parciais, que também aparecem na partida pública. A finalização
+automática a partir das parciais e a conferência com eventos individuais
+permanecem para a próxima entrega.
+
 ## Catálogo reservado para jogos futuros
 
 O banco usa `type` textual validado no backend, em vez de um enum PostgreSQL.

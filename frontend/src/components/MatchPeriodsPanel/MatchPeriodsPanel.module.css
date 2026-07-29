@@ -1,0 +1,20 @@
+.panel { padding: 1rem; border: 1px solid var(--color-border); background: color-mix(in srgb, var(--color-surface) 84%, var(--color-primary-soft)); grid-column: 1 / -1; }
+.panel > header, .names { display: flex; align-items: flex-end; justify-content: space-between; }
+.panel > header { margin-bottom: 1rem; }
+.panel header span { color: var(--color-primary); font-family: var(--font-mono); font-size: .62rem; font-weight: 900; letter-spacing: .08em; }
+.panel h3 { margin: .3rem 0 0; font-size: 1rem; }
+.panel header b { color: var(--color-text-muted); font-size: .7rem; }
+.names { padding: .65rem 11rem .65rem 8rem; color: var(--color-text-muted); font-size: .68rem; }
+.periods { display: grid; gap: .5rem; }
+.period { display: grid; padding-top: .5rem; border-top: 1px solid var(--color-border); align-items: center; gap: .5rem; grid-template-columns: 7rem 4rem auto 4rem 5rem 5rem; }
+.period strong { color: var(--color-text-muted); font-size: .72rem; }
+.period input { width: 100%; padding: .55rem .3rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); text-align: center; }
+.period span { color: var(--color-text-muted); text-align: center; }
+.period button { padding: .55rem .45rem; border: 0; background: var(--color-primary); color: white; cursor: pointer; font-size: .65rem; font-weight: 800; }
+.period .remove { border: 1px solid var(--color-border); background: transparent; color: var(--color-danger); }
+.error { color: var(--color-danger); font-size: .72rem; }
+@media (max-width: 650px) {
+  .names { display: none; }
+  .period { grid-template-columns: 1fr 3.6rem auto 3.6rem; }
+  .period button { grid-column: span 2; }
+}

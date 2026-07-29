@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 
 import { getChampionship } from "../../features/championships/championship-api";
 import { MatchEventsPanel } from "../../components/MatchEventsPanel/MatchEventsPanel";
+import { MatchPeriodsPanel } from "../../components/MatchPeriodsPanel/MatchPeriodsPanel";
 import {
   createMatch,
   changeMatchStatus,
@@ -215,6 +216,14 @@ export function ManageMatchesPage() {
                   teams={teams}
                 />
               )}
+              <MatchPeriodsPanel
+                awayName={match.awayEntry.displayName}
+                championshipId={id}
+                disabled={match.status !== "SCHEDULED"}
+                homeName={match.homeEntry.displayName}
+                matchId={match.id}
+                sport={championship.sport}
+              />
               {match.status !== "CANCELED" && (
                 <ScoreForm
                   awayName={match.awayEntry.displayName}

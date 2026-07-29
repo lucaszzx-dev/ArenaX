@@ -37,8 +37,8 @@ export function HomePage() {
               {isAuthenticated ? "Ir para meu painel" : "Abrir uma arena"}
               <span aria-hidden="true">↗</span>
             </Link>
-            <Link className={styles.textAction} to="/campeonatos/demo">
-              Explorar campeonato demo
+            <Link className={styles.textAction} to="/campeonatos">
+              Explorar campeonatos
             </Link>
           </div>
         </div>

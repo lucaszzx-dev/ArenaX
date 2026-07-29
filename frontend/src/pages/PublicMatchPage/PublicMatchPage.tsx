@@ -19,7 +19,7 @@ export function PublicMatchPage() {
     return <div className={styles.state}>Esta partida não foi encontrada.</div>;
   }
 
-  const { championship, match, events } = query.data;
+  const { championship, match, events, periods } = query.data;
 
   return (
     <main className={styles.page}>
@@ -44,6 +44,24 @@ export function PublicMatchPage() {
         </div>
         <strong>{match.awayEntry.displayName}</strong>
       </section>
+      {periods.length > 0 && (
+        <section className={styles.partials}>
+          <div className={styles.timelineHeading}>
+            <div>
+              <span>PARCIAIS</span>
+              <h2>{championship.sport === "Vôlei" ? "Sets" : "Períodos"}</h2>
+            </div>
+          </div>
+          {periods.map((period) => (
+            <div className={styles.partial} key={period.id}>
+              <span>{periodLabel(championship.sport, period.periodNumber)}</span>
+              <strong>{period.homeScore}</strong>
+              <b>×</b>
+              <strong>{period.awayScore}</strong>
+            </div>
+          ))}
+        </section>
+      )}
       <section className={styles.timeline}>
         <div className={styles.timelineHeading}>
           <div>
@@ -77,6 +95,11 @@ export function PublicMatchPage() {
       </footer>
     </main>
   );
+}
+
+function periodLabel(sport: string, period: number) {
+  if (sport === "Vôlei") return `${period}º set`;
+  return period <= 4 ? `${period}º quarto` : `${period - 4}ª prorrogação`;
 }
 
 const eventLabels: Record<string, string> = {

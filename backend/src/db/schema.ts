@@ -219,6 +219,31 @@ export const matches = pgTable(
   ]
 );
 
+export const matchPeriods = pgTable(
+  "match_periods",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    matchId: uuid("match_id")
+      .notNull()
+      .references(() => matches.id, { onDelete: "cascade" }),
+    periodNumber: integer("period_number").notNull(),
+    homeScore: integer("home_score").notNull(),
+    awayScore: integer("away_score").notNull(),
+    ...timestamps
+  },
+  (table) => [
+    unique("match_periods_match_number_unique").on(
+      table.matchId,
+      table.periodNumber
+    ),
+    check("match_period_number_positive", sql`${table.periodNumber} > 0`),
+    check(
+      "match_period_scores_non_negative",
+      sql`${table.homeScore} >= 0 and ${table.awayScore} >= 0`
+    )
+  ]
+);
+
 export const matchEvents = pgTable(
   "match_events",
   {

@@ -8,6 +8,7 @@ import type { ChampionshipService } from "./championships/championship-service.j
 import type { ParticipantService } from "./participants/participant-service.js";
 import type { MatchService } from "./matches/match-service.js";
 import type { MatchEventService } from "./match-events/match-event-service.js";
+import type { MatchPeriodService } from "./match-periods/match-period-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
@@ -17,6 +18,7 @@ import { championshipRoutes } from "./routes/championships.js";
 import { participantRoutes } from "./routes/participants.js";
 import { matchRoutes } from "./routes/matches.js";
 import { matchEventRoutes } from "./routes/match-events.js";
+import { matchPeriodRoutes } from "./routes/match-periods.js";
 import { publicChampionshipRoutes } from "./routes/public-championships.js";
 
 type BuildAppOptions = {
@@ -25,6 +27,7 @@ type BuildAppOptions = {
   participantService?: ParticipantService;
   matchService?: MatchService;
   matchEventService?: MatchEventService;
+  matchPeriodService?: MatchPeriodService;
   env?: Env;
 };
 
@@ -105,12 +108,22 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     });
   }
 
+  if (options.authService && options.matchPeriodService && options.env) {
+    app.register(matchPeriodRoutes, {
+      prefix: "/api",
+      authService: options.authService,
+      matchPeriodService: options.matchPeriodService,
+      env: options.env
+    });
+  }
+
   if (options.championshipService && options.matchService) {
     app.register(publicChampionshipRoutes, {
       prefix: "/api",
       championshipService: options.championshipService,
       matchService: options.matchService,
-      matchEventService: options.matchEventService
+      matchEventService: options.matchEventService,
+      matchPeriodService: options.matchPeriodService
     });
   }
 

@@ -5,6 +5,7 @@ import type { ChampionshipService } from "../championships/championship-service.
 import { AppError } from "../errors/app-error.js";
 import type { MatchService } from "../matches/match-service.js";
 import type { MatchEventService } from "../match-events/match-event-service.js";
+import type { MatchPeriodService } from "../match-periods/match-period-service.js";
 
 const slugParams = z.object({
   slug: z.string().trim().min(1).max(100)
@@ -23,6 +24,7 @@ type PublicChampionshipRoutesOptions = {
   championshipService: ChampionshipService;
   matchService: MatchService;
   matchEventService?: MatchEventService | undefined;
+  matchPeriodService?: MatchPeriodService | undefined;
 };
 
 export const publicChampionshipRoutes: FastifyPluginAsync<
@@ -99,6 +101,9 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
       const events = options.matchEventService
         ? await options.matchEventService.listPublic(championship.id, match.id)
         : [];
+      const periods = options.matchPeriodService
+        ? await options.matchPeriodService.listPublic(championship.id, match.id)
+        : [];
       return {
         championship: {
           id: championship.id,
@@ -107,7 +112,8 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
           sport: championship.sport
         },
         match,
-        events
+        events,
+        periods
       };
     }
   );

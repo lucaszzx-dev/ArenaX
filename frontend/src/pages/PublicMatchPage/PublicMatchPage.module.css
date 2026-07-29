@@ -10,6 +10,11 @@
 .scoreboard b { color: var(--color-primary-dark); }
 .page > footer { display: flex; padding: 1rem; border: 1px solid var(--color-border); border-top: 0; align-items: center; justify-content: space-between; }
 .timeline { margin-top: 1rem; padding: 1.3rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); }
+.partials { margin-top: 1rem; padding: 1.3rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); }
+.partial { display: grid; min-height: 3.2rem; border-top: 1px solid var(--color-border); align-items: center; gap: .7rem; grid-template-columns: 1fr auto auto auto; }
+.partial span { color: var(--color-text-muted); font-size: .75rem; }
+.partial strong { min-width: 2rem; font-family: var(--font-mono); text-align: center; }
+.partial b { color: var(--color-primary-dark); }
 .timelineHeading { display: flex; margin-bottom: 1rem; align-items: flex-end; justify-content: space-between; }
 .timelineHeading span { color: var(--color-primary); font-family: var(--font-mono); font-size: .62rem; font-weight: 900; letter-spacing: .08em; }
 .timelineHeading h2 { margin: .35rem 0 0; font-size: 1.25rem; }

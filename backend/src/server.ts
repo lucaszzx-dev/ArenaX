@@ -13,6 +13,8 @@ import { DrizzleMatchRepository } from "./matches/drizzle-match-repository.js";
 import { MatchService } from "./matches/match-service.js";
 import { DrizzleMatchEventRepository } from "./match-events/drizzle-match-event-repository.js";
 import { MatchEventService } from "./match-events/match-event-service.js";
+import { DrizzleMatchPeriodRepository } from "./match-periods/drizzle-match-period-repository.js";
+import { MatchPeriodService } from "./match-periods/match-period-service.js";
 
 try {
   loadEnvFile();
@@ -39,12 +41,19 @@ const matchEventService = new MatchEventService(
   matchRepository,
   championshipService
 );
+const matchPeriodRepository = new DrizzleMatchPeriodRepository(database.db);
+const matchPeriodService = new MatchPeriodService(
+  matchPeriodRepository,
+  matchRepository,
+  championshipService
+);
 const app = buildApp({
   authService,
   championshipService,
   participantService,
   matchService,
   matchEventService,
+  matchPeriodService,
   env
 });
 
