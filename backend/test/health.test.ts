@@ -24,4 +24,18 @@ describe("GET /health", () => {
       status: "ok"
     });
   });
+
+  it("exposes the health check through the API prefix", async () => {
+    const app = buildApp();
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/health"
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ status: "ok" });
+
+    await app.close();
+  });
 });

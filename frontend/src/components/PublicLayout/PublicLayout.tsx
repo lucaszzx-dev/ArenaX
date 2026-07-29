@@ -7,6 +7,7 @@ import {
   useCurrentUser
 } from "../../features/auth/auth-query";
 import { Brand } from "../Brand/Brand";
+import { ServerStatusNotice } from "../ServerStatusNotice/ServerStatusNotice";
 import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
 import styles from "./PublicLayout.module.css";
 
@@ -64,6 +65,8 @@ export function PublicLayout() {
           </nav>
         </div>
       </header>
+
+      <ServerStatusNotice />
 
       <main>
         <Outlet />

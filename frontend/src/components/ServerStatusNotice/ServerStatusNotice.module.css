@@ -1,0 +1,65 @@
+.notice {
+  display: flex;
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0.75rem auto 0;
+  padding: 0.8rem 1rem;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  border-radius: 0.35rem;
+  background: var(--color-primary-soft);
+  color: var(--color-text);
+  gap: 0.75rem;
+}
+
+.notice div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.notice strong {
+  color: var(--color-text-strong);
+  font-size: 0.82rem;
+}
+
+.notice span {
+  font-size: 0.75rem;
+}
+
+.notice button {
+  margin-left: auto;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--color-primary-dark);
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: 0 0 auto;
+  border: 2px solid var(--color-border-strong);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 520px) {
+  .notice {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .notice button {
+    width: 100%;
+    margin-left: 0;
+  }
+}

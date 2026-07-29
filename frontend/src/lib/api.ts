@@ -4,6 +4,10 @@ export function getApiUrl(path: string): string {
   return `${apiUrl}${path}`;
 }
 
+export function getApiHealth() {
+  return apiRequest<{ status: "ok" }>("/health");
+}
+
 type ApiErrorBody = {
   error?: {
     code?: string;
@@ -47,7 +51,7 @@ export async function apiRequest<T>(
     });
   } catch {
     throw new ApiError(
-      "Não foi possível conectar ao servidor. Verifique se o Docker e o backend estão ligados.",
+      "O servidor está indisponível ou iniciando. Aguarde alguns segundos e tente novamente.",
       0,
       "CONNECTION_ERROR"
     );

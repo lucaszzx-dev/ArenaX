@@ -33,7 +33,13 @@ export function ProtectedRoute() {
   if (userQuery.isError) {
     return (
       <div className={styles.state} role="alert">
-        Não foi possível confirmar sua sessão. Tente novamente.
+        <div>
+          <strong>Não foi possível confirmar sua sessão.</strong>
+          <p>O servidor pode estar iniciando após um período sem acessos.</p>
+          <button onClick={() => void userQuery.refetch()} type="button">
+            Tentar novamente
+          </button>
+        </div>
       </div>
     );
   }

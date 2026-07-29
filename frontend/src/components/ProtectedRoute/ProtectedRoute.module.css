@@ -17,6 +17,31 @@
   animation: spin 0.8s linear infinite;
 }
 
+.state > div {
+  max-width: 28rem;
+  text-align: center;
+}
+
+.state strong {
+  display: block;
+  color: var(--color-text-strong);
+  font-size: 1rem;
+}
+
+.state p {
+  margin: 0.5rem 0 1rem;
+}
+
+.state button {
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: var(--color-primary);
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 750;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
