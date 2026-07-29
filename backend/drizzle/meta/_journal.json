@@ -22,6 +22,13 @@
       "when": 1785011208850,
       "tag": "0002_vengeful_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1785344045554,
+      "tag": "0003_curious_xavin",
+      "breakpoints": true
     }
   ]
 }

@@ -10,6 +10,8 @@ export type TeamMember = {
   id: string;
   teamId: string;
   displayName: string;
+  jerseyNumber: number | null;
+  position: string | null;
   userId: string | null;
   createdAt: Date;
 };

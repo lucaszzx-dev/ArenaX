@@ -150,6 +150,8 @@ export const teamMembers = pgTable("team_members", {
     .notNull()
     .references(() => teams.id, { onDelete: "cascade" }),
   displayName: text("display_name").notNull(),
+  jerseyNumber: integer("jersey_number"),
+  position: text("position"),
   userId: uuid("user_id").references(() => users.id, {
     onDelete: "set null"
   }),
@@ -213,6 +215,42 @@ export const matches = pgTable(
     check(
       "match_scores_non_negative",
       sql`(${table.homeScore} is null or ${table.homeScore} >= 0) and (${table.awayScore} is null or ${table.awayScore} >= 0)`
+    )
+  ]
+);
+
+export const matchEvents = pgTable(
+  "match_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    matchId: uuid("match_id")
+      .notNull()
+      .references(() => matches.id, { onDelete: "cascade" }),
+    entryId: uuid("entry_id")
+      .notNull()
+      .references(() => championshipEntries.id, { onDelete: "restrict" }),
+    teamMemberId: uuid("team_member_id").references(() => teamMembers.id, {
+      onDelete: "set null"
+    }),
+    actorName: text("actor_name"),
+    type: text("type").notNull(),
+    value: integer("value").notNull().default(1),
+    periodNumber: integer("period_number"),
+    clockSeconds: integer("clock_seconds"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    check("match_event_value_positive", sql`${table.value} > 0`),
+    check(
+      "match_event_period_positive",
+      sql`${table.periodNumber} is null or ${table.periodNumber} > 0`
+    ),
+    check(
+      "match_event_clock_non_negative",
+      sql`${table.clockSeconds} is null or ${table.clockSeconds} >= 0`
     )
   ]
 );

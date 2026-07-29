@@ -94,6 +94,10 @@ A aplicação não recalculará silenciosamente resultados antigos.
 - validar permissões e vínculo entre jogador, equipe e partida;
 - cobrir as regras com testes de integração.
 
+Status em 29 de julho de 2026: concluída no backend. A migração foi aplicada
+no PostgreSQL local, e as regras foram cobertas por testes de serviço e rota.
+O painel ainda não expõe os novos controles; isso pertence à Etapa B.
+
 ### Etapa B — painel do organizador
 
 - editar número e posição dos jogadores;

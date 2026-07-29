@@ -1,0 +1,42 @@
+export type FootballMatchEventType =
+  | "GOAL"
+  | "OWN_GOAL"
+  | "YELLOW_CARD"
+  | "RED_CARD";
+
+export type MatchEvent = {
+  id: string;
+  matchId: string;
+  entryId: string;
+  teamMemberId: string | null;
+  actorName: string | null;
+  type: FootballMatchEventType;
+  value: number;
+  periodNumber: number | null;
+  clockSeconds: number | null;
+  notes: string | null;
+  createdAt: Date;
+};
+
+export type MatchEventEntry = {
+  id: string;
+  championshipId: string;
+  teamId: string | null;
+};
+
+export type MatchEventTeamMember = {
+  id: string;
+  teamId: string;
+  displayName: string;
+};
+
+export type CreateMatchEventInput = Omit<MatchEvent, "id" | "createdAt">;
+
+export interface MatchEventRepository {
+  list(matchId: string): Promise<MatchEvent[]>;
+  findById(eventId: string): Promise<MatchEvent | null>;
+  findEntry(entryId: string): Promise<MatchEventEntry | null>;
+  findTeamMember(memberId: string): Promise<MatchEventTeamMember | null>;
+  create(input: CreateMatchEventInput): Promise<MatchEvent>;
+  delete(eventId: string): Promise<boolean>;
+}
