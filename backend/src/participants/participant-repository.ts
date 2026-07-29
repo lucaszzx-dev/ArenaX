@@ -12,6 +12,7 @@ export type TeamMember = {
   displayName: string;
   jerseyNumber: number | null;
   position: string | null;
+  isCaptain: boolean;
   userId: string | null;
   createdAt: Date;
 };
@@ -21,6 +22,7 @@ export type Team = {
   championshipId: string;
   name: string;
   shortName: string | null;
+  logoUrl: string | null;
   createdAt: Date;
   members: TeamMember[];
 };
@@ -37,8 +39,14 @@ export interface ParticipantRepository {
   createTeam(
     championshipId: string,
     name: string,
-    shortName: string | null
+    shortName: string | null,
+    logoUrl: string | null
   ): Promise<Team>;
+  updateTeamIdentity(
+    teamId: string,
+    input: { name: string; shortName: string | null; logoUrl: string | null }
+  ): Promise<Team>;
+  setCaptain(teamId: string, memberId: string): Promise<Team>;
   deleteTeam(championshipId: string, teamId: string): Promise<boolean>;
   addTeamMember(
     teamId: string,

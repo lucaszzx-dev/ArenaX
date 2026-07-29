@@ -43,6 +43,13 @@
       "when": 1785353726245,
       "tag": "0005_charming_nitro",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785354683766,
+      "tag": "0006_keen_silver_centurion",
+      "breakpoints": true
     }
   ]
 }

@@ -123,7 +123,8 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       championshipService: options.championshipService,
       matchService: options.matchService,
       matchEventService: options.matchEventService,
-      matchPeriodService: options.matchPeriodService
+      matchPeriodService: options.matchPeriodService,
+      participantService: options.participantService
     });
   }
 

@@ -502,8 +502,11 @@ Próximo marco: escolher as hospedagens e executar o primeiro deploy.
 
 1. Placar detalhado por sets no vôlei e por quartos no basquete.
 2. Estatísticas individuais derivadas da súmula, sem duplicar resultados.
-3. Solicitação pública de inscrição com aprovação do organizador.
-4. Equipes reutilizáveis, escudo, capitão e página pública.
+3. Equipes com escudo, capitão, elenco e página pública.
+4. Clubes reutilizáveis em diferentes campeonatos.
 5. Formato eliminatório, geração de confrontos e chaveamento visual.
 6. Auditoria das alterações de placar e eventos.
 7. Atualizações em tempo real e notificações somente depois das regras estáveis.
+
+O fluxo de solicitação pública de inscrição foi retirado do escopo por decisão
+do produto em 29 de julho de 2026.

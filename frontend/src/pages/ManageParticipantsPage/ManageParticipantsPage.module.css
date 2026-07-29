@@ -17,6 +17,7 @@
 .teams { display: grid; gap: 1rem; }
 .team header { display: flex; justify-content: space-between; gap: 1rem; }
 .team h2 { margin: .3rem 0 0; }
+.logo { width: 2.5rem; height: 2.5rem; margin-right: .7rem; border-radius: .35rem; object-fit: cover; float: left; }
 .team ul { margin: 1.2rem 0; padding: 0; list-style: none; }
 .team li { display: flex; padding: .65rem 0; border-top: 1px solid var(--color-border); justify-content: space-between; }
 .team li button { font-size: 1rem; }
@@ -24,6 +25,10 @@
 .team li span { display: flex; align-items: baseline; gap: .35rem; }
 .team li span b { color: var(--color-primary-dark); font-family: var(--font-mono); font-size: .68rem; }
 .team li span small { color: var(--color-text-muted); font-size: .68rem; }
+.team li span em { color: var(--color-primary); font-size: .62rem; font-style: normal; font-weight: 800; text-transform: uppercase; }
+.identityForm { display: grid; margin: 1rem 0; gap: .55rem; grid-template-columns: 1fr .5fr 1.2fr auto; }
+.identityForm input { min-width: 0; padding: .65rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+.identityForm button { border: 0; background: var(--color-primary); color: white; font-weight: 800; }
 .error { padding: .9rem; border-left: 3px solid #ef4444; color: #ef4444; }
 .success { padding: .9rem; border-left: 3px solid var(--color-primary); color: var(--color-primary-dark); }
 .state { display: grid; min-height: calc(100vh - 4rem); place-items: center; color: var(--color-text-muted); }
@@ -31,4 +36,5 @@
   .workspace { grid-template-columns: 1fr; }
   .createForm { position: static; }
   .memberForm { grid-template-columns: 1fr; }
+  .identityForm { grid-template-columns: 1fr; }
 }

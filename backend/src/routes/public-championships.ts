@@ -6,11 +6,13 @@ import { AppError } from "../errors/app-error.js";
 import type { MatchService } from "../matches/match-service.js";
 import type { MatchEventService } from "../match-events/match-event-service.js";
 import type { MatchPeriodService } from "../match-periods/match-period-service.js";
+import type { ParticipantService } from "../participants/participant-service.js";
 
 const slugParams = z.object({
   slug: z.string().trim().min(1).max(100)
 });
 const publicMatchParams = slugParams.extend({ matchId: z.uuid() });
+const publicTeamParams = slugParams.extend({ teamId: z.uuid() });
 const catalogQuery = z.object({
   search: z.string().trim().max(80).optional(),
   sport: z.string().trim().max(40).optional(),
@@ -25,6 +27,7 @@ type PublicChampionshipRoutesOptions = {
   matchService: MatchService;
   matchEventService?: MatchEventService | undefined;
   matchPeriodService?: MatchPeriodService | undefined;
+  participantService?: ParticipantService | undefined;
 };
 
 export const publicChampionshipRoutes: FastifyPluginAsync<
@@ -123,4 +126,25 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
       };
     }
   );
+
+  app.get("/public/championships/:slug/teams/:teamId", async (request) => {
+    const params = publicTeamParams.safeParse(request.params);
+    if (!params.success) throw new AppError("Equipe inválida.", 400, "VALIDATION_ERROR");
+    const championship = await options.championshipService.getPublic(params.data.slug);
+    if (!options.participantService) {
+      throw new AppError("Equipe não encontrada.", 404, "TEAM_NOT_FOUND");
+    }
+    const team = await options.participantService.getPublicTeam(
+      championship.id,
+      params.data.teamId
+    );
+    return {
+      championship: {
+        name: championship.name,
+        slug: championship.slug,
+        sport: championship.sport
+      },
+      team
+    };
+  });
 };

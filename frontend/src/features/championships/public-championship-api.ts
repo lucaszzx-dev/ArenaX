@@ -3,6 +3,7 @@ import type { Championship } from "./championship-api";
 import type { ArenaMatch, MatchEntry, Standing } from "../matches/match-api";
 import type { MatchEvent } from "../matches/match-event-api";
 import type { MatchPeriod } from "../matches/match-period-api";
+import type { Team } from "../participants/participant-api";
 
 export type PublicChampionship = Omit<
   Championship,
@@ -65,3 +66,9 @@ export const getPublicMatch = (slug: string, matchId: string) =>
     events: MatchEvent[];
     periods: MatchPeriod[];
   }>(`/public/championships/${slug}/matches/${matchId}`);
+
+export const getPublicTeam = (slug: string, teamId: string) =>
+  apiRequest<{
+    championship: Pick<PublicChampionship, "name" | "slug" | "sport">;
+    team: Team;
+  }>(`/public/championships/${slug}/teams/${teamId}`);

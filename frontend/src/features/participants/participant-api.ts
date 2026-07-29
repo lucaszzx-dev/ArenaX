@@ -12,6 +12,7 @@ export type TeamMember = {
   displayName: string;
   jerseyNumber: number | null;
   position: string | null;
+  isCaptain: boolean;
 };
 
 export type Team = {
@@ -19,6 +20,7 @@ export type Team = {
   championshipId: string;
   name: string;
   shortName: string | null;
+  logoUrl: string | null;
   members: TeamMember[];
 };
 
@@ -50,11 +52,27 @@ export const deleteParticipant = (id: string, participantId: string) =>
 
 export const createTeam = (
   id: string,
-  input: { name: string; shortName: string | null }
+  input: { name: string; shortName: string | null; logoUrl: string | null }
 ) =>
   apiRequest<{ team: Team }>(`/championships/${id}/teams`, {
     method: "POST",
     body: JSON.stringify(input)
+  });
+
+export const updateTeam = (
+  id: string,
+  teamId: string,
+  input: { name: string; shortName: string | null; logoUrl: string | null }
+) =>
+  apiRequest<{ team: Team }>(`/championships/${id}/teams/${teamId}`, {
+    method: "PUT",
+    body: JSON.stringify(input)
+  });
+
+export const setTeamCaptain = (id: string, teamId: string, memberId: string) =>
+  apiRequest<{ team: Team }>(`/championships/${id}/teams/${teamId}/captain`, {
+    method: "PUT",
+    body: JSON.stringify({ memberId })
   });
 
 export const deleteTeam = (id: string, teamId: string) =>

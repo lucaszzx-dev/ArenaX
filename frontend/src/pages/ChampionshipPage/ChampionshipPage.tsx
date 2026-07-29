@@ -69,7 +69,11 @@ export function ChampionshipPage() {
           <ol className={styles.entries}>{entries.map((entry, index) => (
             <li key={entry.id}>
               <span>{String(index + 1).padStart(2, "0")}</span>
-              <strong>{entry.displayName}</strong>
+              {entry.teamId ? (
+                <Link to={`/campeonatos/${championship.slug}/equipes/${entry.teamId}`}>
+                  <strong>{entry.displayName}</strong>
+                </Link>
+              ) : <strong>{entry.displayName}</strong>}
             </li>
           ))}</ol>
           {!entries.length && <p className={styles.empty}>Nenhum inscrito.</p>}

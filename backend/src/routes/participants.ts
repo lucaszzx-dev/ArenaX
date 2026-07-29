@@ -27,8 +27,12 @@ const teamSchema = z.object({
   name: z.string().trim().min(2).max(80),
   shortName: z
     .union([z.string().trim().max(12), z.null()])
+    .transform((value) => value || null),
+  logoUrl: z
+    .union([z.url().max(500), z.literal(""), z.null()])
     .transform((value) => value || null)
 });
+const captainSchema = z.object({ memberId: z.uuid() });
 
 type ParticipantRoutesOptions = {
   authService: AuthService;
@@ -94,9 +98,38 @@ export const participantRoutes: FastifyPluginAsync<
       user.id,
       params.data.id,
       input.data.name,
-      input.data.shortName
+      input.data.shortName,
+      input.data.logoUrl
     );
     return reply.status(201).send({ team });
+  });
+
+  app.put("/championships/:id/teams/:teamId", async (request) => {
+    const user = await getUser(request);
+    const params = teamParamsSchema.safeParse(request.params);
+    const input = teamSchema.safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+    const team = await options.participantService.updateTeam(
+      user.id,
+      params.data.id,
+      params.data.teamId,
+      input.data
+    );
+    return { team };
+  });
+
+  app.put("/championships/:id/teams/:teamId/captain", async (request) => {
+    const user = await getUser(request);
+    const params = teamParamsSchema.safeParse(request.params);
+    const input = captainSchema.safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+    const team = await options.participantService.setCaptain(
+      user.id,
+      params.data.id,
+      params.data.teamId,
+      input.data.memberId
+    );
+    return { team };
   });
 
   app.delete("/championships/:id/teams/:teamId", async (request, reply) => {

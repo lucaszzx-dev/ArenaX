@@ -42,16 +42,34 @@ export class InMemoryParticipantRepository implements ParticipantRepository {
     return this.teams.find((team) => team.id === teamId) ?? null;
   }
 
-  async createTeam(championshipId: string, name: string, shortName: string | null) {
+  async createTeam(championshipId: string, name: string, shortName: string | null, logoUrl: string | null) {
     const team: Team = {
       id: crypto.randomUUID(),
       championshipId,
       name,
       shortName,
+      logoUrl,
       createdAt: new Date(),
       members: []
     };
     this.teams.push(team);
+    return team;
+  }
+
+  async updateTeamIdentity(
+    teamId: string,
+    input: { name: string; shortName: string | null; logoUrl: string | null }
+  ) {
+    const team = this.teams.find((item) => item.id === teamId);
+    if (!team) throw new Error("Equipe não encontrada.");
+    Object.assign(team, input);
+    return team;
+  }
+
+  async setCaptain(teamId: string, memberId: string) {
+    const team = this.teams.find((item) => item.id === teamId);
+    if (!team) throw new Error("Equipe não encontrada.");
+    for (const member of team.members) member.isCaptain = member.id === memberId;
     return team;
   }
 
@@ -69,6 +87,9 @@ export class InMemoryParticipantRepository implements ParticipantRepository {
       id: crypto.randomUUID(),
       teamId,
       displayName,
+      jerseyNumber: null,
+      position: null,
+      isCaptain: false,
       userId: null,
       createdAt: new Date()
     };

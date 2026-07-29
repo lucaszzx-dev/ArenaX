@@ -12,6 +12,8 @@ import {
   deleteTeamMember,
   listRegistrations,
   registrationQueryKey
+  ,setTeamCaptain
+  ,updateTeam
 } from "../../features/participants/participant-api";
 import { ApiError } from "../../lib/api";
 import styles from "./ManageParticipantsPage.module.css";
@@ -47,7 +49,7 @@ export function ManageParticipantsPage() {
     onError: showError
   });
   const teamMutation = useMutation({
-    mutationFn: (input: { name: string; shortName: string | null }) =>
+    mutationFn: (input: { name: string; shortName: string | null; logoUrl: string | null }) =>
       createTeam(id, input),
     onSuccess: async () => {
       await refresh();
@@ -93,6 +95,7 @@ export function ManageParticipantsPage() {
     teamMutation.mutate({
       name: String(data.get("name") ?? ""),
       shortName: String(data.get("shortName") ?? "") || null
+      ,logoUrl: String(data.get("logoUrl") ?? "") || null
     }, { onSuccess: () => form.reset() });
   }
 
@@ -152,13 +155,17 @@ export function ManageParticipantsPage() {
           <form className={styles.createForm} onSubmit={submitTeam}>
             <label>Nome da equipe<input minLength={2} name="name" required /></label>
             <label>Sigla<input maxLength={12} name="shortName" placeholder="Ex.: RAI" /></label>
+            <label>URL do escudo<input name="logoUrl" placeholder="https://..." type="url" /></label>
             <button disabled={teamMutation.isPending}>Criar equipe</button>
           </form>
           <div className={styles.teams}>
             {registrations.teams.map((team) => (
               <article className={styles.team} key={team.id}>
                 <header>
-                  <div><span>{team.shortName || "TIME"}</span><h2>{team.name}</h2></div>
+                  <div>
+                    {team.logoUrl && <img alt="" className={styles.logo} src={team.logoUrl} />}
+                    <span>{team.shortName || "TIME"}</span><h2>{team.name}</h2>
+                  </div>
                   <button
                     disabled={actionMutation.isPending}
                     onClick={() => confirmAction(
@@ -178,8 +185,13 @@ export function ManageParticipantsPage() {
                         <b>#{member.jerseyNumber}</b>
                       )}{" "}
                       {member.displayName}
+                      {member.isCaptain && <em>Capitão</em>}
                       {member.position && <small>{member.position}</small>}
                     </span>
+                    <button onClick={() => actionMutation.mutate({
+                      action: () => setTeamCaptain(id, team.id, member.id),
+                      successMessage: `${member.displayName} agora é capitão.`
+                    })} type="button">Capitão</button>
                     <button aria-label={`Remover ${member.displayName}`} onClick={() =>
                       confirmAction(
                         `Remover ${member.displayName} da equipe?`,
@@ -189,6 +201,23 @@ export function ManageParticipantsPage() {
                     } type="button">×</button>
                   </li>
                 ))}</ul>
+                <form className={styles.identityForm} onSubmit={(event) => {
+                  event.preventDefault();
+                  const data = new FormData(event.currentTarget);
+                  actionMutation.mutate({
+                    action: () => updateTeam(id, team.id, {
+                      name: String(data.get("name")),
+                      shortName: String(data.get("shortName")) || null,
+                      logoUrl: String(data.get("logoUrl")) || null
+                    }),
+                    successMessage: "Identidade da equipe atualizada."
+                  });
+                }}>
+                  <input defaultValue={team.name} name="name" required />
+                  <input defaultValue={team.shortName ?? ""} name="shortName" placeholder="Sigla" />
+                  <input defaultValue={team.logoUrl ?? ""} name="logoUrl" placeholder="URL do escudo" type="url" />
+                  <button>Salvar identidade</button>
+                </form>
                 <MemberForm disabled={actionMutation.isPending} onAdd={(input) =>
                   actionMutation.mutate({
                     action: () => addTeamMember(id, team.id, input),

@@ -75,12 +75,13 @@ export class DrizzleParticipantRepository implements ParticipantRepository {
   async createTeam(
     championshipId: string,
     name: string,
-    shortName: string | null
+    shortName: string | null,
+    logoUrl: string | null
   ): Promise<Team> {
     return this.db.transaction(async (transaction) => {
       const [team] = await transaction
         .insert(teams)
-        .values({ championshipId, name, shortName })
+        .values({ championshipId, name, shortName, logoUrl })
         .returning();
 
       if (!team) throw new Error("Não foi possível cadastrar a equipe.");
@@ -93,6 +94,43 @@ export class DrizzleParticipantRepository implements ParticipantRepository {
       });
 
       return { ...team, members: [] };
+    });
+  }
+
+  async updateTeamIdentity(
+    teamId: string,
+    input: { name: string; shortName: string | null; logoUrl: string | null }
+  ) {
+    return this.db.transaction(async (transaction) => {
+      const [team] = await transaction
+        .update(teams)
+        .set(input)
+        .where(eq(teams.id, teamId))
+        .returning();
+      if (!team) throw new Error("Não foi possível atualizar a equipe.");
+      await transaction
+        .update(championshipEntries)
+        .set({ displayName: input.name })
+        .where(eq(championshipEntries.teamId, teamId));
+      return this.withMembers(team);
+    });
+  }
+
+  async setCaptain(teamId: string, memberId: string) {
+    return this.db.transaction(async (transaction) => {
+      await transaction
+        .update(teamMembers)
+        .set({ isCaptain: false })
+        .where(eq(teamMembers.teamId, teamId));
+      const [captain] = await transaction
+        .update(teamMembers)
+        .set({ isCaptain: true })
+        .where(and(eq(teamMembers.id, memberId), eq(teamMembers.teamId, teamId)))
+        .returning();
+      if (!captain) throw new Error("Jogador não encontrado.");
+      const [team] = await transaction.select().from(teams).where(eq(teams.id, teamId));
+      if (!team) throw new Error("Equipe não encontrada.");
+      return this.withMembers(team);
     });
   }
 

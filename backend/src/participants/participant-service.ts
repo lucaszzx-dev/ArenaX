@@ -69,7 +69,8 @@ export class ParticipantService {
     organizerId: string,
     championshipId: string,
     name: string,
-    shortName: string | null
+    shortName: string | null,
+    logoUrl: string | null = null
   ): Promise<Team> {
     await this.requireEntryType(organizerId, championshipId, "TEAM");
     const existing = await this.repository.listTeams(championshipId);
@@ -82,7 +83,36 @@ export class ParticipantService {
       );
     }
 
-    return this.repository.createTeam(championshipId, name, shortName);
+    return this.repository.createTeam(championshipId, name, shortName, logoUrl);
+  }
+
+  async updateTeam(
+    organizerId: string,
+    championshipId: string,
+    teamId: string,
+    input: { name: string; shortName: string | null; logoUrl: string | null }
+  ) {
+    await this.requireEntryType(organizerId, championshipId, "TEAM");
+    await this.requireTeam(championshipId, teamId);
+    return this.repository.updateTeamIdentity(teamId, input);
+  }
+
+  async setCaptain(
+    organizerId: string,
+    championshipId: string,
+    teamId: string,
+    memberId: string
+  ) {
+    await this.requireEntryType(organizerId, championshipId, "TEAM");
+    const team = await this.requireTeam(championshipId, teamId);
+    if (!team.members.some((member) => member.id === memberId)) {
+      throw new AppError("Jogador não encontrado.", 404, "TEAM_MEMBER_NOT_FOUND");
+    }
+    return this.repository.setCaptain(teamId, memberId);
+  }
+
+  async getPublicTeam(championshipId: string, teamId: string) {
+    return this.requireTeam(championshipId, teamId);
   }
 
   async deleteTeam(organizerId: string, championshipId: string, teamId: string) {

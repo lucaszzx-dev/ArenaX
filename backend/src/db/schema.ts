@@ -132,6 +132,7 @@ export const teams = pgTable(
       .references(() => championships.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     shortName: text("short_name"),
+    logoUrl: text("logo_url"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow()
@@ -152,6 +153,7 @@ export const teamMembers = pgTable("team_members", {
   displayName: text("display_name").notNull(),
   jerseyNumber: integer("jersey_number"),
   position: text("position"),
+  isCaptain: boolean("is_captain").notNull().default(false),
   userId: uuid("user_id").references(() => users.id, {
     onDelete: "set null"
   }),
