@@ -16,7 +16,7 @@ export function ChampionshipPage() {
   if (query.isPending) return <div className={styles.state}>Carregando arena...</div>;
   if (query.isError) return <div className={styles.state}>Esta arena não foi encontrada.</div>;
 
-  const { championship, entries, matches, standings } = query.data;
+  const { championship, entries, matches, standings, statistics } = query.data;
   const finishedCount = matches.filter((match) => match.status === "FINISHED").length;
   const standingLabels = getStandingLabels(championship.sport);
 
@@ -99,6 +99,68 @@ export function ChampionshipPage() {
         ))}
         {!matches.length && <p className={styles.empty}>Nenhuma partida criada.</p>}
       </section>
+
+      {statistics.length > 0 && (
+        <section className={`${styles.panel} ${styles.statistics}`}>
+          <div className={styles.panelHeading}>
+            <div><span>Destaques</span><h2>Estatísticas individuais</h2></div>
+            <span>Calculadas pela súmula</span>
+          </div>
+          <div className={styles.tableWrap}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Jogador</th>
+                  <th>Equipe</th>
+                  {statColumns(championship.sport).map((column) => (
+                    <th key={column.key}>{column.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {statistics.map((statistic) => (
+                  <tr key={statistic.teamMemberId ?? `${statistic.entryId}:${statistic.actorName}`}>
+                    <td><strong>{statistic.actorName}</strong></td>
+                    <td>{entries.find((entry) => entry.id === statistic.entryId)?.displayName ?? "Participante"}</td>
+                    {statColumns(championship.sport).map((column) => (
+                      <td key={column.key}>{statistic[column.key]}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
     </div>
   );
+}
+
+type StatisticKey =
+  | "goals"
+  | "points"
+  | "aces"
+  | "blocks"
+  | "yellowCards"
+  | "redCards";
+
+function statColumns(sport: string): Array<{
+  key: StatisticKey;
+  label: string;
+}> {
+  if (sport === "Futebol" || sport === "Futsal") {
+    return [
+      { key: "goals", label: "Gols" },
+      { key: "yellowCards", label: "CA" },
+      { key: "redCards", label: "CV" }
+    ];
+  }
+  if (sport === "Vôlei") {
+    return [
+      { key: "points", label: "Pontos" },
+      { key: "aces", label: "Aces" },
+      { key: "blocks", label: "Bloqueios" }
+    ];
+  }
+  return [{ key: "points", label: "Pontos" }];
 }

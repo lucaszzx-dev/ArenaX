@@ -152,6 +152,15 @@ tbody tr:last-child td {
   margin-top: 1rem;
 }
 
+.statistics {
+  margin-top: 1rem;
+}
+
+.statistics td:not(:first-child):not(:nth-child(2)),
+.statistics th:not(:first-child):not(:nth-child(2)) {
+  text-align: center;
+}
+
 .empty {
   padding: 1.35rem;
   color: var(--color-text-muted);

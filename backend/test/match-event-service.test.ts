@@ -289,6 +289,48 @@ describe("MatchEventService", () => {
     });
   });
 
+  it("derives individual statistics from known event authors", async () => {
+    const { arenaId, matchId } = await createMatch();
+    events.entries.push({
+      id: "entry-home",
+      championshipId: arenaId,
+      teamId: "team-home"
+    });
+    events.members.push({
+      id: "member-home",
+      teamId: "team-home",
+      displayName: "Camisa 9"
+    });
+
+    for (let minute = 10; minute <= 20; minute += 10) {
+      await service.create("organizer-1", arenaId, matchId, {
+        entryId: "entry-home",
+        teamMemberId: "member-home",
+        type: "GOAL",
+        periodNumber: 1,
+        clockSeconds: minute * 60,
+        notes: null
+      });
+    }
+    await service.create("organizer-1", arenaId, matchId, {
+      entryId: "entry-home",
+      teamMemberId: "member-home",
+      type: "YELLOW_CARD",
+      periodNumber: 1,
+      clockSeconds: 25 * 60,
+      notes: null
+    });
+
+    expect(await service.statisticsPublic(arenaId, "Futsal")).toMatchObject([
+      {
+        actorName: "Camisa 9",
+        goals: 2,
+        yellowCards: 1,
+        events: 3
+      }
+    ]);
+  });
+
   async function createMatch() {
     const arena = await championships.create("organizer-1", arenaInput);
     matches.entries.push(

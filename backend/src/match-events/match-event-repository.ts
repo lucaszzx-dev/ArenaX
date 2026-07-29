@@ -40,6 +40,7 @@ export type CreateMatchEventInput = Omit<MatchEvent, "id" | "createdAt">;
 
 export interface MatchEventRepository {
   list(matchId: string): Promise<MatchEvent[]>;
+  listByChampionship(championshipId: string): Promise<MatchEvent[]>;
   findById(eventId: string): Promise<MatchEvent | null>;
   findEntry(entryId: string): Promise<MatchEventEntry | null>;
   findTeamMember(memberId: string): Promise<MatchEventTeamMember | null>;

@@ -62,6 +62,12 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
       params.data.slug
     );
     const overview = await options.matchService.publicOverview(championship);
+    const statistics = options.matchEventService
+      ? await options.matchEventService.statisticsPublic(
+        championship.id,
+        championship.sport
+      )
+      : [];
     const publicChampionship = {
       id: championship.id,
       name: championship.name,
@@ -78,7 +84,7 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
       endsAt: championship.endsAt
     };
 
-    return { championship: publicChampionship, ...overview };
+    return { championship: publicChampionship, ...overview, statistics };
   });
 
   app.get(

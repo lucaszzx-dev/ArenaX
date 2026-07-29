@@ -4,6 +4,7 @@ import type { Database } from "../db/client.js";
 import {
   championshipEntries,
   matchEvents,
+  matches,
   teamMembers
 } from "../db/schema.js";
 import type {
@@ -27,6 +28,27 @@ export class DrizzleMatchEventRepository implements MatchEventRepository {
         asc(matchEvents.clockSeconds),
         asc(matchEvents.createdAt)
       ) as Promise<MatchEvent[]>;
+  }
+
+  listByChampionship(championshipId: string): Promise<MatchEvent[]> {
+    return this.db
+      .select({
+        id: matchEvents.id,
+        matchId: matchEvents.matchId,
+        entryId: matchEvents.entryId,
+        teamMemberId: matchEvents.teamMemberId,
+        actorName: matchEvents.actorName,
+        type: matchEvents.type,
+        value: matchEvents.value,
+        periodNumber: matchEvents.periodNumber,
+        clockSeconds: matchEvents.clockSeconds,
+        notes: matchEvents.notes,
+        createdAt: matchEvents.createdAt
+      })
+      .from(matchEvents)
+      .innerJoin(matches, eq(matches.id, matchEvents.matchId))
+      .where(eq(matches.championshipId, championshipId))
+      .orderBy(asc(matchEvents.createdAt)) as Promise<MatchEvent[]>;
   }
 
   async findById(eventId: string): Promise<MatchEvent | null> {

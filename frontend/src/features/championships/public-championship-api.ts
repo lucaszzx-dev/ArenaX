@@ -14,6 +14,20 @@ export type PublicChampionshipOverview = {
   entries: MatchEntry[];
   matches: ArenaMatch[];
   standings: Standing[];
+  statistics: PlayerStatistic[];
+};
+
+export type PlayerStatistic = {
+  teamMemberId: string | null;
+  entryId: string;
+  actorName: string;
+  goals: number;
+  points: number;
+  aces: number;
+  blocks: number;
+  yellowCards: number;
+  redCards: number;
+  events: number;
 };
 
 export type PublicChampionshipCard = Pick<

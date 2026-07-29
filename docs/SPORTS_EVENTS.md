@@ -134,6 +134,15 @@ remover parciais, que também aparecem na partida pública. A finalização
 automática a partir das parciais e a conferência com eventos individuais
 permanecem para a próxima entrega.
 
+As estatísticas individuais também passaram a ser derivadas da súmula:
+
+- futebol e futsal: gols, cartões amarelos e vermelhos;
+- basquete: pontos conforme o valor de cada cesta;
+- vôlei: pontos, aces e bloqueios.
+
+Somente eventos associados a um jogador conhecido entram nos rankings
+individuais. A página pública apresenta os destaques junto da equipe.
+
 ## Catálogo reservado para jogos futuros
 
 O banco usa `type` textual validado no backend, em vez de um enum PostgreSQL.

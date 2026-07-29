@@ -17,6 +17,15 @@ export class InMemoryMatchEventRepository implements MatchEventRepository {
     return this.events.filter((event) => event.matchId === matchId);
   }
 
+  async listByChampionship(championshipId: string) {
+    const entryIds = new Set(
+      this.entries
+        .filter((entry) => entry.championshipId === championshipId)
+        .map((entry) => entry.id)
+    );
+    return this.events.filter((event) => entryIds.has(event.entryId));
+  }
+
   async findById(eventId: string) {
     return this.events.find((event) => event.id === eventId) ?? null;
   }

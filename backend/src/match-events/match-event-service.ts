@@ -40,6 +40,19 @@ export type AddMatchEventInput = {
   notes: string | null;
 };
 
+export type PlayerStatistic = {
+  teamMemberId: string | null;
+  entryId: string;
+  actorName: string;
+  goals: number;
+  points: number;
+  aces: number;
+  blocks: number;
+  yellowCards: number;
+  redCards: number;
+  events: number;
+};
+
 export class MatchEventService {
   constructor(
     private readonly repository: MatchEventRepository,
@@ -60,6 +73,52 @@ export class MatchEventService {
   async listPublic(championshipId: string, matchId: string) {
     await this.requireMatch(championshipId, matchId);
     return this.repository.list(matchId);
+  }
+
+  async statisticsPublic(
+    championshipId: string,
+    sport: string
+  ): Promise<PlayerStatistic[]> {
+    const events = await this.repository.listByChampionship(championshipId);
+    const statistics = new Map<string, PlayerStatistic>();
+
+    for (const event of events) {
+      if (!event.actorName) continue;
+      const key = event.teamMemberId ?? `${event.entryId}:${event.actorName}`;
+      const statistic = statistics.get(key) ?? {
+        teamMemberId: event.teamMemberId,
+        entryId: event.entryId,
+        actorName: event.actorName,
+        goals: 0,
+        points: 0,
+        aces: 0,
+        blocks: 0,
+        yellowCards: 0,
+        redCards: 0,
+        events: 0
+      };
+      statistic.events += 1;
+      if (event.type === "GOAL") statistic.goals += 1;
+      if (
+        event.type === "FREE_THROW" ||
+        event.type === "TWO_POINT_SHOT" ||
+        event.type === "THREE_POINT_SHOT" ||
+        event.type === "VOLLEYBALL_POINT" ||
+        event.type === "ACE" ||
+        event.type === "BLOCK"
+      ) statistic.points += event.value;
+      if (event.type === "ACE") statistic.aces += 1;
+      if (event.type === "BLOCK") statistic.blocks += 1;
+      if (event.type === "YELLOW_CARD") statistic.yellowCards += 1;
+      if (event.type === "RED_CARD") statistic.redCards += 1;
+      statistics.set(key, statistic);
+    }
+
+    return [...statistics.values()].sort((a, b) =>
+      primaryMetric(b, sport) - primaryMetric(a, sport) ||
+      b.events - a.events ||
+      a.actorName.localeCompare(b.actorName, "pt-BR")
+    );
   }
 
   async create(
@@ -179,4 +238,9 @@ export class MatchEventService {
     }
     return match;
   }
+}
+
+function primaryMetric(statistic: PlayerStatistic, sport: string) {
+  if (sport === "Futebol" || sport === "Futsal") return statistic.goals;
+  return statistic.points;
 }
