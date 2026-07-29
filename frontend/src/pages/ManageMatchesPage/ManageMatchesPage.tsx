@@ -14,6 +14,7 @@ import {
   recordScore,
   updateMatchSchedule
 } from "../../features/matches/match-api";
+import { getStandingLabels } from "../../features/matches/standing-labels";
 import {
   listRegistrations,
   registrationQueryKey
@@ -121,6 +122,7 @@ export function ManageMatchesPage() {
     championship.sport === "Futsal" ||
     championship.sport === "Basquete" ||
     championship.sport === "Vôlei";
+  const standingLabels = getStandingLabels(championship.sport);
 
   function submitMatch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -302,7 +304,14 @@ export function ManageMatchesPage() {
             <thead>
               <tr>
                 <th>#</th><th>Participante</th><th>J</th><th>V</th>
-                <th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>PTS</th>
+                {championship.allowsDraw && <th title="Empates">E</th>}
+                <th>D</th>
+                <th title={standingLabels.scoreForTitle}>{standingLabels.scoreFor}</th>
+                <th title={standingLabels.scoreAgainstTitle}>{standingLabels.scoreAgainst}</th>
+                <th title={standingLabels.scoreDifferenceTitle}>
+                  {standingLabels.scoreDifference}
+                </th>
+                <th>PTS</th>
               </tr>
             </thead>
             <tbody>
@@ -311,7 +320,8 @@ export function ManageMatchesPage() {
                   <td>{row.position}</td>
                   <th>{row.displayName}</th>
                   <td>{row.played}</td><td>{row.wins}</td>
-                  <td>{row.draws}</td><td>{row.losses}</td>
+                  {championship.allowsDraw && <td>{row.draws}</td>}
+                  <td>{row.losses}</td>
                   <td>{row.scoreFor}</td><td>{row.scoreAgainst}</td>
                   <td>{row.scoreDifference}</td><td><b>{row.points}</b></td>
                 </tr>

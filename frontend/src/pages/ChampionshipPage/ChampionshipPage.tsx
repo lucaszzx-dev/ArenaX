@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getPublicChampionship } from "../../features/championships/public-championship-api";
+import { getStandingLabels } from "../../features/matches/standing-labels";
 import styles from "./ChampionshipPage.module.css";
 
 export function ChampionshipPage() {
@@ -17,6 +18,7 @@ export function ChampionshipPage() {
 
   const { championship, entries, matches, standings } = query.data;
   const finishedCount = matches.filter((match) => match.status === "FINISHED").length;
+  const standingLabels = getStandingLabels(championship.sport);
 
   return (
     <div className={styles.page}>
@@ -41,7 +43,11 @@ export function ChampionshipPage() {
             <table>
               <thead><tr>
                 <th>Pos.</th><th>Participante</th><th>J</th>
-                <th>V</th><th>SG</th><th>Pts.</th>
+                <th>V</th>
+                <th title={standingLabels.scoreDifferenceTitle}>
+                  {standingLabels.scoreDifference}
+                </th>
+                <th>Pts.</th>
               </tr></thead>
               <tbody>{standings.map((row) => (
                 <tr key={row.entryId}>
