@@ -7,7 +7,7 @@
 .workspace { display: grid; align-items: start; gap: 1.25rem; grid-template-columns: minmax(260px, .75fr) minmax(0, 1.6fr); }
 .createForm, .matches { padding: 1.3rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); }
 .createForm { display: grid; gap: .9rem; position: sticky; top: 5rem; }
-.matches { display: grid; gap: 1rem; }
+.matches { display: grid; gap: 1.5rem; }
 .createForm label { display: grid; gap: .4rem; color: var(--color-text-muted); font-size: .72rem; }
 .createForm select, .createForm input { min-width: 0; padding: .8rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
 .createForm button { padding: .85rem; border: 0; background: var(--color-primary); color: white; font-weight: 800; }
