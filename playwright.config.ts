@@ -24,10 +24,10 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: "pnpm --dir backend dev",
+      command: "pnpm --dir backend build && pnpm --dir backend start",
       url: "http://localhost:3333/health",
       reuseExistingServer: true,
-      timeout: 30_000
+      timeout: 60_000
     },
     {
       command: "pnpm --dir frontend dev",
