@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 
 import { getPublicChampionship } from "../../features/championships/public-championship-api";
 import { getStandingLabels } from "../../features/matches/standing-labels";
+import { Bracket } from "../../components/Bracket/Bracket";
+import { getPublicBracket } from "../../features/knockout/knockout-api";
 import styles from "./ChampionshipPage.module.css";
 
 export function ChampionshipPage() {
@@ -11,6 +13,11 @@ export function ChampionshipPage() {
     queryKey: ["public-championship", slug],
     queryFn: () => getPublicChampionship(slug),
     enabled: Boolean(slug)
+  });
+  const bracketQuery = useQuery({
+    queryKey: ["public-bracket", slug],
+    queryFn: () => getPublicBracket(slug),
+    enabled: Boolean(slug) && query.data?.championship.format === "KNOCKOUT"
   });
 
   if (query.isPending) return <div className={styles.state}>Carregando arena...</div>;
@@ -32,6 +39,15 @@ export function ChampionshipPage() {
           <span><b>{finishedCount}</b> resultados</span>
         </div>
       </section>
+
+      {championship.format === "KNOCKOUT" && bracketQuery.data && (
+        <section className={`${styles.panel} ${styles.bracketPanel}`}>
+          <div className={styles.panelHeading}>
+            <div><span>Mata-mata</span><h2>Chaveamento</h2></div>
+          </div>
+          <Bracket bracket={bracketQuery.data} />
+        </section>
+      )}
 
       <div className={styles.content}>
         <section className={styles.panel}>

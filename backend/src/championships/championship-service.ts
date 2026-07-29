@@ -25,6 +25,7 @@ export class ChampionshipService {
 
     return this.repository.create({
       ...input,
+      allowsDraw: input.format === "KNOCKOUT" ? false : input.allowsDraw,
       format: input.format ?? "LEAGUE",
       organizerId,
       slug: this.createSlug(input.name)
@@ -82,10 +83,13 @@ export class ChampionshipService {
     championshipId: string,
     input: UpdateChampionshipInput
   ): Promise<Championship> {
-    await this.getMine(organizerId, championshipId);
+    const championship = await this.getMine(organizerId, championshipId);
     this.validateDates(input.startsAt, input.endsAt);
 
-    return this.repository.update(championshipId, input);
+    return this.repository.update(championshipId, {
+      ...input,
+      allowsDraw: championship.format === "KNOCKOUT" ? false : input.allowsDraw
+    });
   }
 
   private validateDates(startsAt: Date | null, endsAt: Date | null) {

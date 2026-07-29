@@ -272,6 +272,38 @@ export const matches = pgTable(
   ]
 );
 
+export const knockoutNodes = pgTable(
+  "knockout_nodes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    championshipId: uuid("championship_id")
+      .notNull()
+      .references(() => championships.id, { onDelete: "cascade" }),
+    roundNumber: integer("round_number").notNull(),
+    position: integer("position").notNull(),
+    homeEntryId: uuid("home_entry_id").references(() => championshipEntries.id, {
+      onDelete: "restrict"
+    }),
+    awayEntryId: uuid("away_entry_id").references(() => championshipEntries.id, {
+      onDelete: "restrict"
+    }),
+    matchId: uuid("match_id").references(() => matches.id, {
+      onDelete: "set null"
+    }),
+    ...timestamps
+  },
+  (table) => [
+    unique("knockout_nodes_round_position_unique").on(
+      table.championshipId,
+      table.roundNumber,
+      table.position
+    ),
+    unique("knockout_nodes_match_unique").on(table.matchId),
+    check("knockout_node_round_positive", sql`${table.roundNumber} > 0`),
+    check("knockout_node_position_positive", sql`${table.position} > 0`)
+  ]
+);
+
 export const matchPeriods = pgTable(
   "match_periods",
   {

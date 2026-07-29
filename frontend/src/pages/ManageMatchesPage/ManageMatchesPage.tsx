@@ -23,6 +23,12 @@ import {
   registrationQueryKey
 } from "../../features/participants/participant-api";
 import { ApiError } from "../../lib/api";
+import { Bracket } from "../../components/Bracket/Bracket";
+import {
+  bracketQueryKey,
+  generateBracket,
+  getBracket
+} from "../../features/knockout/knockout-api";
 import styles from "./ManageMatchesPage.module.css";
 
 export function ManageMatchesPage() {
@@ -50,6 +56,11 @@ export function ManageMatchesPage() {
     queryFn: () => listRegistrations(id),
     enabled: Boolean(id)
   });
+  const bracketQuery = useQuery({
+    queryKey: bracketQueryKey(id),
+    queryFn: () => getBracket(id),
+    enabled: Boolean(id) && championshipQuery.data?.championship.format === "KNOCKOUT"
+  });
   const refresh = async () => {
     setErrorMessage(null);
     await queryClient.invalidateQueries({ queryKey: matchQueryKey(id) });
@@ -57,6 +68,7 @@ export function ManageMatchesPage() {
       queryKey: ["championships", id, "standings"]
     });
     await queryClient.invalidateQueries({ queryKey: ["match-audit", id] });
+    await queryClient.invalidateQueries({ queryKey: bracketQueryKey(id) });
   };
   const createMutation = useMutation({
     mutationFn: (input: {
@@ -77,6 +89,17 @@ export function ManageMatchesPage() {
       await refresh();
       setSuccessMessage(
         `${result.total} partidas distribuídas em ${result.rounds} rodadas.`
+      );
+    },
+    onError: showError
+  });
+  const bracketMutation = useMutation({
+    mutationFn: () => generateBracket(id),
+    onSuccess: async (result) => {
+      await refresh();
+      await queryClient.invalidateQueries({ queryKey: bracketQueryKey(id) });
+      setSuccessMessage(
+        `Chaveamento criado com ${result.totalRounds} fases e ${result.byes} folgas.`
       );
     },
     onError: showError
@@ -221,42 +244,63 @@ export function ManageMatchesPage() {
                 )}
               </>
             ) : (
-              <p>O gerador eliminatório será liberado junto com o chaveamento.</p>
+              <>
+                <p>Distribui os inscritos, aplica folgas e cria a primeira fase.</p>
+                <button
+                  disabled={
+                    bracketMutation.isPending ||
+                    entries.length < 2 ||
+                    matches.length > 0 ||
+                    championship.status !== "DRAFT"
+                  }
+                  onClick={() => bracketMutation.mutate()}
+                  type="button"
+                >
+                  Gerar chaveamento
+                </button>
+              </>
             )}
           </section>
-          <span className={styles.divider}>criação manual</span>
-          <label>
-            Adversário 1
-            <select name="homeEntryId" required defaultValue="">
-              <option disabled value="">Selecione</option>
-              {entries.map((entry) => (
-                <option key={entry.id} value={entry.id}>{entry.displayName}</option>
-              ))}
-            </select>
-          </label>
-          <span className={styles.versus}>×</span>
-          <label>
-            Adversário 2
-            <select name="awayEntryId" required defaultValue="">
-              <option disabled value="">Selecione</option>
-              {entries.map((entry) => (
-                <option key={entry.id} value={entry.id}>{entry.displayName}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Data e horário opcionais
-            <input name="scheduledAt" type="datetime-local" />
-          </label>
-          <button disabled={createMutation.isPending || entries.length < 2}>
-            Criar partida
-          </button>
-          {entries.length < 2 && (
-            <p>Cadastre pelo menos dois adversários antes de criar partidas.</p>
+          {championship.format === "LEAGUE" && (
+            <>
+              <span className={styles.divider}>criação manual</span>
+              <label>
+                Adversário 1
+                <select name="homeEntryId" required defaultValue="">
+                  <option disabled value="">Selecione</option>
+                  {entries.map((entry) => (
+                    <option key={entry.id} value={entry.id}>{entry.displayName}</option>
+                  ))}
+                </select>
+              </label>
+              <span className={styles.versus}>×</span>
+              <label>
+                Adversário 2
+                <select name="awayEntryId" required defaultValue="">
+                  <option disabled value="">Selecione</option>
+                  {entries.map((entry) => (
+                    <option key={entry.id} value={entry.id}>{entry.displayName}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Data e horário opcionais
+                <input name="scheduledAt" type="datetime-local" />
+              </label>
+              <button disabled={createMutation.isPending || entries.length < 2}>
+                Criar partida
+              </button>
+              {entries.length < 2 && (
+                <p>Cadastre pelo menos dois adversários antes de criar partidas.</p>
+              )}
+            </>
           )}
         </form>
 
         <div className={styles.matches}>
+          {championship.format === "KNOCKOUT" && bracketQuery.data && (
+            <Bracket bracket={bracketQuery.data} />
+          )}
           <div className={styles.listHeading}>
             <h2>Calendário</h2>
             <span>{matches.length} partidas</span>
@@ -302,7 +346,11 @@ export function ManageMatchesPage() {
                   awayName={match.awayEntry.displayName}
                   defaultAway={match.awayScore}
                   defaultHome={match.homeScore}
-                  disabled={scoreMutation.isPending}
+                  disabled={
+                    scoreMutation.isPending ||
+                    (championship.format === "KNOCKOUT" &&
+                      match.status === "FINISHED")
+                  }
                   homeName={match.homeEntry.displayName}
                   onSave={(homeScore, awayScore) => scoreMutation.mutate({
                     matchId: match.id,
@@ -354,7 +402,7 @@ export function ManageMatchesPage() {
                     Reabrir
                   </button>
                 )}
-                {match.status === "SCHEDULED" && (
+                {match.status === "SCHEDULED" && championship.format === "LEAGUE" && (
                   <button
                     disabled={deleteMutation.isPending}
                     onClick={() => {

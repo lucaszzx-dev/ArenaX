@@ -8,6 +8,7 @@ import type {
   Standing
 } from "./match-repository.js";
 import type { MatchAuditService } from "../match-audit/match-audit-service.js";
+import type { KnockoutService } from "../knockout/knockout-service.js";
 
 export type ScheduleMatchInput = Omit<CreateMatchInput, "championshipId">;
 export type GenerateLeagueInput = {
@@ -20,7 +21,8 @@ export class MatchService {
   constructor(
     private readonly repository: MatchRepository,
     private readonly championships: ChampionshipService,
-    private readonly audit?: MatchAuditService
+    private readonly audit?: MatchAuditService,
+    private readonly knockout?: KnockoutService
   ) {}
 
   async list(organizerId: string, championshipId: string) {
@@ -38,7 +40,17 @@ export class MatchService {
     championshipId: string,
     input: ScheduleMatchInput
   ): Promise<Match> {
-    await this.championships.getMine(organizerId, championshipId);
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
+    if (championship.format === "KNOCKOUT") {
+      throw new AppError(
+        "Use o gerador de chaveamento para criar partidas de mata-mata.",
+        409,
+        "KNOCKOUT_MATCH_REQUIRES_BRACKET"
+      );
+    }
 
     if (input.homeEntryId === input.awayEntryId) {
       throw new AppError(
@@ -140,7 +152,17 @@ export class MatchService {
     championshipId: string,
     matchId: string
   ) {
-    await this.championships.getMine(organizerId, championshipId);
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
+    if (championship.format === "KNOCKOUT") {
+      throw new AppError(
+        "Partidas do chaveamento não podem ser excluídas individualmente.",
+        409,
+        "BRACKET_MATCH_CANNOT_BE_DELETED"
+      );
+    }
     const match = await this.repository.findById(matchId);
 
     if (!match || match.championshipId !== championshipId) {
@@ -180,6 +202,13 @@ export class MatchService {
         "DRAW_NOT_ALLOWED"
       );
     }
+    if (championship.format === "KNOCKOUT" && match.status === "FINISHED") {
+      throw new AppError(
+        "Reabra a partida antes de corrigir um resultado do mata-mata.",
+        409,
+        "KNOCKOUT_SCORE_REQUIRES_REOPEN"
+      );
+    }
 
     const previousScore = {
       homeScore: match.homeScore,
@@ -190,6 +219,12 @@ export class MatchService {
       before: previousScore,
       after: { homeScore, awayScore }
     });
+    if (championship.format === "KNOCKOUT") {
+      await this.knockout?.advanceWinner(
+        matchId,
+        homeScore > awayScore ? match.homeEntryId : match.awayEntryId
+      );
+    }
     return updated;
   }
 
@@ -217,9 +252,19 @@ export class MatchService {
     matchId: string,
     action: "CANCEL" | "REOPEN"
   ) {
-    await this.championships.getMine(organizerId, championshipId);
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
     const match = await this.requireMatch(championshipId, matchId);
     if (action === "CANCEL") {
+      if (championship.format === "KNOCKOUT" && match.status === "FINISHED") {
+        throw new AppError(
+          "Reabra o confronto antes de cancelá-lo.",
+          409,
+          "KNOCKOUT_FINISHED_MATCH_CANNOT_BE_CANCELED"
+        );
+      }
       if (match.status === "CANCELED") return match;
       const previousStatus = match.status;
       const updated = await this.repository.updateStatus(matchId, "CANCELED", false);
@@ -229,6 +274,9 @@ export class MatchService {
       return updated;
     }
     if (match.status === "SCHEDULED") return match;
+    if (championship.format === "KNOCKOUT") {
+      await this.knockout?.prepareReopen(matchId);
+    }
     const previousState = {
       status: match.status,
       homeScore: match.homeScore,

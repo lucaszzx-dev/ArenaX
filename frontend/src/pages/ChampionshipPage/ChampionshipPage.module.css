@@ -44,6 +44,11 @@
   grid-template-columns: 1.5fr 1fr;
 }
 
+.bracketPanel {
+  margin-top: 3rem;
+  padding: 0 1rem 1rem;
+}
+
 .panel {
   overflow: hidden;
   border: 1px solid var(--color-border);
