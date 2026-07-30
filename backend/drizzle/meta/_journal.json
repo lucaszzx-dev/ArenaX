@@ -78,6 +78,13 @@
       "when": 1785356883411,
       "tag": "0010_petite_silver_centurion",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1785435877822,
+      "tag": "0011_talented_freak",
+      "breakpoints": true
     }
   ]
 }

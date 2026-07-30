@@ -360,6 +360,9 @@ export function ManageMatchesPage() {
                 />
               )}
               <div className={styles.matchActions}>
+          <Link to={`/painel/campeonatos/${id}/partidas/${match.id}`} style={{ color: "var(--color-primary)", fontWeight: 700, fontSize: ".68rem", textDecoration: "none" }}>
+            Administrar
+          </Link>
                 {match.status === "SCHEDULED" && (
                   <ScheduleForm
                     defaultValue={toLocalDateTime(match.scheduledAt)}

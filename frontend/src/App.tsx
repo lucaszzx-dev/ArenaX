@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { PublicLayout } from "./components/PublicLayout/PublicLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute/ProtectedRoute";
 import { GuestOnlyRoute } from "./components/GuestOnlyRoute/GuestOnlyRoute";
+import { AdminMatchPage } from "./pages/AdminMatchPage/AdminMatchPage";
 import { ChampionshipPage } from "./pages/ChampionshipPage/ChampionshipPage";
 import { DashboardPage } from "./pages/DashboardPage/DashboardPage";
 import { CreateChampionshipPage } from "./pages/CreateChampionshipPage/CreateChampionshipPage";
@@ -52,6 +53,10 @@ export function App() {
           <Route
             path="painel/campeonatos/:id/partidas"
             element={<ManageMatchesPage />}
+          />
+          <Route
+            path="painel/campeonatos/:id/partidas/:matchId"
+            element={<AdminMatchPage />}
           />
         </Route>
         <Route path="campeonatos" element={<ExploreChampionshipsPage />} />

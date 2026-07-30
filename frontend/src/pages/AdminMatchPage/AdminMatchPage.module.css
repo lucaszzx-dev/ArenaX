@@ -1,0 +1,452 @@
+.page {
+  width: min(1120px, calc(100% - 2rem));
+  min-height: calc(100vh - 4rem);
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+
+.back {
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
+  text-decoration: none;
+}
+
+.heading {
+  margin: 2.5rem 0;
+}
+
+.heading > span {
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.heading h1 {
+  margin: 0.6rem 0 0.3rem;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.scoreBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.scoreBadge b {
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--color-text-strong);
+  font-family: var(--font-mono);
+}
+
+.scoreBadge > span {
+  font-size: 1.4rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+
+.status {
+  font-size: 0.65rem !important;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.2rem;
+  color: #fff !important;
+}
+
+.status:has(+ *) {
+  background: var(--color-primary);
+}
+
+.round {
+  margin-top: 0.5rem;
+  font-size: 0.76rem;
+  font-family: var(--font-mono);
+  color: var(--color-text-muted);
+}
+
+.grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.panel {
+  padding: 1.3rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-elevated);
+}
+
+.panel > header {
+  margin-bottom: 1rem;
+}
+
+.panel header span {
+  color: var(--color-primary-dark);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.panel h2 {
+  margin: 0.3rem 0 0;
+  font-size: 1.1rem;
+}
+
+.panel h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-strong);
+}
+
+.metaForm {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.metaForm label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.metaForm input,
+.metaForm textarea {
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+}
+
+.metaForm .fullWidth {
+  grid-column: 1 / -1;
+}
+
+.metaForm button {
+  justify-self: start;
+  padding: 0.6rem 1rem;
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+
+.scoreForm {
+  display: flex;
+  align-items: end;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.scoreForm label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.scoreForm input {
+  width: 4.5rem;
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.scoreForm > span {
+  font-size: 1.3rem;
+  color: var(--color-text-muted);
+  padding-bottom: 0.6rem;
+}
+
+.scoreForm button {
+  padding: 0.55rem 0.9rem;
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 800;
+}
+
+.lineupSection {
+  margin-bottom: 1.5rem;
+}
+
+.lineupSection:last-child {
+  margin-bottom: 0;
+}
+
+.lineupGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.lineupLabel {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.lineupItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.lineupItem input {
+  accent-color: var(--color-primary);
+}
+
+.lineupSave {
+  margin-top: 0.7rem;
+  padding: 0.5rem 0.9rem;
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.72rem;
+}
+
+.eventForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--color-border);
+  align-items: end;
+}
+
+.eventForm label {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+}
+
+.eventForm select,
+.eventForm input {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.78rem;
+}
+
+.eventForm button {
+  padding: 0.4rem 0.7rem;
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.72rem;
+  align-self: end;
+}
+
+.eventList {
+  display: grid;
+}
+
+.eventRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.eventRow:first-child {
+  border-top: 0;
+}
+
+.eventInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.eventInfo strong {
+  font-size: 0.82rem;
+  min-width: 6rem;
+}
+
+.eventInfo > span {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.eventMeta {
+  font-family: var(--font-mono);
+  font-size: 0.68rem !important;
+}
+
+.eventActions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.eventActions button {
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 0.68rem;
+}
+
+.periodsGrid {
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.periodForm {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.periodForm strong {
+  font-size: 0.7rem;
+  min-width: 4.5rem;
+  font-family: var(--font-mono);
+}
+
+.periodForm input {
+  width: 2.5rem;
+  padding: 0.3rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.periodForm > span {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+.periodForm button {
+  padding: 0.25rem 0.4rem;
+  border: 0;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.auditList {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.auditList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.78rem;
+}
+
+.auditList li:first-child {
+  border-top: 0;
+}
+
+.auditList time {
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+}
+
+.actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.dangerBtn {
+  color: var(--color-danger) !important;
+  border-color: var(--color-danger) !important;
+}
+
+.warningBtn {
+  color: #d97706 !important;
+  border-color: #d97706 !important;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+}
+
+.state {
+  display: grid;
+  min-height: calc(100vh - 4rem);
+  place-items: center;
+  color: var(--color-text-muted);
+}
+
+.errorMsg {
+  padding: 0.9rem;
+  border-left: 3px solid var(--color-danger);
+  color: var(--color-danger);
+}
+
+.successMsg {
+  padding: 0.9rem;
+  border-left: 3px solid var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+@media (max-width: 800px) {
+  .lineupGrid {
+    grid-template-columns: 1fr;
+  }
+  .scoreForm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .scoreForm input {
+    width: 100%;
+  }
+  .eventForm {
+    flex-direction: column;
+  }
+}

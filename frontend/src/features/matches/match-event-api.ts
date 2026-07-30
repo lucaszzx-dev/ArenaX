@@ -56,6 +56,24 @@ export const createMatchEvent = (
     { method: "POST", body: JSON.stringify(input) }
   );
 
+export const updateMatchEvent = (
+  championshipId: string,
+  matchId: string,
+  eventId: string,
+  input: {
+    entryId: string;
+    teamMemberId: string | null;
+    type: MatchEventType;
+    periodNumber: number | null;
+    clockSeconds: number | null;
+    notes: string | null;
+  }
+) =>
+  apiRequest<{ event: MatchEvent }>(
+    `/championships/${championshipId}/matches/${matchId}/events/${eventId}`,
+    { method: "PUT", body: JSON.stringify(input) }
+  );
+
 export const deleteMatchEvent = (
   championshipId: string,
   matchId: string,
