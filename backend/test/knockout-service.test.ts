@@ -120,4 +120,27 @@ describe("KnockoutService", () => {
       1
     )).rejects.toMatchObject({ code: "DRAW_NOT_ALLOWED" });
   });
+
+  it("rejects bracket generation for a league arena", async () => {
+    const arena = await championships.create("organizer-1", {
+      name: "Liga ArenaX",
+      sport: "Futsal",
+      description: null,
+      entryType: "TEAM",
+      format: "LEAGUE",
+      winPoints: 3,
+      drawPoints: 1,
+      lossPoints: 0,
+      allowsDraw: true,
+      startsAt: null,
+      endsAt: null
+    });
+    await expect(knockout.generate("organizer-1", arena.id)).rejects.toMatchObject({ code: "CHAMPIONSHIP_IS_NOT_KNOCKOUT" });
+  });
+
+  it("rejects bracket generation when arena is not draft", async () => {
+    const arena = await createArena(4);
+    await championships.setStatus("organizer-1", arena.id, "PUBLISHED");
+    await expect(knockout.generate("organizer-1", arena.id)).rejects.toMatchObject({ code: "BRACKET_REQUIRES_DRAFT" });
+  });
 });

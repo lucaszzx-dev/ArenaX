@@ -360,4 +360,31 @@ describe("MatchService", () => {
       new Date()
     )).rejects.toMatchObject({ code: "MATCH_NOT_SCHEDULED" });
   });
+
+  it("rejects league generation for a knockout arena", async () => {
+    const arena = await championships.create("organizer-1", { ...arenaInput, format: "KNOCKOUT" });
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    await expect(service.generateLeague("organizer-1", arena.id, {
+      legs: 1,
+      startsAt: null,
+      intervalDays: 7
+    })).rejects.toMatchObject({ code: "FORMAT_GENERATION_NOT_AVAILABLE" });
+  });
+
+  it("rejects league generation when arena is not draft", async () => {
+    const arena = await championships.create("organizer-1", arenaInput);
+    await championships.setStatus("organizer-1", arena.id, "PUBLISHED");
+    repository.entries.push(
+      { id: "entry-1", championshipId: arena.id, displayName: "Azul" },
+      { id: "entry-2", championshipId: arena.id, displayName: "Raio" }
+    );
+    await expect(service.generateLeague("organizer-1", arena.id, {
+      legs: 1,
+      startsAt: null,
+      intervalDays: 7
+    })).rejects.toMatchObject({ code: "FIXTURES_REQUIRE_DRAFT" });
+  });
 });
