@@ -1,168 +1,36 @@
-.page {
-  width: min(1080px, calc(100% - 2rem));
-  min-height: calc(100vh - 4rem);
-  margin: 0 auto;
-  padding: 4rem 0;
-}
+﻿.page { width: min(1120px, calc(100% - 2rem)); min-height: calc(100vh - 4rem); margin: 0 auto; padding: 4rem 0; }
+.welcome { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-bottom: 2.5rem; }
+.welcome > div > span { color: var(--color-primary); font-family: var(--font-mono); font-size: .68rem; font-weight: 800; text-transform: uppercase; }
+.welcome h1 { margin: .6rem 0 .2rem; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -.04em; line-height: 1; }
+.welcome p { margin: 0; color: var(--color-text-muted); }
+.createButton { display: flex; align-items: center; gap: .4rem; padding: .7rem 1.1rem; background: var(--color-primary); color: #fff; text-decoration: none; font-weight: 800; font-size: .78rem; white-space: nowrap; }
 
-.welcome {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 2rem;
-}
+.summary { display: grid; gap: .6rem; grid-template-columns: repeat(4, 1fr); margin-bottom: 1.5rem; }
+.summaryCard { padding: 1rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); text-align: center; }
+.summaryCard b { display: block; font-size: 1.8rem; font-weight: 900; color: var(--color-primary-dark); }
+.summaryCard span { font-size: .68rem; color: var(--color-text-muted); text-transform: uppercase; }
 
-.welcome > div > span {
-  color: var(--color-primary);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  font-weight: 850;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
+.section { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: .8rem; }
+.section h2 { margin: 0; font-size: 1.2rem; }
 
-.welcome h1 {
-  margin: 0.75rem 0 0.5rem;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  letter-spacing: -0.065em;
-}
-
-.welcome p,
-.emptyState p {
-  color: var(--color-text-muted);
-}
-
-.createButton {
-  display: flex;
-  padding: 0.9rem 1rem;
-  align-items: center;
-  flex: 0 0 auto;
-  background: var(--color-primary);
-  color: #fff;
-  gap: 0.6rem;
-  font-size: 0.82rem;
-  font-weight: 800;
-  text-decoration: none;
-}
-
-.state,
-.emptyState {
-  margin-top: 3rem;
-  padding: 3.5rem 1.5rem;
-  border: 1px dashed var(--color-border-strong);
-  background: var(--color-surface-elevated);
-  text-align: center;
-}
-
-.state {
-  color: var(--color-text-muted);
-  font-size: 0.82rem;
-}
-
-.emptyState > span {
-  display: grid;
-  width: 3rem;
-  height: 3rem;
-  margin: 0 auto 1.2rem;
-  place-items: center;
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 900;
-}
-
-.emptyState h2 {
-  margin-bottom: 0.5rem;
-}
-
-.emptyState a {
-  display: inline-block;
-  margin-top: 1rem;
-  color: var(--color-primary-dark);
-  font-weight: 800;
-  text-underline-offset: 0.25rem;
-}
-
-.grid {
-  display: grid;
-  margin-top: 3rem;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.card {
-  display: flex;
-  min-height: 17rem;
-  padding: 1.4rem;
-  border: 1px solid var(--color-border);
-  border-top: 3px solid var(--color-primary);
-  background: var(--color-surface-elevated);
-  color: var(--color-text);
-  flex-direction: column;
-  text-decoration: none;
-  transition:
-    border-color 160ms ease,
-    transform 160ms ease;
-}
-
-.card:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-3px);
-}
-
-.card header,
-.card footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card header > span,
-.card footer {
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  text-transform: uppercase;
-}
-
-.card header b {
-  padding: 0.3rem 0.45rem;
-  background: var(--color-primary-soft);
-  color: var(--color-primary-dark);
-  font-size: 0.62rem;
-}
-
-.card h2 {
-  margin: 2.2rem 0 0.7rem;
-  color: var(--color-text-strong);
-  font-size: 1.5rem;
-  letter-spacing: -0.045em;
-}
-
-.card > p {
-  color: var(--color-text-muted);
-  font-size: 0.8rem;
-  line-height: 1.6;
-}
-
-.card footer {
-  margin-top: auto;
-  padding-top: 1rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.card footer strong {
-  color: var(--color-primary-dark);
-}
-
-@media (max-width: 700px) {
-  .welcome {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .grid {
-    grid-template-columns: 1fr;
-  }
-}
+.grid { display: grid; gap: .8rem; }
+.card { display: grid; gap: .6rem; padding: 1.2rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); text-decoration: none; color: inherit; }
+.card header { display: flex; align-items: center; gap: .6rem; }
+.card header > span { color: var(--color-primary); font-family: var(--font-mono); font-size: .65rem; text-transform: uppercase; font-weight: 700; }
+.card header b { padding: .15rem .45rem; font-size: .6rem; text-transform: uppercase; border-radius: .15rem; }
+.card header b[data-status="DRAFT"] { background: rgba(217,56,56,.1); color: var(--color-danger); }
+.card header b[data-status="PUBLISHED"] { background: var(--color-primary-soft); color: var(--color-primary); }
+.card header b[data-status="FINISHED"] { background: rgba(100,116,139,.12); color: var(--color-text-muted); }
+.card h2 { margin: 0; font-size: 1.1rem; }
+.card p { margin: 0; font-size: .78rem; color: var(--color-text-muted); }
+.card footer { display: flex; align-items: center; justify-content: space-between; font-size: .72rem; }
+.card footer > span { color: var(--color-text-muted); }
+.card footer > div { display: flex; align-items: center; gap: .5rem; }
+.alert { color: #d97706; font-weight: 700; font-size: .62rem; }
+.emptyState { display: grid; place-items: center; text-align: center; padding: 3rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); }
+.emptyState span { display: grid; place-items: center; width: 3rem; height: 3rem; background: var(--color-primary-soft); color: var(--color-primary); font-weight: 900; }
+.emptyState h2 { margin: .8rem 0 .2rem; }
+.emptyState p { color: var(--color-text-muted); font-size: .82rem; }
+.emptyState a { padding: .6rem 1rem; background: var(--color-primary); color: #fff; text-decoration: none; font-weight: 800; font-size: .82rem; margin-top: .8rem; }
+.state { display: grid; min-height: 10rem; place-items: center; color: var(--color-text-muted); }
+@media (max-width: 700px) { .summary { grid-template-columns: repeat(2, 1fr); } }
