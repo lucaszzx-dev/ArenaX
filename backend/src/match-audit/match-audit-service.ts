@@ -6,7 +6,15 @@ import { matchAuditLogs } from "../db/schema.js";
 import { AppError } from "../errors/app-error.js";
 import type { MatchRepository } from "../matches/match-repository.js";
 
-export type MatchAuditAction = "SCORE_CHANGED" | "MATCH_CANCELED" | "MATCH_REOPENED";
+export type MatchAuditAction =
+  | "SCORE_CHANGED"
+  | "MATCH_CANCELED"
+  | "MATCH_REOPENED"
+  | "MATCH_METADATA_CHANGED"
+  | "MATCH_LINEUP_CHANGED"
+  | "MATCH_EVENT_CREATED"
+  | "MATCH_EVENT_CHANGED"
+  | "MATCH_EVENT_DELETED";
 
 export class MatchAuditService {
   constructor(

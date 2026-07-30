@@ -12,6 +12,7 @@ import type { MatchPeriodService } from "./match-periods/match-period-service.js
 import type { MatchAuditService } from "./match-audit/match-audit-service.js";
 import type { ClubService } from "./clubs/club-service.js";
 import type { KnockoutService } from "./knockout/knockout-service.js";
+import type { MatchOperationService } from "./match-operations/match-operation-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
@@ -25,6 +26,7 @@ import { matchPeriodRoutes } from "./routes/match-periods.js";
 import { publicChampionshipRoutes } from "./routes/public-championships.js";
 import { clubRoutes } from "./routes/clubs.js";
 import { knockoutRoutes } from "./routes/knockout.js";
+import { matchOperationRoutes } from "./routes/match-operations.js";
 
 type BuildAppOptions = {
   authService?: AuthService;
@@ -36,6 +38,7 @@ type BuildAppOptions = {
   matchAuditService?: MatchAuditService | undefined;
   clubService?: ClubService;
   knockoutService?: KnockoutService;
+  matchOperationService?: MatchOperationService;
   env?: Env;
 };
 
@@ -116,6 +119,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     });
   }
 
+  if (options.authService && options.matchOperationService && options.env) {
+    app.register(matchOperationRoutes, {
+      prefix: "/api",
+      authService: options.authService,
+      service: options.matchOperationService,
+      env: options.env
+    });
+  }
+
   if (options.authService && options.matchService && options.env) {
     app.register(matchRoutes, {
       prefix: "/api",
@@ -152,6 +164,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       matchEventService: options.matchEventService,
       matchPeriodService: options.matchPeriodService,
       participantService: options.participantService
+      ,matchOperationService: options.matchOperationService
     });
   }
 

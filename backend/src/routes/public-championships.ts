@@ -7,6 +7,7 @@ import type { MatchService } from "../matches/match-service.js";
 import type { MatchEventService } from "../match-events/match-event-service.js";
 import type { MatchPeriodService } from "../match-periods/match-period-service.js";
 import type { ParticipantService } from "../participants/participant-service.js";
+import type { MatchOperationService } from "../match-operations/match-operation-service.js";
 
 const slugParams = z.object({
   slug: z.string().trim().min(1).max(100)
@@ -28,6 +29,7 @@ type PublicChampionshipRoutesOptions = {
   matchEventService?: MatchEventService | undefined;
   matchPeriodService?: MatchPeriodService | undefined;
   participantService?: ParticipantService | undefined;
+  matchOperationService?: MatchOperationService | undefined;
 };
 
 export const publicChampionshipRoutes: FastifyPluginAsync<
@@ -49,6 +51,7 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
         description: championship.description,
         entryType: championship.entryType,
         status: championship.status,
+        format: championship.format,
         startsAt: championship.startsAt,
         endsAt: championship.endsAt
       }))
@@ -79,6 +82,7 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
       description: championship.description,
       entryType: championship.entryType,
       status: championship.status,
+      format: championship.format,
       winPoints: championship.winPoints,
       drawPoints: championship.drawPoints,
       lossPoints: championship.lossPoints,
@@ -113,6 +117,9 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
       const periods = options.matchPeriodService
         ? await options.matchPeriodService.listPublic(championship.id, match.id)
         : [];
+      const operations = options.matchOperationService
+        ? await options.matchOperationService.getPublic(championship.id, match.id)
+        : { metadata: null, lineup: [] };
       return {
         championship: {
           id: championship.id,
@@ -123,6 +130,7 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
         match,
         events,
         periods
+        ,operations
       };
     }
   );

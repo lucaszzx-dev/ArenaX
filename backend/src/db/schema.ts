@@ -35,6 +35,11 @@ export const matchStatus = pgEnum("match_status", [
   "CANCELED"
 ]);
 
+export const lineupRole = pgEnum("lineup_role", [
+  "STARTER",
+  "SUBSTITUTE"
+]);
+
 const timestamps = {
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -257,6 +262,9 @@ export const matches = pgTable(
     awayScore: integer("away_score"),
     roundNumber: integer("round_number"),
     generated: boolean("generated").notNull().default(false),
+    venue: text("venue"),
+    referee: text("referee"),
+    operationalNotes: text("operational_notes"),
     ...timestamps
   },
   (table) => [
@@ -269,6 +277,29 @@ export const matches = pgTable(
       "match_scores_non_negative",
       sql`(${table.homeScore} is null or ${table.homeScore} >= 0) and (${table.awayScore} is null or ${table.awayScore} >= 0)`
     )
+  ]
+);
+
+export const matchLineups = pgTable(
+  "match_lineups",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    matchId: uuid("match_id")
+      .notNull()
+      .references(() => matches.id, { onDelete: "cascade" }),
+    entryId: uuid("entry_id")
+      .notNull()
+      .references(() => championshipEntries.id, { onDelete: "cascade" }),
+    teamMemberId: uuid("team_member_id")
+      .notNull()
+      .references(() => teamMembers.id, { onDelete: "cascade" }),
+    role: lineupRole("role").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    unique("match_lineups_member_unique").on(table.matchId, table.teamMemberId)
   ]
 );
 

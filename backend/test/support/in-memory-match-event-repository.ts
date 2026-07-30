@@ -48,6 +48,13 @@ export class InMemoryMatchEventRepository implements MatchEventRepository {
     return event;
   }
 
+  async update(eventId: string, input: CreateMatchEventInput) {
+    const event = this.events.find((item) => item.id === eventId);
+    if (!event) throw new Error("Evento não encontrado.");
+    Object.assign(event, input);
+    return event;
+  }
+
   async delete(eventId: string) {
     const index = this.events.findIndex((event) => event.id === eventId);
     if (index < 0) return false;

@@ -99,6 +99,16 @@ export class DrizzleMatchEventRepository implements MatchEventRepository {
     return event as MatchEvent;
   }
 
+  async update(eventId: string, input: CreateMatchEventInput): Promise<MatchEvent> {
+    const [event] = await this.db
+      .update(matchEvents)
+      .set(input)
+      .where(eq(matchEvents.id, eventId))
+      .returning();
+    if (!event) throw new Error("Não foi possível atualizar o evento.");
+    return event as MatchEvent;
+  }
+
   async delete(eventId: string): Promise<boolean> {
     const deleted = await this.db
       .delete(matchEvents)

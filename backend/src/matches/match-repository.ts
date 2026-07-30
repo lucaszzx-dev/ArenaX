@@ -19,6 +19,9 @@ export type Match = {
   awayScore: number | null;
   roundNumber: number | null;
   generated: boolean;
+  venue: string | null;
+  referee: string | null;
+  operationalNotes: string | null;
   createdAt: Date;
   updatedAt: Date;
   homeEntry: MatchEntry;

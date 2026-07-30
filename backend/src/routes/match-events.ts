@@ -96,6 +96,24 @@ export const matchEventRoutes: FastifyPluginAsync<
       return reply.status(204).send();
     }
   );
+
+  app.put(
+    "/championships/:id/matches/:matchId/events/:eventId",
+    async (request) => {
+      const user = await getUser(request);
+      const params = eventParams.safeParse(request.params);
+      const input = eventSchema.safeParse(request.body);
+      if (!params.success || !input.success) throw validationError();
+      const event = await options.matchEventService.update(
+        user.id,
+        params.data.id,
+        params.data.matchId,
+        params.data.eventId,
+        input.data
+      );
+      return { event };
+    }
+  );
 };
 
 function validationError() {

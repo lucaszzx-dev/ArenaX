@@ -45,5 +45,6 @@ export interface MatchEventRepository {
   findEntry(entryId: string): Promise<MatchEventEntry | null>;
   findTeamMember(memberId: string): Promise<MatchEventTeamMember | null>;
   create(input: CreateMatchEventInput): Promise<MatchEvent>;
+  update(eventId: string, input: CreateMatchEventInput): Promise<MatchEvent>;
   delete(eventId: string): Promise<boolean>;
 }

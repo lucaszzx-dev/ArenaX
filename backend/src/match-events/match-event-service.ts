@@ -5,6 +5,7 @@ import type {
   MatchEventType,
   MatchEventRepository
 } from "./match-event-repository.js";
+import type { MatchAuditService } from "../match-audit/match-audit-service.js";
 
 const eventRules: Record<string, Partial<Record<MatchEventType, number>>> = {
   Futebol: {
@@ -57,7 +58,8 @@ export class MatchEventService {
   constructor(
     private readonly repository: MatchEventRepository,
     private readonly matches: MatchRepository,
-    private readonly championships: ChampionshipService
+    private readonly championships: ChampionshipService,
+    private readonly audit?: MatchAuditService
   ) {}
 
   async list(
@@ -170,7 +172,7 @@ export class MatchEventService {
       actorName = member.displayName;
     }
 
-    return this.repository.create({
+    const event = await this.repository.create({
       matchId,
       entryId: input.entryId,
       teamMemberId: input.teamMemberId,
@@ -181,6 +183,35 @@ export class MatchEventService {
       clockSeconds: input.clockSeconds,
       notes: input.notes
     });
+    await this.audit?.record(organizerId, matchId, "MATCH_EVENT_CREATED", {
+      event
+    });
+    return event;
+  }
+
+  async update(
+    organizerId: string,
+    championshipId: string,
+    matchId: string,
+    eventId: string,
+    input: AddMatchEventInput
+  ) {
+    const existing = await this.repository.findById(eventId);
+    if (!existing || existing.matchId !== matchId) {
+      throw new AppError("Evento não encontrado.", 404, "MATCH_EVENT_NOT_FOUND");
+    }
+    const replacement = await this.validateEvent(
+      organizerId,
+      championshipId,
+      matchId,
+      input
+    );
+    const event = await this.repository.update(eventId, replacement);
+    await this.audit?.record(organizerId, matchId, "MATCH_EVENT_CHANGED", {
+      before: existing,
+      after: event
+    });
+    return event;
   }
 
   async delete(
@@ -202,6 +233,66 @@ export class MatchEventService {
     }
 
     await this.repository.delete(eventId);
+    await this.audit?.record(organizerId, matchId, "MATCH_EVENT_DELETED", {
+      event
+    });
+  }
+
+  private async validateEvent(
+    organizerId: string,
+    championshipId: string,
+    matchId: string,
+    input: AddMatchEventInput
+  ) {
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
+    const rules = this.requireSupportedSport(championship.sport);
+    const match = await this.requireEditableMatch(championshipId, matchId);
+    const eventValue = rules[input.type];
+    if (eventValue === undefined) {
+      throw new AppError(
+        "Esse tipo de evento não é aceito para o esporte da arena.",
+        400,
+        "INVALID_MATCH_EVENT_TYPE"
+      );
+    }
+    const entry = await this.repository.findEntry(input.entryId);
+    if (
+      !entry ||
+      entry.championshipId !== championshipId ||
+      (entry.id !== match.homeEntryId && entry.id !== match.awayEntryId)
+    ) {
+      throw new AppError(
+        "A equipe do evento não participa desta partida.",
+        400,
+        "EVENT_ENTRY_NOT_IN_MATCH"
+      );
+    }
+    let actorName: string | null = null;
+    if (input.teamMemberId) {
+      const member = await this.repository.findTeamMember(input.teamMemberId);
+      if (!member || !entry.teamId || member.teamId !== entry.teamId) {
+        throw new AppError(
+          "O jogador não pertence à equipe selecionada.",
+          400,
+          "EVENT_MEMBER_NOT_IN_ENTRY"
+        );
+      }
+      actorName = member.displayName;
+    }
+    return {
+      matchId,
+      entryId: input.entryId,
+      teamMemberId: input.teamMemberId,
+      actorName,
+      type: input.type,
+      value: eventValue,
+      periodNumber: input.periodNumber,
+      clockSeconds: input.clockSeconds,
+      notes: input.notes
+    };
   }
 
   private requireSupportedSport(sport: string) {
