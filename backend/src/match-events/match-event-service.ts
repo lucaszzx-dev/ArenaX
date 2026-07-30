@@ -31,7 +31,8 @@ const eventRules: Record<string, Partial<Record<MatchEventType, number>>> = {
   Basquete: {
     FREE_THROW: 1,
     TWO_POINT_SHOT: 2,
-    THREE_POINT_SHOT: 3
+    THREE_POINT_SHOT: 3,
+    PERSONAL_FOUL: 0
   },
   "Vôlei": {
     VOLLEYBALL_POINT: 1,
@@ -59,6 +60,7 @@ export type PlayerStatistic = {
   blocks: number;
   yellowCards: number;
   redCards: number;
+  personalFouls: number;
   events: number;
 };
 
@@ -105,6 +107,7 @@ export class MatchEventService {
         blocks: 0,
         yellowCards: 0,
         redCards: 0,
+        personalFouls: 0,
         events: 0
       };
       statistic.events += 1;
@@ -121,6 +124,7 @@ export class MatchEventService {
       if (event.type === "BLOCK") statistic.blocks += 1;
       if (event.type === "YELLOW_CARD") statistic.yellowCards += 1;
       if (event.type === "RED_CARD") statistic.redCards += 1;
+      if (event.type === "PERSONAL_FOUL") statistic.personalFouls += 1;
       statistics.set(key, statistic);
     }
 
@@ -143,7 +147,7 @@ export class MatchEventService {
       entryId: playerEvents[0]!.entryId,
       actorName: playerEvents[0]!.actorName ?? "",
       goals: 0, points: 0, aces: 0, blocks: 0,
-      yellowCards: 0, redCards: 0, events: 0
+      yellowCards: 0, redCards: 0, personalFouls: 0, events: 0
     };
     for (const e of playerEvents) {
       stat.events += 1;
@@ -153,6 +157,7 @@ export class MatchEventService {
       if (e.type === "BLOCK") stat.blocks += 1;
       if (e.type === "YELLOW_CARD") stat.yellowCards += 1;
       if (e.type === "RED_CARD") stat.redCards += 1;
+      if (e.type === "PERSONAL_FOUL") stat.personalFouls += 1;
     }
     return stat;
   }

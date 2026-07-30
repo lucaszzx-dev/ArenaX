@@ -29,7 +29,8 @@ const eventSchema = z.object({
     "ASSIST",
     "SUBSTITUTION",
     "PENALTY_CONVERTED",
-    "PENALTY_MISSED"
+    "PENALTY_MISSED",
+    "PERSONAL_FOUL"
   ]),
   periodNumber: z.union([z.number().int().min(1).max(20), z.null()]).default(null),
   clockSeconds: z

@@ -1,13 +1,10 @@
-﻿feat: complete football/futsal match events and fix migrations
+﻿feat: complete basketball rules, fouls, dynamic overtime and statistics
 
-- Add ASSIST, SUBSTITUTION, PENALTY_CONVERTED, PENALTY_MISSED event types
-- Add relatedEventId linking assists to goals
-- Add suspendedPlayers calculation based on yellow/red card accumulation
-- Add maxYellowCards championship configuration for auto-suspension
-- Update frontend forms, labels, API types to support new events
-- Add DB migration 0013 (max_yellow_cards, related_event_id)
-- Fix invalid third place test assertion
-- Fix drizzle-knockout-repository max query and null safety
-- Fix schema maxYellowCards to be notNull
-- Fix championship-repository duplicate field
-- Backend build: OK, Frontend build: OK, Tests: 76/76, Lint: clean
+Add PERSONAL_FOUL event type for basketball
+Track personal fouls per player via statisticsPublic/playerStats
+Display foul count per player in lineup section
+Visual highlight at 4 fouls (warning) and 5+ (limit)
+Dynamic overtime: unlimited, added on demand, removable when empty
+Rework period UI: shows only 4 quarters by default for basketball
+Add 9 basketball-specific tests (events, scoring, fouls, permissions)
+Backend build: OK, Frontend build: OK, Tests: 85/85, Lint: clean

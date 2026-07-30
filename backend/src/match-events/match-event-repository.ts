@@ -13,7 +13,8 @@ export type MatchEventType =
   | "ASSIST"
   | "SUBSTITUTION"
   | "PENALTY_CONVERTED"
-  | "PENALTY_MISSED";
+  | "PENALTY_MISSED"
+  | "PERSONAL_FOUL";
 
 export type MatchEvent = {
   id: string;

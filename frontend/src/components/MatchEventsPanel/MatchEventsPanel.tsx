@@ -24,6 +24,7 @@ const eventLabels: Record<MatchEventType, string> = {
   VOLLEYBALL_POINT: "Ponto",
   ACE: "Ace",
   BLOCK: "Ponto de bloqueio",
+  PERSONAL_FOUL: "Falta pessoal",
   ASSIST: "Assist\u00eancia",
   SUBSTITUTION: "Substitui\u00e7\u00e3o",
   PENALTY_CONVERTED: "P\u00eanalti convertido",

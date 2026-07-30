@@ -53,6 +53,7 @@ const eventLabels: Record<string, string> = {
   VOLLEYBALL_POINT: "Ponto",
   ACE: "Ace",
   BLOCK: "Ponto de bloqueio",
+  PERSONAL_FOUL: "Falta pessoal",
   ASSIST: "Assist\u00eancia",
   SUBSTITUTION: "Substitui\u00e7\u00e3o",
   PENALTY_CONVERTED: "P\u00eanalti convertido",
@@ -62,7 +63,7 @@ const eventLabels: Record<string, string> = {
 const sportEventTypes: Record<string, MatchEventType[]> = {
   Futebol: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD", "ASSIST", "SUBSTITUTION", "PENALTY_CONVERTED", "PENALTY_MISSED"],
   Futsal: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD", "ASSIST", "SUBSTITUTION", "PENALTY_CONVERTED", "PENALTY_MISSED"],
-  Basquete: ["FREE_THROW", "TWO_POINT_SHOT", "THREE_POINT_SHOT"],
+  Basquete: ["FREE_THROW", "TWO_POINT_SHOT", "THREE_POINT_SHOT", "PERSONAL_FOUL"],
   "Vôlei": ["VOLLEYBALL_POINT", "ACE", "BLOCK"]
 };
 
@@ -294,6 +295,8 @@ export function AdminMatchPage() {
                 entry={entry}
                 lineup={entryLineup}
                 teamMembers={team?.members ?? []}
+                sport={championship.sport}
+                events={eventsQuery.data?.events ?? []}
                 onSave={(players) => lineupMutation.mutate({ entryId: entry.id, players })}
               />
             );
@@ -306,11 +309,14 @@ export function AdminMatchPage() {
           <section className={styles.panel}>
             <header><span>PARCIAIS</span><h2>Placar detalhado</h2></header>
             <div className={styles.periodsGrid}>
-              {periodsQuery.data?.periods && Array.from(
-                { length: periodConfig[championship.sport].count },
+              {Array.from(
+                { length: championship.sport === "Basquete" ? 4 + overtimePeriods : periodConfig[championship.sport].count },
                 (_, i) => i + 1
               ).map((num) => {
-                const period = periodsQuery.data!.periods.find((p) => p.periodNumber === num);
+                const period = periodsQuery.data?.periods?.find((p) => p.periodNumber === num);
+                const periodLabel = championship.sport === "Basquete"
+                  ? (num <= 4 ? `${num}º quarto` : `${num - 4}ª prorrogação`)
+                  : periodConfig[championship.sport].label(num);
                 return (
                   <form key={num} className={styles.periodForm} onSubmit={(e) => {
                     e.preventDefault();
@@ -321,14 +327,24 @@ export function AdminMatchPage() {
                       awayScore: Number(data.get("awayScore"))
                     });
                   }}>
-                    <strong>{periodConfig[championship.sport].label(num)}</strong>
-                    <input aria-label={`${match.homeEntry.displayName} ${periodConfig[championship.sport].label(num)}`} defaultValue={period?.homeScore ?? ""} disabled={!canEdit} min={0} name="homeScore" required type="number" />
+                    <strong>{periodLabel}</strong>
+                    <input aria-label={`${match.homeEntry.displayName} ${periodLabel}`} defaultValue={period?.homeScore ?? ""} disabled={!canEdit} min={0} name="homeScore" required type="number" />
                     <span>×</span>
-                    <input aria-label={`${match.awayEntry.displayName} ${periodConfig[championship.sport].label(num)}`} defaultValue={period?.awayScore ?? ""} disabled={!canEdit} min={0} name="awayScore" required type="number" />
+                    <input aria-label={`${match.awayEntry.displayName} ${periodLabel}`} defaultValue={period?.awayScore ?? ""} disabled={!canEdit} min={0} name="awayScore" required type="number" />
                     {canEdit && (
                       <>
                         <button disabled={periodMutation.isPending} type="submit">{period ? "Atualizar" : "Salvar"}</button>
-                        {period && <button className={styles.dangerBtn} disabled={deletePeriodMutation.isPending} onClick={() => deletePeriodMutation.mutate(num)} type="button">Remover</button>}
+                        {period && num > 4 && (
+                          <button className={styles.dangerBtn} disabled={deletePeriodMutation.isPending} onClick={() => {
+                            if (period.homeScore > 0 || period.awayScore > 0) {
+                              if (!window.confirm("Esta prorrogação contém placar. Remover mesmo assim?")) return;
+                            }
+                            deletePeriodMutation.mutate(num);
+                          }} type="button">Remover</button>
+                        )}
+                        {!period && num > 4 && (
+                          <button className={styles.dangerBtn} onClick={() => setOvertimePeriods((p) => Math.min(p, num - 5))} type="button">Remover</button>
+                        )}
                       </>
                     )}
                   </form>
@@ -338,8 +354,10 @@ export function AdminMatchPage() {
           {canEdit && championship.sport === "Basquete" && (
               <button
                 className={styles.overtimeBtn}
-                disabled={overtimePeriods >= 4}
-                onClick={() => setOvertimePeriods((p) => Math.min(p + 1, 4))}
+                onClick={() => {
+                  if (overtimePeriods === 0 && periodsQuery.data?.periods?.find((p) => p.periodNumber === 5)) return;
+                  setOvertimePeriods((p) => p + 1);
+                }}
                 type="button"
               >
                 + Prorrogação
@@ -437,13 +455,17 @@ function LineupSection({
   entry,
   lineup,
   teamMembers,
-  onSave
+  onSave,
+  sport,
+  events = []
 }: {
   canEdit: boolean;
   entry: { id: string; displayName: string };
   lineup: MatchLineupItem[];
   teamMembers: Array<{ id: string; displayName: string; jerseyNumber: number | null }>;
   onSave: (players: Array<{ teamMemberId: string; role: LineupRole }>) => void;
+  sport?: string;
+  events?: MatchEvent[];
 }) {
   const [starters, setStarters] = useState<string[]>(
     lineup.filter((l) => l.role === "STARTER").map((l) => l.teamMemberId)
@@ -451,6 +473,15 @@ function LineupSection({
   const [subs, setSubs] = useState<string[]>(
     lineup.filter((l) => l.role === "SUBSTITUTE").map((l) => l.teamMemberId)
   );
+
+  const showFouls = sport === "Basquete";
+  const foulCounts: Record<string, number> = {};
+  if (showFouls) {
+    for (const e of events) {
+      if (e.type !== "PERSONAL_FOUL" || !e.teamMemberId) continue;
+      foulCounts[e.teamMemberId] = (foulCounts[e.teamMemberId] ?? 0) + 1;
+    }
+  }
 
   function toggleStarter(memberId: string) {
     setStarters((prev) =>
@@ -483,6 +514,11 @@ function LineupSection({
                 type="checkbox"
               />
               <span>{member.jerseyNumber ? `#${member.jerseyNumber} ` : ""}{member.displayName}</span>
+              {showFouls && foulCounts[member.id] != null && (
+                <span className={foulCounts[member.id] >= 5 ? styles.foulLimit : foulCounts[member.id] >= 4 ? styles.foulWarning : styles.foulBadge}>
+                  {foulCounts[member.id]}F
+                </span>
+              )}
             </label>
           ))}
         </div>
@@ -497,6 +533,11 @@ function LineupSection({
                 type="checkbox"
               />
               <span>{member.displayName}</span>
+              {showFouls && foulCounts[member.id] != null && (
+                <span className={foulCounts[member.id] >= 5 ? styles.foulLimit : foulCounts[member.id] >= 4 ? styles.foulWarning : styles.foulBadge}>
+                  {foulCounts[member.id]}F
+                </span>
+              )}
             </label>
           ))}
         </div>
