@@ -117,7 +117,6 @@ export function AdminMatchPage() {
 
   const supportsEvents = championshipQuery.data?.championship && sportEventTypes[championshipQuery.data.championship.sport];
   const supportsPeriods = championshipQuery.data?.championship && periodConfig[championshipQuery.data.championship.sport];
-  const totalPeriods = supportsPeriods ? periodConfig[championship.sport].count + overtimePeriods : 0;
 
   const teams = registrationsQuery.data?.teams ?? [];
   const metadata = opsQuery.data?.metadata ?? null;
@@ -522,8 +521,8 @@ function EventForm({
   championshipId: string;
   matchId: string;
   sport: string;
-  homeEntry: { id: string; displayName: string; teamId: string | null };
-  awayEntry: { id: string; displayName: string; teamId: string | null };
+  homeEntry: { id: string; displayName: string; teamId?: string | null };
+  awayEntry: { id: string; displayName: string; teamId?: string | null };
   teams: Array<{ id: string; members: Array<{ id: string; displayName: string }> }>;
   onSubmit: (input: {
     entryId: string;
@@ -604,7 +603,7 @@ function EventRow({
 }: {
   event: MatchEvent;
   canEdit: boolean;
-  match: { homeEntry: { id: string; displayName: string; teamId: string | null }; awayEntry: { id: string; displayName: string; teamId: string | null } };
+  match: { homeEntry: { id: string; displayName: string; teamId?: string | null }; awayEntry: { id: string; displayName: string; teamId?: string | null } };
   sport: string;
   teams: Array<{ id: string; members: Array<{ id: string; displayName: string }> }>;
   onUpdate: (eventId: string, input: Parameters<typeof updateMatchEvent>[3]) => void;

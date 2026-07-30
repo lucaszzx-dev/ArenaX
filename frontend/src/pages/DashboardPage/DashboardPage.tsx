@@ -1,5 +1,4 @@
-﻿import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 
 import { useCurrentUser } from "../../features/auth/auth-query";
 import { useChampionships } from "../../features/championships/championship-query";
