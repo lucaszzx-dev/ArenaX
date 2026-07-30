@@ -43,6 +43,7 @@ export class DrizzleMatchEventRepository implements MatchEventRepository {
         periodNumber: matchEvents.periodNumber,
         clockSeconds: matchEvents.clockSeconds,
         notes: matchEvents.notes,
+        relatedEventId: matchEvents.relatedEventId,
         createdAt: matchEvents.createdAt
       })
       .from(matchEvents)

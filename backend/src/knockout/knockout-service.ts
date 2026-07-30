@@ -23,7 +23,7 @@ export class KnockoutService {
     return this.getBracket(championship.id);
   }
 
-  async generate(organizerId: string, championshipId: string) {
+  async generate(organizerId: string, championshipId: string, thirdPlace?: boolean) {
     const championship = await this.championships.getMine(organizerId, championshipId);
     if (championship.format !== "KNOCKOUT") {
       throw new AppError(
@@ -102,13 +102,23 @@ export class KnockoutService {
       else next.awayEntryId = automaticWinner;
     }
 
+    const hasThirdPlace = thirdPlace ?? true;
+    if (hasThirdPlace && totalRounds >= 2) {
+      nodesToSave.push({
+        roundNumber: totalRounds + 1,
+        position: 2,
+        homeEntryId: null,
+        awayEntryId: null
+      });
+    }
+
     const created = await this.repository.createBracket(
       championshipId,
       nodesToSave
     );
     return {
       nodes: created,
-      totalRounds,
+      totalRounds: hasThirdPlace && totalRounds >= 2 ? totalRounds + 1 : totalRounds,
       bracketSize,
       byes
     };
@@ -116,6 +126,26 @@ export class KnockoutService {
 
   advanceWinner(matchId: string, winnerEntryId: string) {
     return this.repository.advanceWinner(matchId, winnerEntryId);
+  }
+
+  advanceLoser(matchId: string, loserEntryId: string) {
+    return this.repository.advanceLoser(matchId, loserEntryId);
+  }
+
+  async getChampion(championshipId: string) {
+    const bracket = await this.getBracket(championshipId);
+    const maxRound = Math.max(...bracket.nodes.map((n) => n.roundNumber));
+    const finalNode = bracket.nodes.find((n) =>
+      n.roundNumber === (bracket.nodes.some((x) => x.roundNumber === maxRound && x.position === 2) ? maxRound - 1 : maxRound)
+    );
+    const finalMatch = bracket.matches.find((m) => m.id === finalNode?.matchId);
+    if (!finalMatch || finalMatch.status !== "FINISHED" ||
+        finalMatch.homeScore === null || finalMatch.awayScore === null) {
+      return null;
+    }
+    return finalMatch.homeScore > finalMatch.awayScore
+      ? finalMatch.homeEntryId
+      : finalMatch.awayEntryId;
   }
 
   prepareReopen(matchId: string) {

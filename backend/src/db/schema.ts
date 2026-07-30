@@ -1,4 +1,4 @@
-import {
+﻿import {
   boolean,
   check,
   integer,
@@ -119,6 +119,8 @@ export const championships = pgTable(
     drawPoints: integer("draw_points").notNull().default(1),
     lossPoints: integer("loss_points").notNull().default(0),
     allowsDraw: boolean("allows_draw").notNull().default(true),
+    maxYellowCards: integer("max_yellow_cards").notNull().default(0),
+    thirdPlace: boolean("third_place").notNull().default(true),
     startsAt: timestamp("starts_at", { withTimezone: true }),
     endsAt: timestamp("ends_at", { withTimezone: true }),
     ...timestamps
@@ -392,6 +394,7 @@ export const matchEvents = pgTable(
     periodNumber: integer("period_number"),
     clockSeconds: integer("clock_seconds"),
     notes: text("notes"),
+    relatedEventId: uuid("related_event_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow()

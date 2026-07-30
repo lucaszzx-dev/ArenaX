@@ -68,6 +68,34 @@ export class InMemoryKnockoutRepository implements KnockoutRepository {
     }
   }
 
+  async advanceLoser(matchId: string, loserEntryId: string) {
+    const source = this.nodes.find((node) => node.matchId === matchId);
+    if (!source) return;
+
+    const maxRound = Math.max.apply(null, this.nodes.filter((n) => n.championshipId === source.championshipId).map((n) => n.roundNumber));
+    const third = this.nodes.find((node) =>
+      node.championshipId === source.championshipId &&
+      node.roundNumber === maxRound &&
+      node.position === 2
+    );
+    if (!third) return;
+
+    if (source.position % 2 === 1) third.homeEntryId = loserEntryId;
+    else third.awayEntryId = loserEntryId;
+
+    if (!third.matchId && third.homeEntryId && third.awayEntryId) {
+      const match = await this.matches.create({
+        championshipId: third.championshipId,
+        homeEntryId: third.homeEntryId,
+        awayEntryId: third.awayEntryId,
+        scheduledAt: null,
+        roundNumber: third.roundNumber,
+        generated: true
+      });
+      third.matchId = match.id;
+    }
+  }
+
   async prepareReopen(matchId: string) {
     const source = this.nodes.find((node) => node.matchId === matchId);
     if (!source) return;

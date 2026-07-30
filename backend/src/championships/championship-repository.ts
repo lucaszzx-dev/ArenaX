@@ -1,4 +1,4 @@
-export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
+﻿export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
 export type ChampionshipStatus = "DRAFT" | "PUBLISHED" | "FINISHED";
 export type TournamentFormat = "LEAGUE" | "KNOCKOUT";
 
@@ -16,6 +16,8 @@ export type Championship = {
   drawPoints: number;
   lossPoints: number;
   allowsDraw: boolean;
+  thirdPlace: boolean;
+  maxYellowCards: number;
   startsAt: Date | null;
   endsAt: Date | null;
   createdAt: Date;

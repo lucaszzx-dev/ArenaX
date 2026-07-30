@@ -17,6 +17,7 @@ export class InMemoryChampionshipRepository
     const championship: Championship = {
       ...input,
       format: input.format ?? "LEAGUE",
+      thirdPlace: input.thirdPlace ?? true,
       id: crypto.randomUUID(),
       status: "DRAFT",
       createdAt: now,

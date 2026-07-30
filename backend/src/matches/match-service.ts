@@ -224,6 +224,10 @@ export class MatchService {
         matchId,
         homeScore > awayScore ? match.homeEntryId : match.awayEntryId
       );
+      await this.knockout?.advanceLoser(
+        matchId,
+        homeScore > awayScore ? match.awayEntryId : match.homeEntryId
+      );
     }
     return updated;
   }

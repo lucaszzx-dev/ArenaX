@@ -1,4 +1,4 @@
-import { apiRequest } from "../../lib/api";
+﻿import { apiRequest } from "../../lib/api";
 
 export type MatchEventType =
   | "GOAL"
@@ -10,7 +10,11 @@ export type MatchEventType =
   | "THREE_POINT_SHOT"
   | "VOLLEYBALL_POINT"
   | "ACE"
-  | "BLOCK";
+  | "BLOCK"
+  | "ASSIST"
+  | "SUBSTITUTION"
+  | "PENALTY_CONVERTED"
+  | "PENALTY_MISSED";
 
 export type MatchEvent = {
   id: string;
@@ -23,6 +27,7 @@ export type MatchEvent = {
   periodNumber: number | null;
   clockSeconds: number | null;
   notes: string | null;
+  relatedEventId: string | null;
   createdAt: string;
 };
 
@@ -39,6 +44,15 @@ export const listMatchEvents = (
     `/championships/${championshipId}/matches/${matchId}/events`
   );
 
+export const listSuspendedPlayers = (
+  championshipId: string,
+  matchId: string,
+  entryId: string
+) =>
+  apiRequest<{ suspendedPlayerIds: string[] }>(
+    `/championships/${championshipId}/matches/${matchId}/suspended-players?entryId=${entryId}`
+  );
+
 export const createMatchEvent = (
   championshipId: string,
   matchId: string,
@@ -49,6 +63,7 @@ export const createMatchEvent = (
     periodNumber: number | null;
     clockSeconds: number | null;
     notes: string | null;
+    relatedEventId?: string | null;
   }
 ) =>
   apiRequest<{ event: MatchEvent }>(
@@ -67,6 +82,7 @@ export const updateMatchEvent = (
     periodNumber: number | null;
     clockSeconds: number | null;
     notes: string | null;
+    relatedEventId?: string | null;
   }
 ) =>
   apiRequest<{ event: MatchEvent }>(

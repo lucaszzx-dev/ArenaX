@@ -1,4 +1,4 @@
-import { type FormEvent, useMemo, useState } from "react";
+﻿import { type FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -23,7 +23,11 @@ const eventLabels: Record<MatchEventType, string> = {
   THREE_POINT_SHOT: "Cesta de 3 pontos",
   VOLLEYBALL_POINT: "Ponto",
   ACE: "Ace",
-  BLOCK: "Ponto de bloqueio"
+  BLOCK: "Ponto de bloqueio",
+  ASSIST: "Assist\u00eancia",
+  SUBSTITUTION: "Substitui\u00e7\u00e3o",
+  PENALTY_CONVERTED: "P\u00eanalti convertido",
+  PENALTY_MISSED: "P\u00eanalti perdido"
 };
 
 const sportConfigs: Record<string, {

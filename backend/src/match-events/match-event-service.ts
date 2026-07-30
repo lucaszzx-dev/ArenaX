@@ -12,13 +12,21 @@ const eventRules: Record<string, Partial<Record<MatchEventType, number>>> = {
     GOAL: 1,
     OWN_GOAL: 1,
     YELLOW_CARD: 1,
-    RED_CARD: 1
+    RED_CARD: 1,
+    ASSIST: 0,
+    SUBSTITUTION: 0,
+    PENALTY_CONVERTED: 1,
+    PENALTY_MISSED: 0
   },
   Futsal: {
     GOAL: 1,
     OWN_GOAL: 1,
     YELLOW_CARD: 1,
-    RED_CARD: 1
+    RED_CARD: 1,
+    ASSIST: 0,
+    SUBSTITUTION: 0,
+    PENALTY_CONVERTED: 1,
+    PENALTY_MISSED: 0
   },
   Basquete: {
     FREE_THROW: 1,
@@ -39,8 +47,8 @@ export type AddMatchEventInput = {
   periodNumber: number | null;
   clockSeconds: number | null;
   notes: string | null;
+  relatedEventId?: string | null;
 };
-
 export type PlayerStatistic = {
   teamMemberId: string | null;
   entryId: string;
@@ -161,42 +169,21 @@ export class MatchEventService {
     );
     const rules = this.requireSupportedSport(championship.sport);
 
-    const match = await this.requireEditableMatch(championshipId, matchId);
+    await this.requireEditableMatch(championshipId, matchId);
 
     const eventValue = rules[input.type];
     if (eventValue === undefined) {
       throw new AppError(
-        "Esse tipo de evento não é aceito para o esporte da arena.",
+        "Esse tipo de evento n\u00e3o \u00e9 aceito para o esporte da arena.",
         400,
         "INVALID_MATCH_EVENT_TYPE"
       );
     }
 
-    const entry = await this.repository.findEntry(input.entryId);
-    if (
-      !entry ||
-      entry.championshipId !== championshipId ||
-      (entry.id !== match.homeEntryId && entry.id !== match.awayEntryId)
-    ) {
-      throw new AppError(
-        "A equipe do evento não participa desta partida.",
-        400,
-        "EVENT_ENTRY_NOT_IN_MATCH"
-      );
-    }
+    const entry = await this.validateEntry(input.entryId, championshipId, matchId);
+    const actorName = await this.validateTeamMember(input.teamMemberId, entry);
 
-    let actorName: string | null = null;
-    if (input.teamMemberId) {
-      const member = await this.repository.findTeamMember(input.teamMemberId);
-      if (!member || !entry.teamId || member.teamId !== entry.teamId) {
-        throw new AppError(
-          "O jogador não pertence à equipe selecionada.",
-          400,
-          "EVENT_MEMBER_NOT_IN_ENTRY"
-        );
-      }
-      actorName = member.displayName;
-    }
+    await this.validateAssist(input, matchId);
 
     const event = await this.repository.create({
       matchId,
@@ -207,7 +194,8 @@ export class MatchEventService {
       value: eventValue,
       periodNumber: input.periodNumber,
       clockSeconds: input.clockSeconds,
-      notes: input.notes
+      notes: input.notes,
+      relatedEventId: input.relatedEventId ?? null
     });
     await this.audit?.record(organizerId, matchId, "MATCH_EVENT_CREATED", {
       event
@@ -270,44 +258,20 @@ export class MatchEventService {
     matchId: string,
     input: AddMatchEventInput
   ) {
-    const championship = await this.championships.getMine(
-      organizerId,
-      championshipId
-    );
-    const rules = this.requireSupportedSport(championship.sport);
-    const match = await this.requireEditableMatch(championshipId, matchId);
+    await this.championships.getMine(organizerId, championshipId);
+    const championship = await this.championships.getChampionshipById(championshipId);
+    const rules = this.requireSupportedSport(championship?.sport ?? "");
     const eventValue = rules[input.type];
     if (eventValue === undefined) {
       throw new AppError(
-        "Esse tipo de evento não é aceito para o esporte da arena.",
+        "Esse tipo de evento n\u00e3o \u00e9 aceito para o esporte da arena.",
         400,
         "INVALID_MATCH_EVENT_TYPE"
       );
     }
-    const entry = await this.repository.findEntry(input.entryId);
-    if (
-      !entry ||
-      entry.championshipId !== championshipId ||
-      (entry.id !== match.homeEntryId && entry.id !== match.awayEntryId)
-    ) {
-      throw new AppError(
-        "A equipe do evento não participa desta partida.",
-        400,
-        "EVENT_ENTRY_NOT_IN_MATCH"
-      );
-    }
-    let actorName: string | null = null;
-    if (input.teamMemberId) {
-      const member = await this.repository.findTeamMember(input.teamMemberId);
-      if (!member || !entry.teamId || member.teamId !== entry.teamId) {
-        throw new AppError(
-          "O jogador não pertence à equipe selecionada.",
-          400,
-          "EVENT_MEMBER_NOT_IN_ENTRY"
-        );
-      }
-      actorName = member.displayName;
-    }
+    const entry = await this.validateEntry(input.entryId, championshipId, matchId);
+    const actorName = await this.validateTeamMember(input.teamMemberId, entry);
+    await this.validateAssist(input, matchId);
     return {
       matchId,
       entryId: input.entryId,
@@ -317,10 +281,100 @@ export class MatchEventService {
       value: eventValue,
       periodNumber: input.periodNumber,
       clockSeconds: input.clockSeconds,
-      notes: input.notes
+      notes: input.notes,
+      relatedEventId: input.relatedEventId ?? null
     };
   }
 
+  async suspendedPlayers(championshipId: string, entryId: string) {
+    const championship = await this.championships.getChampionshipById(championshipId);
+    if (!championship || !championship.maxYellowCards) return [];
+    const events = await this.repository.listByChampionship(championshipId);
+    const cards = new Map<string, { yellowCount: number; hasRed: boolean }>();
+    for (const event of events) {
+      if (event.entryId !== entryId || !event.teamMemberId) continue;
+      if (event.type === "YELLOW_CARD") {
+        const record = cards.get(event.teamMemberId) ?? { yellowCount: 0, hasRed: false };
+        record.yellowCount += 1;
+        cards.set(event.teamMemberId, record);
+      }
+      if (event.type === "RED_CARD") {
+        const record = cards.get(event.teamMemberId) ?? { yellowCount: 0, hasRed: true };
+        record.hasRed = true;
+        cards.set(event.teamMemberId, record);
+      }
+    }
+    const suspended: string[] = [];
+    for (const [memberId, record] of cards) {
+      if (record.hasRed || (championship.maxYellowCards > 0 && record.yellowCount >= championship.maxYellowCards)) {
+        suspended.push(memberId);
+      }
+    }
+    return suspended;
+  }
+
+  private async validateAssist(input: AddMatchEventInput, matchId: string) {
+    if (input.type !== "ASSIST") return;
+    if (!input.relatedEventId) {
+      throw new AppError(
+        "Assist\u00eancia deve estar vinculada a um gol.",
+        400,
+        "ASSIST_REQUIRES_RELATED_GOAL"
+      );
+    }
+    const targetEvent = await this.repository.findById(input.relatedEventId);
+    if (!targetEvent || targetEvent.matchId !== matchId || targetEvent.type !== "GOAL") {
+      throw new AppError(
+        "Assist\u00eancia deve estar vinculada a um gol v\u00e1lido da mesma partida.",
+        400,
+        "ASSIST_REQUIRES_RELATED_GOAL"
+      );
+    }
+    if (targetEvent.entryId !== input.entryId) {
+      throw new AppError(
+        "Assist\u00eancia deve ser da mesma equipe do gol.",
+        400,
+        "ASSIST_MUST_BE_SAME_TEAM"
+      );
+    }
+  }
+
+  private async validateEntry(
+    entryId: string,
+    championshipId: string,
+    matchId: string
+  ) {
+    const match = await this.requireMatch(championshipId, matchId);
+    const entry = await this.repository.findEntry(entryId);
+    if (
+      !entry ||
+      entry.championshipId !== championshipId ||
+      (entry.id !== match.homeEntryId && entry.id !== match.awayEntryId)
+    ) {
+      throw new AppError(
+        "A equipe do evento n\u00e3o participa desta partida.",
+        400,
+        "EVENT_ENTRY_NOT_IN_MATCH"
+      );
+    }
+    return entry;
+  }
+
+  private async validateTeamMember(
+    teamMemberId: string | null,
+    entry: { teamId: string | null }
+  ): Promise<string | null> {
+    if (!teamMemberId) return null;
+    const member = await this.repository.findTeamMember(teamMemberId);
+    if (!member || !entry.teamId || member.teamId !== entry.teamId) {
+      throw new AppError(
+        "O jogador n\u00e3o pertence \u00e0 equipe selecionada.",
+        400,
+        "EVENT_MEMBER_NOT_IN_ENTRY"
+      );
+    }
+    return member.displayName;
+  }
   private requireSupportedSport(sport: string) {
     const rules = eventRules[sport];
     if (!rules) {

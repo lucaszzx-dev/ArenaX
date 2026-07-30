@@ -1,0 +1,1 @@
+ALTER TABLE "championships" ADD COLUMN "third_place" boolean DEFAULT true NOT NULL;

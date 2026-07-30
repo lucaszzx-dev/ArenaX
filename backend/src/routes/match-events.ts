@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from "fastify";
+﻿import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 
 import type { AuthService } from "../auth/auth-service.js";
@@ -25,7 +25,11 @@ const eventSchema = z.object({
     "THREE_POINT_SHOT",
     "VOLLEYBALL_POINT",
     "ACE",
-    "BLOCK"
+    "BLOCK",
+    "ASSIST",
+    "SUBSTITUTION",
+    "PENALTY_CONVERTED",
+    "PENALTY_MISSED"
   ]),
   periodNumber: z.union([z.number().int().min(1).max(20), z.null()]).default(null),
   clockSeconds: z
@@ -34,7 +38,8 @@ const eventSchema = z.object({
   notes: z
     .union([z.string().trim().max(200), z.null()])
     .transform((value) => value || null)
-    .default(null)
+    .default(null),
+  relatedEventId: z.union([z.uuid(), z.null()]).default(null)
 });
 
 type MatchEventRoutesOptions = {
@@ -60,6 +65,19 @@ export const matchEventRoutes: FastifyPluginAsync<
       params.data.matchId
     );
     return { events };
+  });
+
+  app.get("/championships/:id/matches/:matchId/suspended-players", async (request) => {
+    const params = matchParams.safeParse(request.params);
+    if (!params.success) throw validationError();
+    const query = z.object({ entryId: z.uuid() }).safeParse(request.query);
+    if (!query.success) throw validationError();
+
+    const result = await options.matchEventService.suspendedPlayers(
+      params.data.id,
+      query.data.entryId
+    );
+    return { suspendedPlayerIds: result };
   });
 
   app.post(

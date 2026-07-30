@@ -22,5 +22,6 @@ export interface KnockoutRepository {
     nodes: SaveKnockoutNode[]
   ): Promise<KnockoutNode[]>;
   advanceWinner(matchId: string, winnerEntryId: string): Promise<void>;
+  advanceLoser(matchId: string, loserEntryId: string): Promise<void>;
   prepareReopen(matchId: string): Promise<void>;
 }

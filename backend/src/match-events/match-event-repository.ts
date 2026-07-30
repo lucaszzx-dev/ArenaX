@@ -1,3 +1,4 @@
+﻿
 export type MatchEventType =
   | "GOAL"
   | "OWN_GOAL"
@@ -8,7 +9,11 @@ export type MatchEventType =
   | "THREE_POINT_SHOT"
   | "VOLLEYBALL_POINT"
   | "ACE"
-  | "BLOCK";
+  | "BLOCK"
+  | "ASSIST"
+  | "SUBSTITUTION"
+  | "PENALTY_CONVERTED"
+  | "PENALTY_MISSED";
 
 export type MatchEvent = {
   id: string;
@@ -21,6 +26,7 @@ export type MatchEvent = {
   periodNumber: number | null;
   clockSeconds: number | null;
   notes: string | null;
+  relatedEventId: string | null;
   createdAt: Date;
 };
 

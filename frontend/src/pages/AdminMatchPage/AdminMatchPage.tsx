@@ -42,7 +42,7 @@ import {
 import { ApiError } from "../../lib/api";
 import styles from "./AdminMatchPage.module.css";
 
-const eventLabels: Record<MatchEventType, string> = {
+const eventLabels: Record<string, string> = {
   GOAL: "Gol",
   OWN_GOAL: "Gol contra",
   YELLOW_CARD: "Cartão amarelo",
@@ -52,12 +52,16 @@ const eventLabels: Record<MatchEventType, string> = {
   THREE_POINT_SHOT: "Cesta de 3 pontos",
   VOLLEYBALL_POINT: "Ponto",
   ACE: "Ace",
-  BLOCK: "Ponto de bloqueio"
+  BLOCK: "Ponto de bloqueio",
+  ASSIST: "Assist\u00eancia",
+  SUBSTITUTION: "Substitui\u00e7\u00e3o",
+  PENALTY_CONVERTED: "P\u00eanalti convertido",
+  PENALTY_MISSED: "P\u00eanalti perdido"
 };
 
 const sportEventTypes: Record<string, MatchEventType[]> = {
-  Futebol: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD"],
-  Futsal: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD"],
+  Futebol: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD", "ASSIST", "SUBSTITUTION", "PENALTY_CONVERTED", "PENALTY_MISSED"],
+  Futsal: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD", "ASSIST", "SUBSTITUTION", "PENALTY_CONVERTED", "PENALTY_MISSED"],
   Basquete: ["FREE_THROW", "TWO_POINT_SHOT", "THREE_POINT_SHOT"],
   "Vôlei": ["VOLLEYBALL_POINT", "ACE", "BLOCK"]
 };

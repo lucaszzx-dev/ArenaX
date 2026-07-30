@@ -1,4 +1,4 @@
-import type { FormEvent } from "react";
+﻿import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 
 import type {
@@ -7,7 +7,7 @@ import type {
 } from "./championship-api";
 import styles from "./ChampionshipForm.module.css";
 
-const sports = ["Futebol", "Futsal", "Basquete", "Vôlei", "eSports", "Outro"];
+const sports = ["Futebol", "Futsal", "Basquete", "V�lei", "eSports", "Outro"];
 
 type ChampionshipFormProps = {
   initial?: Championship;
@@ -37,6 +37,11 @@ export function ChampionshipForm({
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
 
+    const maxYellowCardsEnabled = formData.get("maxYellowCardsEnabled") === "on";
+    const maxYellowCards = maxYellowCardsEnabled
+      ? Number(formData.get("maxYellowCardsValue") ?? 3)
+      : 0;
+
     onSubmit({
       name: String(formData.get("name") ?? ""),
       sport: String(formData.get("sport") ?? ""),
@@ -48,6 +53,8 @@ export function ChampionshipForm({
       drawPoints: Number(formData.get("drawPoints")),
       lossPoints: Number(formData.get("lossPoints")),
       allowsDraw: formData.get("allowsDraw") === "on",
+      thirdPlace: formData.get("thirdPlace") === "on",
+      maxYellowCards,
       startsAt: toIsoDate(formData.get("startsAt")),
       endsAt: toIsoDate(formData.get("endsAt"))
     });
@@ -80,7 +87,7 @@ export function ChampionshipForm({
           </label>
 
           <label>
-            Inscrição
+            Inscri��o
             <select defaultValue={initial?.entryType ?? "TEAM"} name="entryType">
               <option value="TEAM">Por equipes</option>
               <option value="INDIVIDUAL">Individual</option>
@@ -100,13 +107,22 @@ export function ChampionshipForm({
             {initial && <input name="format" type="hidden" value={initial.format} />}
           </label>
 
+          <label className={styles.checkbox}>
+            <input
+              defaultChecked={initial?.thirdPlace ?? true}
+              name="thirdPlace"
+              type="checkbox"
+            />
+            Disputa de terceiro lugar (mata-mata)
+          </label>
+
           <label className={styles.full}>
-            Descrição
+            Descri��o
             <textarea
               defaultValue={initial?.description ?? ""}
               maxLength={500}
               name="description"
-              placeholder="Explique brevemente como será a competição."
+              placeholder="Explique brevemente como ser� a competi��o."
               rows={4}
             />
           </label>
@@ -114,7 +130,7 @@ export function ChampionshipForm({
       </fieldset>
 
       <fieldset>
-        <legend>02 / Calendário</legend>
+        <legend>02 / Calend�rio</legend>
         <div className={styles.fields}>
           <label>
             Data inicial
@@ -136,10 +152,10 @@ export function ChampionshipForm({
       </fieldset>
 
       <fieldset>
-        <legend>03 / Pontuação</legend>
+        <legend>03 / Pontua��o</legend>
         <div className={styles.scoreFields}>
           <label>
-            Vitória
+            Vit�ria
             <input defaultValue={initial?.winPoints ?? 3} max="20" min="0" name="winPoints" type="number" />
           </label>
           <label>
@@ -158,6 +174,24 @@ export function ChampionshipForm({
             type="checkbox"
           />
           Este campeonato permite partidas empatadas
+        </label>
+        <label className={styles.checkbox}>
+          <input
+            defaultChecked={initial ? (initial.maxYellowCards > 0) : false}
+            name="maxYellowCardsEnabled"
+            type="checkbox"
+          />
+          Suspens�o autom�tica por cart�es
+        </label>
+        <label>
+          Amarelos para suspens�o
+          <input
+            defaultValue={initial?.maxYellowCards ?? 3}
+            min={1}
+            max={10}
+            name="maxYellowCardsValue"
+            type="number"
+          />
         </label>
       </fieldset>
 

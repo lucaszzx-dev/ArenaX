@@ -1,4 +1,4 @@
-import { and, asc, eq } from "drizzle-orm";
+﻿import { and, asc, eq, max } from "drizzle-orm";
 
 import type { Database } from "../db/client.js";
 import { knockoutNodes, matches } from "../db/schema.js";
@@ -93,6 +93,60 @@ export class DrizzleKnockoutRepository implements KnockoutRepository {
         .update(knockoutNodes)
         .set({ matchId: nextMatch.id, updatedAt: new Date() })
         .where(eq(knockoutNodes.id, next.id));
+    });
+  }
+
+  async advanceLoser(matchId: string, loserEntryId: string) {
+    await this.db.transaction(async (transaction) => {
+      const [source] = await transaction
+        .select()
+        .from(knockoutNodes)
+        .where(eq(knockoutNodes.matchId, matchId));
+      if (!source) return;
+
+      const [maxRow] = await transaction
+        .select({ value: max(knockoutNodes.roundNumber) })
+        .from(knockoutNodes)
+        .where(eq(knockoutNodes.championshipId, source.championshipId));
+      const thirdRound = Number(maxRow?.value ?? 0);
+
+      const [third] = await transaction
+        .select()
+        .from(knockoutNodes)
+        .where(and(
+          eq(knockoutNodes.championshipId, source.championshipId),
+          eq(knockoutNodes.roundNumber, thirdRound),
+          eq(knockoutNodes.position, 2)
+        ));
+      if (!third) return;
+
+      const target = source.position % 2 === 1 ? "homeEntryId" : "awayEntryId";
+      await transaction
+        .update(knockoutNodes)
+        .set({ [target]: loserEntryId, updatedAt: new Date() })
+        .where(eq(knockoutNodes.id, third.id));
+
+      const [updated] = await transaction
+        .select()
+        .from(knockoutNodes)
+        .where(eq(knockoutNodes.id, third.id));
+      if (!updated || !updated.homeEntryId || !updated.awayEntryId || updated.matchId) return;
+
+      const [thirdMatch] = await transaction
+        .insert(matches)
+        .values({
+          championshipId: source.championshipId,
+          homeEntryId: updated.homeEntryId,
+          awayEntryId: updated.awayEntryId,
+          roundNumber: updated.roundNumber,
+          generated: true
+        })
+        .returning();
+      if (!thirdMatch) throw new Error("N\u00e3o foi poss\u00edvel criar a disputa de terceiro.");
+      await transaction
+        .update(knockoutNodes)
+        .set({ matchId: thirdMatch.id, updatedAt: new Date() })
+        .where(eq(knockoutNodes.id, third.id));
     });
   }
 

@@ -1,4 +1,4 @@
-import { apiRequest } from "../../lib/api";
+﻿import { apiRequest } from "../../lib/api";
 
 export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
 export type ChampionshipStatus = "DRAFT" | "PUBLISHED" | "FINISHED";
@@ -18,6 +18,8 @@ export type Championship = {
   drawPoints: number;
   lossPoints: number;
   allowsDraw: boolean;
+  thirdPlace: boolean;
+  maxYellowCards: number;
   startsAt: string | null;
   endsAt: string | null;
   createdAt: string;
@@ -34,6 +36,8 @@ export type ChampionshipInput = {
   drawPoints: number;
   lossPoints: number;
   allowsDraw: boolean;
+  thirdPlace: boolean;
+  maxYellowCards: number;
   startsAt: string | null;
   endsAt: string | null;
 };

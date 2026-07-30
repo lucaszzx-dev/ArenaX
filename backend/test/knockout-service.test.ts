@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+﻿import { beforeEach, describe, expect, it } from "vitest";
 
 import { ChampionshipService } from "../src/championships/championship-service.js";
 import { KnockoutService } from "../src/knockout/knockout-service.js";
@@ -48,7 +48,7 @@ describe("KnockoutService", () => {
 
   it("creates a bracket and distributes byes", async () => {
     const arena = await createArena(3);
-    const result = await knockout.generate("organizer-1", arena.id);
+    const result = await knockout.generate("organizer-1", arena.id, false);
 
     expect(result).toMatchObject({
       totalRounds: 2,
@@ -63,7 +63,7 @@ describe("KnockoutService", () => {
 
   it("advances a winner and creates the next confrontation", async () => {
     const arena = await createArena(3);
-    await knockout.generate("organizer-1", arena.id);
+    await knockout.generate("organizer-1", arena.id, false);
     const semifinal = matches.matches[0];
     if (!semifinal) throw new Error("Semifinal ausente.");
 
@@ -86,7 +86,7 @@ describe("KnockoutService", () => {
 
   it("blocks reopening after the next confrontation exists", async () => {
     const arena = await createArena(3);
-    await knockout.generate("organizer-1", arena.id);
+    await knockout.generate("organizer-1", arena.id, false);
     const semifinal = matches.matches[0];
     if (!semifinal) throw new Error("Semifinal ausente.");
     await matchService.recordScore("organizer-1", arena.id, semifinal.id, 2, 0);
@@ -109,7 +109,7 @@ describe("KnockoutService", () => {
       scheduledAt: null
     })).rejects.toMatchObject({ code: "KNOCKOUT_MATCH_REQUIRES_BRACKET" });
 
-    await knockout.generate("organizer-1", arena.id);
+    await knockout.generate("organizer-1", arena.id, false);
     const final = matches.matches[0];
     if (!final) throw new Error("Final ausente.");
     await expect(matchService.recordScore(
@@ -142,5 +142,68 @@ describe("KnockoutService", () => {
     const arena = await createArena(4);
     await championships.setStatus("organizer-1", arena.id, "PUBLISHED");
     await expect(knockout.generate("organizer-1", arena.id)).rejects.toMatchObject({ code: "BRACKET_REQUIRES_DRAFT" });
+  });
+
+  it("creates third place node when enabled", async () => {
+    const arena = await createArena(4);
+    const result = await knockout.generate("organizer-1", arena.id, true);
+    const maxRound = Math.max(...result.nodes.map((n) => n.roundNumber));
+    const thirdNode = result.nodes.find((n) => n.roundNumber === maxRound && n.position === 2);
+    expect(thirdNode).toBeDefined();
+    expect(thirdNode?.homeEntryId).toBeNull();
+    expect(thirdNode?.awayEntryId).toBeNull();
+  });
+
+  it("does not create third place node when disabled", async () => {
+    const arena = await createArena(4);
+    const result = await knockout.generate("organizer-1", arena.id, false);
+    const maxRound = Math.max(...result.nodes.map((n) => n.roundNumber));
+    const thirdNode = result.nodes.find((n) => n.roundNumber === maxRound && n.position === 2);
+    expect(thirdNode).toBeUndefined();
+  });
+
+  it("skips third place for 2-player bracket", async () => {
+    const arena = await createArena(2);
+    const result = await knockout.generate("organizer-1", arena.id, true);
+    expect(result.totalRounds).toBe(1);
+    expect(result.nodes).toHaveLength(1);
+  });
+
+  it("advances loser to third place match", async () => {
+    const arena = await createArena(4);
+    await knockout.generate("organizer-1", arena.id, true);
+    const semi1 = matches.matches[0];
+    await matchService.recordScore("organizer-1", arena.id, semi1.id, 2, 0);
+    const semi2 = matches.matches[1];
+    await matchService.recordScore("organizer-1", arena.id, semi2.id, 1, 3);
+    const finalMatch = matches.matches.find((m) => m.roundNumber === 2 && m.id !== semi1.id && m.id !== semi2.id);
+    expect(finalMatch).toBeDefined();
+    const thirdMatch = matches.matches.find((m) => m.roundNumber === 3);
+    expect(thirdMatch).toBeDefined();
+    expect(thirdMatch?.homeEntryId).toBe(semi1.awayEntryId);
+    expect(thirdMatch?.awayEntryId).toBe(semi2.homeEntryId);
+  });
+
+  it("detects the champion after the final", async () => {
+    const arena = await createArena(2);
+    await knockout.generate("organizer-1", arena.id, false);
+    const final = matches.matches[0];
+    await matchService.recordScore("organizer-1", arena.id, final.id, 3, 1);
+    const championId = await knockout.getChampion(arena.id);
+    expect(championId).toBe("entry-1");
+  });
+
+  it("returns null champion before final is finished", async () => {
+    const arena = await createArena(2);
+    await knockout.generate("organizer-1", arena.id, false);
+    const championId = await knockout.getChampion(arena.id);
+    expect(championId).toBeNull();
+  });
+
+  it("handles byes with third place enabled", async () => {
+    const arena = await createArena(3);
+    const result = await knockout.generate("organizer-1", arena.id, true);
+    expect(result.totalRounds).toBe(3);
+    expect(result.nodes).toHaveLength(4);
   });
 });

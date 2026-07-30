@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+﻿import { randomBytes } from "node:crypto";
 
 import type {
   Championship,
@@ -26,6 +26,7 @@ export class ChampionshipService {
     return this.repository.create({
       ...input,
       allowsDraw: input.format === "KNOCKOUT" ? false : input.allowsDraw,
+      thirdPlace: input.format === "KNOCKOUT" ? (input.thirdPlace ?? true) : false,
       format: input.format ?? "LEAGUE",
       organizerId,
       slug: this.createSlug(input.name)
@@ -48,7 +49,7 @@ export class ChampionshipService {
 
     if (!championship || championship.organizerId !== organizerId) {
       throw new AppError(
-        "Campeonato não encontrado.",
+        "Campeonato n�o encontrado.",
         404,
         "CHAMPIONSHIP_NOT_FOUND"
       );
@@ -61,12 +62,20 @@ export class ChampionshipService {
     const championship = await this.repository.findBySlug(slug);
     if (!championship || championship.status === "DRAFT") {
       throw new AppError(
-        "Campeonato não encontrado.",
+        "Campeonato n�o encontrado.",
         404,
         "CHAMPIONSHIP_NOT_FOUND"
       );
     }
     return championship;
+  }
+
+  async findById(id: string): Promise<Championship | null> {
+    return this.repository.findById(id);
+  }
+
+  async getChampionshipById(id: string): Promise<Championship | null> {
+    return this.repository.findById(id);
   }
 
   async setStatus(
@@ -95,7 +104,7 @@ export class ChampionshipService {
   private validateDates(startsAt: Date | null, endsAt: Date | null) {
     if (startsAt && endsAt && endsAt < startsAt) {
       throw new AppError(
-        "A data final deve ser posterior à data inicial.",
+        "A data final deve ser posterior � data inicial.",
         400,
         "INVALID_CHAMPIONSHIP_DATES"
       );

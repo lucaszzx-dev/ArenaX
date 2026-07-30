@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from "fastify";
+﻿import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 
 import { requireUser } from "../auth/require-user.js";
@@ -23,6 +23,8 @@ const championshipInputSchema = z.object({
   drawPoints: z.number().int().min(0).max(20),
   lossPoints: z.number().int().min(0).max(20),
   allowsDraw: z.boolean(),
+  thirdPlace: z.boolean().default(true),
+  maxYellowCards: z.number().int().min(0).max(20).default(0),
   startsAt: nullableDate,
   endsAt: nullableDate
 });

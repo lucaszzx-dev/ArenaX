@@ -9,8 +9,14 @@ export function Bracket({ bracket }: { bracket: BracketData }) {
   if (!bracket.nodes.length) {
     return <p className={styles.empty}>O chaveamento ainda não foi gerado.</p>;
   }
+  const maxRound = Math.max(...rounds);
+  const isThirdPlace = bracket.nodes.some((node) =>
+    node.roundNumber === maxRound && node.position === 2
+  );
+  const finalRound = isThirdPlace ? maxRound - 1 : maxRound;
+
   const finalNode = bracket.nodes.find((node) =>
-    node.roundNumber === Math.max(...rounds)
+    node.roundNumber === finalRound && node.position === 1
   );
   const finalMatch = bracket.matches.find((match) => match.id === finalNode?.matchId);
   const championId = finalMatch?.status === "FINISHED" &&
@@ -21,12 +27,40 @@ export function Bracket({ bracket }: { bracket: BracketData }) {
       : finalMatch.awayEntryId
     : null;
 
+  const thirdPlaceNode = isThirdPlace
+    ? bracket.nodes.find((node) => node.roundNumber === maxRound && node.position === 2)
+    : null;
+  const thirdPlaceMatch = thirdPlaceNode
+    ? bracket.matches.find((m) => m.id === thirdPlaceNode.matchId)
+    : null;
+
   return (
     <>
       {championId && (
         <div className={styles.champion}>
+          <span className={styles.championTrophy}>&#x1F3C6;</span>
           <span>Campeão</span>
           <strong>{entryName(championId)}</strong>
+        </div>
+      )}
+      {thirdPlaceNode && (
+        <div className={styles.thirdPlace}>
+          <span>3º lugar</span>
+          {thirdPlaceMatch?.status === "FINISHED" ? (
+            <>
+              <strong>{entryName(
+                (thirdPlaceMatch.homeScore ?? 0) > (thirdPlaceMatch.awayScore ?? 0)
+                  ? thirdPlaceMatch.homeEntryId
+                  : thirdPlaceMatch.awayEntryId
+              )}</strong>
+              <span>
+                {entryName(thirdPlaceNode.homeEntryId)} {thirdPlaceMatch.homeScore ?? "–"}
+                × {thirdPlaceMatch.awayScore ?? "–"} {entryName(thirdPlaceNode.awayEntryId)}
+              </span>
+            </>
+          ) : (
+            <span>{entryName(thirdPlaceNode.homeEntryId)} × {entryName(thirdPlaceNode.awayEntryId)}</span>
+          )}
         </div>
       )}
       <div className={styles.scroll}>

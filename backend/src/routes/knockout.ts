@@ -1,4 +1,4 @@
-import type { FastifyPluginAsync } from "fastify";
+﻿import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 
 import type { AuthService } from "../auth/auth-service.js";
@@ -33,10 +33,13 @@ export const knockoutRoutes: FastifyPluginAsync<KnockoutRoutesOptions> = async (
   app.post("/championships/:id/bracket/generate", async (request, reply) => {
     const currentUser = await user(request);
     const params = idParams.safeParse(request.params);
+    const body = request.body as Record<string, unknown> | undefined;
     if (!params.success) throw validationError();
+    const thirdPlace = body?.thirdPlace === false ? false : true;
     const result = await options.knockoutService.generate(
       currentUser.id,
-      params.data.id
+      params.data.id,
+      thirdPlace
     );
     return reply.status(201).send(result);
   });
@@ -45,6 +48,13 @@ export const knockoutRoutes: FastifyPluginAsync<KnockoutRoutesOptions> = async (
     const params = slugParams.safeParse(request.params);
     if (!params.success) throw validationError();
     return options.knockoutService.getPublic(params.data.slug);
+  });
+
+  app.get("/championships/:id/bracket/champion", async (request) => {
+    const params = idParams.safeParse(request.params);
+    if (!params.success) throw validationError();
+    const championEntryId = await options.knockoutService.getChampion(params.data.id);
+    return { championEntryId };
   });
 };
 
