@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
@@ -117,7 +117,7 @@ export function AdminMatchPage() {
 
   const supportsEvents = championshipQuery.data?.championship && sportEventTypes[championshipQuery.data.championship.sport];
   const supportsPeriods = championshipQuery.data?.championship && periodConfig[championshipQuery.data.championship.sport];
-  const totalPeriods = supportsPeriods ? totalPeriods + overtimePeriods : 0;
+  const totalPeriods = supportsPeriods ? periodConfig[championship.sport].count + overtimePeriods : 0;
 
   const teams = registrationsQuery.data?.teams ?? [];
   const metadata = opsQuery.data?.metadata ?? null;
