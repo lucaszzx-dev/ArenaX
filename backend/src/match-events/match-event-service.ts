@@ -1,4 +1,4 @@
-import type { ChampionshipService } from "../championships/championship-service.js";
+﻿import type { ChampionshipService } from "../championships/championship-service.js";
 import { AppError } from "../errors/app-error.js";
 import type { MatchRepository } from "../matches/match-repository.js";
 import type {
@@ -121,6 +121,32 @@ export class MatchEventService {
       b.events - a.events ||
       a.actorName.localeCompare(b.actorName, "pt-BR")
     );
+  }
+
+  async playerStats(
+    championshipId: string,
+    memberId: string
+  ): Promise<PlayerStatistic | null> {
+    const events = await this.repository.listByChampionship(championshipId);
+    const playerEvents = events.filter((e) => e.teamMemberId === memberId && e.actorName);
+    if (!playerEvents.length) return null;
+    const stat: PlayerStatistic = {
+      teamMemberId: memberId,
+      entryId: playerEvents[0]!.entryId,
+      actorName: playerEvents[0]!.actorName ?? "",
+      goals: 0, points: 0, aces: 0, blocks: 0,
+      yellowCards: 0, redCards: 0, events: 0
+    };
+    for (const e of playerEvents) {
+      stat.events += 1;
+      if (e.type === "GOAL") stat.goals += 1;
+      if (["FREE_THROW","TWO_POINT_SHOT","THREE_POINT_SHOT","VOLLEYBALL_POINT","ACE","BLOCK"].includes(e.type)) stat.points += e.value;
+      if (e.type === "ACE") stat.aces += 1;
+      if (e.type === "BLOCK") stat.blocks += 1;
+      if (e.type === "YELLOW_CARD") stat.yellowCards += 1;
+      if (e.type === "RED_CARD") stat.redCards += 1;
+    }
+    return stat;
   }
 
   async create(

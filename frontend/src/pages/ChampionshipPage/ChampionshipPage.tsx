@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getPublicChampionship } from "../../features/championships/public-championship-api";
@@ -140,7 +140,7 @@ export function ChampionshipPage() {
               <tbody>
                 {statistics.map((statistic) => (
                   <tr key={statistic.teamMemberId ?? `${statistic.entryId}:${statistic.actorName}`}>
-                    <td><strong>{statistic.actorName}</strong></td>
+                    <td><Link to={`/campeonatos/${championship.slug}/jogadores/${statistic.teamMemberId}`}><strong>{statistic.actorName}</strong></Link></td>
                     <td>{entries.find((entry) => entry.id === statistic.entryId)?.displayName ?? "Participante"}</td>
                     {statColumns(championship.sport).map((column) => (
                       <td key={column.key}>{statistic[column.key]}</td>

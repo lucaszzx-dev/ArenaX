@@ -14,6 +14,8 @@ const slugParams = z.object({
 });
 const publicMatchParams = slugParams.extend({ matchId: z.uuid() });
 const publicTeamParams = slugParams.extend({ teamId: z.uuid() });
+const publicPlayerParams = slugParams.extend({ memberId: z.uuid() });
+
 const catalogQuery = z.object({
   search: z.string().trim().max(80).optional(),
   sport: z.string().trim().max(40).optional(),
@@ -153,6 +155,23 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
         sport: championship.sport
       },
       team
+    };
+  });
+
+  app.get("/public/championships/:slug/players/:memberId", async (request) => {
+    const params = publicPlayerParams.safeParse(request.params);
+    if (!params.success) throw new AppError("Jogador inválido.", 400, "VALIDATION_ERROR");
+    const championship = await options.championshipService.getPublic(params.data.slug);
+    if (!options.matchEventService) {
+      throw new AppError("Estatísticas não disponíveis.", 404, "STATS_NOT_AVAILABLE");
+    }
+    const stats = await options.matchEventService.playerStats(championship.id, params.data.memberId);
+    if (!stats) {
+      throw new AppError("Jogador não encontrado.", 404, "PLAYER_NOT_FOUND");
+    }
+    return {
+      championship: { name: championship.name, slug: championship.slug, sport: championship.sport },
+      statistics: stats
     };
   });
 };

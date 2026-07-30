@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+﻿import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getPublicTeam } from "../../features/championships/public-championship-api";
@@ -30,7 +30,12 @@ export function PublicTeamPage() {
         {team.members.map((member) => (
           <article key={member.id}>
             <b>{member.jerseyNumber !== null ? `#${member.jerseyNumber}` : "—"}</b>
-            <div><strong>{member.displayName}</strong><span>{member.position || "Posição não informada"}</span></div>
+            <div>
+              <Link to={`/campeonatos/${championship.slug}/jogadores/${member.id}`}>
+                <strong>{member.displayName}</strong>
+              </Link>
+              <span>{member.position || "Posição não informada"}</span>
+            </div>
             {member.isCaptain && <em>Capitão</em>}
           </article>
         ))}
