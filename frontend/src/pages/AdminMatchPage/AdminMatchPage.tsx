@@ -63,7 +63,7 @@ const sportEventTypes: Record<string, MatchEventType[]> = {
 };
 
 const periodConfig: Record<string, { count: number; label: (p: number) => string }> = {
-  Basquete: { count: 8, label: (p) => (p <= 4 ? `${p}º quarto` : `${p - 4}ª pror.`) },
+  Basquete: { count: 4, label: (p) => (p <= 4 ? `${p}º quarto` : `${p - 4}ª pror.`) },
   "Vôlei": { count: 5, label: (p) => `${p}º set` }
 };
 
@@ -71,6 +71,7 @@ export function AdminMatchPage() {
   const { id = "", matchId = "" } = useParams();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [overtimePeriods, setOvertimePeriods] = useState(0);
 
   const championshipQuery = useQuery({
     queryKey: ["championships", "detail", id],
@@ -116,6 +117,7 @@ export function AdminMatchPage() {
 
   const supportsEvents = championshipQuery.data?.championship && sportEventTypes[championshipQuery.data.championship.sport];
   const supportsPeriods = championshipQuery.data?.championship && periodConfig[championshipQuery.data.championship.sport];
+  const totalPeriods = supportsPeriods ? totalPeriods + overtimePeriods : 0;
 
   const teams = registrationsQuery.data?.teams ?? [];
   const metadata = opsQuery.data?.metadata ?? null;
@@ -330,6 +332,16 @@ export function AdminMatchPage() {
                 );
               })}
             </div>
+          {canEdit && championship.sport === "Basquete" && (
+              <button
+                className={styles.overtimeBtn}
+                disabled={overtimePeriods >= 4}
+                onClick={() => setOvertimePeriods((p) => Math.min(p + 1, 4))}
+                type="button"
+              >
+                + Prorrogação
+              </button>
+            )}
           </section>
         )}
 

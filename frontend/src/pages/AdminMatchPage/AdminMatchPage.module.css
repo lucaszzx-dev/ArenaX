@@ -1,4 +1,4 @@
-.page {
+﻿.page {
   width: min(1120px, calc(100% - 2rem));
   min-height: calc(100vh - 4rem);
   margin: 0 auto;
@@ -449,4 +449,15 @@
   .eventForm {
     flex-direction: column;
   }
+}
+
+.overtimeBtn {
+  margin-top: .6rem;
+  padding: .45rem .7rem;
+  border: 1px dashed var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-weight: 800;
+  font-size: .7rem;
 }
