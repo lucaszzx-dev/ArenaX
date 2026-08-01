@@ -1,4 +1,4 @@
-import cookie from "@fastify/cookie";
+﻿import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyInstance } from "fastify";
@@ -8,6 +8,7 @@ import type { ChampionshipService } from "./championships/championship-service.j
 import type { ParticipantService } from "./participants/participant-service.js";
 import type { MatchService } from "./matches/match-service.js";
 import type { MatchEventService } from "./match-events/match-event-service.js";
+import type { StatisticsService } from "./match-events/statistics-service.js";
 import type { MatchPeriodService } from "./match-periods/match-period-service.js";
 import type { MatchAuditService } from "./match-audit/match-audit-service.js";
 import type { ClubService } from "./clubs/club-service.js";
@@ -24,6 +25,8 @@ import { matchRoutes } from "./routes/matches.js";
 import { matchEventRoutes } from "./routes/match-events.js";
 import { matchPeriodRoutes } from "./routes/match-periods.js";
 import { publicChampionshipRoutes } from "./routes/public-championships.js";
+import { publicStatisticsRoutes } from "./routes/public-statistics.js";
+import { adminStatisticsRoutes } from "./routes/admin-statistics.js";
 import { clubRoutes } from "./routes/clubs.js";
 import { knockoutRoutes } from "./routes/knockout.js";
 import { matchOperationRoutes } from "./routes/match-operations.js";
@@ -34,6 +37,7 @@ type BuildAppOptions = {
   participantService?: ParticipantService;
   matchService?: MatchService;
   matchEventService?: MatchEventService;
+  statisticsService?: StatisticsService;
   matchPeriodService?: MatchPeriodService;
   matchAuditService?: MatchAuditService | undefined;
   clubService?: ClubService;
@@ -147,6 +151,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     });
   }
 
+  if (options.authService && options.statisticsService && options.env) {
+    app.register(adminStatisticsRoutes, {
+      prefix: "/api",
+      authService: options.authService,
+      statisticsService: options.statisticsService,
+      env: options.env
+    });
+  }
+
   if (options.authService && options.matchPeriodService && options.env) {
     app.register(matchPeriodRoutes, {
       prefix: "/api",
@@ -163,8 +176,13 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       matchService: options.matchService,
       matchEventService: options.matchEventService,
       matchPeriodService: options.matchPeriodService,
-      participantService: options.participantService
-      ,matchOperationService: options.matchOperationService
+      participantService: options.participantService,
+      matchOperationService: options.matchOperationService
+    });
+    app.register(publicStatisticsRoutes, {
+      prefix: "/api",
+      championshipService: options.championshipService,
+      statisticsService: options.statisticsService
     });
   }
 
