@@ -1,4 +1,4 @@
-import type { ChampionshipService } from "../championships/championship-service.js";
+﻿import type { ChampionshipService } from "../championships/championship-service.js";
 import type { Championship } from "../championships/championship-repository.js";
 import { AppError } from "../errors/app-error.js";
 import type {
@@ -429,6 +429,25 @@ export class MatchService {
       .map((row, index) => ({ ...row, position: index + 1 }));
   }
 
+  async updateMvp(organizerId: string, championshipId: string, matchId: string, mvpId: string | null) {
+    await this.championships.getMine(organizerId, championshipId);
+    const match = await this.requireMatch(championshipId, matchId);
+    if (mvpId) {
+      const member = await this.repository.findTeamMember(mvpId);
+      if (!member) {
+        throw new AppError("Jogador não encontrado.", 404, "MVP_MEMBER_NOT_FOUND");
+      }
+      const [homeEntry, awayEntry] = await Promise.all([
+        this.repository.findEntry(match.homeEntryId),
+        this.repository.findEntry(match.awayEntryId)
+      ]);
+      const validTeamIds = [homeEntry?.teamId, awayEntry?.teamId].filter((id): id is string => id != null);
+      if (!validTeamIds.includes(member.teamId)) {
+        throw new AppError("O MVP deve pertencer a uma das equipes da partida.", 400, "MVP_NOT_IN_MATCH");
+      }
+    }
+    return this.repository.updateMvp(matchId, mvpId);
+  }
   private async requireMatch(championshipId: string, matchId: string) {
     const match = await this.repository.findById(matchId);
     if (!match || match.championshipId !== championshipId) {

@@ -18,6 +18,7 @@ export type Championship = {
   drawPoints: number;
   lossPoints: number;
   allowsDraw: boolean;
+  bestOfSets: number;
   thirdPlace: boolean;
   maxYellowCards: number;
   startsAt: string | null;
@@ -36,6 +37,7 @@ export type ChampionshipInput = {
   drawPoints: number;
   lossPoints: number;
   allowsDraw: boolean;
+  bestOfSets: number;
   thirdPlace: boolean;
   maxYellowCards: number;
   startsAt: string | null;

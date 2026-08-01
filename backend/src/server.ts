@@ -78,7 +78,9 @@ const matchPeriodRepository = new DrizzleMatchPeriodRepository(database.db);
 const matchPeriodService = new MatchPeriodService(
   matchPeriodRepository,
   matchRepository,
-  championshipService
+  championshipService,
+  matchService,
+  matchAuditService
 );
 const app = buildApp({
   authService,

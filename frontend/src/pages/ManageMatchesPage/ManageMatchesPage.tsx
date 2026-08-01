@@ -334,6 +334,7 @@ export function ManageMatchesPage() {
               )}
               <MatchPeriodsPanel
                 awayName={match.awayEntry.displayName}
+                bestOfSets={championship.bestOfSets ?? 5}
                 championshipId={id}
                 disabled={match.status !== "SCHEDULED"}
                 homeName={match.homeEntry.displayName}

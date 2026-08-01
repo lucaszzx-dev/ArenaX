@@ -1,4 +1,4 @@
-﻿export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
+export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
 export type ChampionshipStatus = "DRAFT" | "PUBLISHED" | "FINISHED";
 export type TournamentFormat = "LEAGUE" | "KNOCKOUT";
 
@@ -17,6 +17,7 @@ export type Championship = {
   lossPoints: number;
   allowsDraw: boolean;
   thirdPlace: boolean;
+  bestOfSets: number;
   maxYellowCards: number;
   startsAt: Date | null;
   endsAt: Date | null;
@@ -26,8 +27,8 @@ export type Championship = {
 
 export type SaveChampionshipInput = Omit<
   Championship,
-  "id" | "status" | "format" | "createdAt" | "updatedAt"
-> & { format?: TournamentFormat };
+  "id" | "status" | "format" | "bestOfSets" | "createdAt" | "updatedAt"
+> & { format?: TournamentFormat; bestOfSets?: number };
 
 export type UpdateChampionshipInput = Omit<
   SaveChampionshipInput,

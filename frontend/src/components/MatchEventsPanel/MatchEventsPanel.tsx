@@ -25,6 +25,11 @@ const eventLabels: Record<MatchEventType, string> = {
   ACE: "Ace",
   BLOCK: "Ponto de bloqueio",
   PERSONAL_FOUL: "Falta pessoal",
+  ERROR: "Erro do adversário",
+  SPIKE: "Ataque convertido",
+  SERVE_ERROR: "Erro de saque",
+  ATTACK_ERROR: "Erro de ataque",
+  RECEPTION_ERROR: "Erro de recepção",
   ASSIST: "Assist\u00eancia",
   SUBSTITUTION: "Substitui\u00e7\u00e3o",
   PENALTY_CONVERTED: "P\u00eanalti convertido",
@@ -65,7 +70,7 @@ const sportConfigs: Record<string, {
     usesClock: true
   },
   "Vôlei": {
-    eventTypes: ["VOLLEYBALL_POINT", "ACE", "BLOCK"],
+    eventTypes: ["VOLLEYBALL_POINT", "ACE", "BLOCK", "ERROR", "SPIKE", "SERVE_ERROR", "ATTACK_ERROR", "RECEPTION_ERROR"],
     periodLabel: "Set",
     periods: [1, 2, 3, 4, 5].map((value) => ({
       value,

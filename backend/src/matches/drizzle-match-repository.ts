@@ -1,7 +1,7 @@
-import { and, asc, eq } from "drizzle-orm";
+﻿import { and, asc, eq } from "drizzle-orm";
 
 import type { Database } from "../db/client.js";
-import { championshipEntries, matches } from "../db/schema.js";
+import { championshipEntries, matches, teamMembers } from "../db/schema.js";
 import type {
   CreateMatchInput,
   Match,
@@ -61,29 +61,30 @@ export class DrizzleMatchRepository implements MatchRepository {
   }
 
   async create(input: CreateMatchInput): Promise<Match> {
-    const [match] = await this.db.insert(matches).values(input).returning();
+    const [match] = await this.db
+      .insert(matches)
+      .values(input)
+      .returning();
     if (!match) throw new Error("Não foi possível criar a partida.");
     return this.withEntries(match);
   }
 
   async createMany(inputs: CreateMatchInput[]): Promise<Match[]> {
     if (!inputs.length) return [];
-    const rows = await this.db.insert(matches).values(inputs).returning();
+    const rows = await this.db
+      .insert(matches)
+      .values(inputs)
+      .returning();
     return Promise.all(rows.map((match) => this.withEntries(match)));
   }
 
   async updateScore(matchId: string, homeScore: number, awayScore: number) {
     const [match] = await this.db
       .update(matches)
-      .set({
-        homeScore,
-        awayScore,
-        status: "FINISHED",
-        updatedAt: new Date()
-      })
+      .set({ homeScore, awayScore, updatedAt: new Date() })
       .where(eq(matches.id, matchId))
       .returning();
-    if (!match) throw new Error("Não foi possível registrar o placar.");
+    if (!match) throw new Error("Partida não encontrada.");
     return this.withEntries(match);
   }
 
@@ -93,7 +94,7 @@ export class DrizzleMatchRepository implements MatchRepository {
       .set({ scheduledAt, updatedAt: new Date() })
       .where(eq(matches.id, matchId))
       .returning();
-    if (!match) throw new Error("Não foi possível alterar o agendamento.");
+    if (!match) throw new Error("Partida não encontrada.");
     return this.withEntries(match);
   }
 
@@ -111,7 +112,7 @@ export class DrizzleMatchRepository implements MatchRepository {
       })
       .where(eq(matches.id, matchId))
       .returning();
-    if (!match) throw new Error("Não foi possível alterar a partida.");
+    if (!match) throw new Error("Partida não encontrada.");
     return this.withEntries(match);
   }
 
@@ -126,6 +127,24 @@ export class DrizzleMatchRepository implements MatchRepository {
     return deleted.length > 0;
   }
 
+  async findTeamMember(memberId: string) {
+    const [member] = await this.db
+      .select({ id: teamMembers.id, teamId: teamMembers.teamId, displayName: teamMembers.displayName })
+      .from(teamMembers)
+      .where(eq(teamMembers.id, memberId));
+    return member ?? null;
+  }
+
+  async updateMvp(matchId: string, mvpId: string | null) {
+    const [match] = await this.db
+      .update(matches)
+      .set({ mvpId, updatedAt: new Date() })
+      .where(eq(matches.id, matchId))
+      .returning();
+    if (!match) throw new Error("Não foi possível definir o MVP.");
+    return this.withEntries(match);
+  }
+
   private async withEntries(
     match: typeof matches.$inferSelect
   ): Promise<Match> {
@@ -136,6 +155,6 @@ export class DrizzleMatchRepository implements MatchRepository {
     if (!homeEntry || !awayEntry) {
       throw new Error("A partida possui adversários inválidos.");
     }
-    return { ...match, homeEntry, awayEntry };
+    return { ...match, mvpId: match.mvpId, homeEntry, awayEntry };
   }
 }

@@ -1,4 +1,4 @@
-import { apiRequest } from "../../lib/api";
+﻿import { apiRequest } from "../../lib/api";
 
 export type MatchEntry = {
   id: string;
@@ -19,6 +19,7 @@ export type ArenaMatch = {
   awayScore: number | null;
   roundNumber: number | null;
   generated: boolean;
+  mvpId: string | null;
   homeEntry: MatchEntry;
   awayEntry: MatchEntry;
 };
@@ -72,6 +73,15 @@ export const generateLeagueMatches = (
   { method: "POST", body: JSON.stringify(input) }
 );
 
+export const updateMatchMvp = (
+  championshipId: string,
+  matchId: string,
+  mvpId: string | null
+) =>
+  apiRequest<{ match: ArenaMatch }>(
+    `/championships/${championshipId}/matches/${matchId}/mvp`,
+    { method: "PUT", body: JSON.stringify({ mvpId }) }
+  );
 export const deleteMatch = (championshipId: string, matchId: string) =>
   apiRequest<void>(`/championships/${championshipId}/matches/${matchId}`, {
     method: "DELETE"

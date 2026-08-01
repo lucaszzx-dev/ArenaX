@@ -1,4 +1,4 @@
-export type MatchEntry = {
+﻿export type MatchEntry = {
   id: string;
   championshipId: string;
   displayName: string;
@@ -19,6 +19,7 @@ export type Match = {
   awayScore: number | null;
   roundNumber: number | null;
   generated: boolean;
+  mvpId: string | null;
   venue: string | null;
   referee: string | null;
   operationalNotes: string | null;
@@ -54,6 +55,7 @@ export type Standing = {
 export interface MatchRepository {
   listEntries(championshipId: string): Promise<MatchEntry[]>;
   findEntry(entryId: string): Promise<MatchEntry | null>;
+  findTeamMember(memberId: string): Promise<{ id: string; teamId: string; displayName: string } | null>;
   listByChampionship(championshipId: string): Promise<Match[]>;
   findById(matchId: string): Promise<Match | null>;
   create(input: CreateMatchInput): Promise<Match>;
@@ -70,4 +72,5 @@ export interface MatchRepository {
     clearScore: boolean
   ): Promise<Match>;
   delete(championshipId: string, matchId: string): Promise<boolean>;
+  updateMvp(matchId: string, mvpId: string | null): Promise<Match>;
 }

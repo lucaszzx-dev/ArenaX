@@ -1,4 +1,4 @@
-export type LineupRole = "STARTER" | "SUBSTITUTE";
+﻿export type LineupRole = "STARTER" | "SUBSTITUTE";
 
 export type MatchLineup = {
   id: string;
@@ -30,3 +30,8 @@ export interface MatchOperationRepository {
   findEntryTeam(entryId: string): Promise<string | null>;
   listValidMemberIds(teamId: string): Promise<string[]>;
 }
+
+export type MatchMvp = {
+  mvpId: string | null;
+  mvpName: string | null;
+};

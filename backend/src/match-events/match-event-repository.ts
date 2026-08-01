@@ -1,5 +1,4 @@
-﻿
-export type MatchEventType =
+﻿export type MatchEventType =
   | "GOAL"
   | "OWN_GOAL"
   | "YELLOW_CARD"
@@ -14,7 +13,12 @@ export type MatchEventType =
   | "SUBSTITUTION"
   | "PENALTY_CONVERTED"
   | "PENALTY_MISSED"
-  | "PERSONAL_FOUL";
+  | "PERSONAL_FOUL"
+  | "ERROR"
+  | "SPIKE"
+  | "SERVE_ERROR"
+  | "ATTACK_ERROR"
+  | "RECEPTION_ERROR";
 
 export type MatchEvent = {
   id: string;

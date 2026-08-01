@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   CreateMatchInput,
   Match,
   MatchEntry,
@@ -8,9 +8,15 @@ import type {
 export class InMemoryMatchRepository implements MatchRepository {
   readonly entries: MatchEntry[] = [];
   readonly matches: Match[] = [];
+  readonly members: Array<{ id: string; teamId: string; displayName: string }> = [];
+
 
   async listEntries(championshipId: string) {
     return this.entries.filter((entry) => entry.championshipId === championshipId);
+  }
+
+  async findTeamMember(memberId: string) {
+    return this.members.find((m) => m.id === memberId) ?? null;
   }
 
   async findEntry(entryId: string) {
@@ -40,6 +46,7 @@ export class InMemoryMatchRepository implements MatchRepository {
       generated: input.generated ?? false,
       venue: null,
       referee: null,
+      mvpId: null,
       operationalNotes: null,
       createdAt: now,
       updatedAt: now,
@@ -97,5 +104,12 @@ export class InMemoryMatchRepository implements MatchRepository {
     if (index < 0) return false;
     this.matches.splice(index, 1);
     return true;
+  }
+  async updateMvp(matchId: string, mvpId: string | null) {
+    const match = this.matches.find((item) => item.id === matchId);
+    if (!match) throw new Error("Partida não encontrada.");
+    match.mvpId = mvpId;
+    match.updatedAt = new Date();
+    return match;
   }
 }

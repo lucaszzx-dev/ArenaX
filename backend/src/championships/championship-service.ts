@@ -27,6 +27,7 @@ export class ChampionshipService {
       ...input,
       allowsDraw: input.format === "KNOCKOUT" ? false : input.allowsDraw,
       thirdPlace: input.format === "KNOCKOUT" ? (input.thirdPlace ?? true) : false,
+      bestOfSets: input.bestOfSets ?? 5,
       format: input.format ?? "LEAGUE",
       organizerId,
       slug: this.createSlug(input.name)

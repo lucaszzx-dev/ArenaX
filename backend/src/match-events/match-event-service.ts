@@ -34,10 +34,15 @@ const eventRules: Record<string, Partial<Record<MatchEventType, number>>> = {
     THREE_POINT_SHOT: 3,
     PERSONAL_FOUL: 0
   },
-  "Vôlei": {
+  "V\u00f4lei": {
     VOLLEYBALL_POINT: 1,
     ACE: 1,
-    BLOCK: 1
+    BLOCK: 1,
+    ERROR: 0,
+    SPIKE: 1,
+    SERVE_ERROR: 0,
+    ATTACK_ERROR: 0,
+    RECEPTION_ERROR: 0
   }
 };
 
@@ -118,7 +123,8 @@ export class MatchEventService {
         event.type === "THREE_POINT_SHOT" ||
         event.type === "VOLLEYBALL_POINT" ||
         event.type === "ACE" ||
-        event.type === "BLOCK"
+        event.type === "BLOCK" ||
+        event.type === "SPIKE"
       ) statistic.points += event.value;
       if (event.type === "ACE") statistic.aces += 1;
       if (event.type === "BLOCK") statistic.blocks += 1;
@@ -152,7 +158,7 @@ export class MatchEventService {
     for (const e of playerEvents) {
       stat.events += 1;
       if (e.type === "GOAL") stat.goals += 1;
-      if (["FREE_THROW","TWO_POINT_SHOT","THREE_POINT_SHOT","VOLLEYBALL_POINT","ACE","BLOCK"].includes(e.type)) stat.points += e.value;
+      if (["FREE_THROW","TWO_POINT_SHOT","THREE_POINT_SHOT","VOLLEYBALL_POINT","ACE","BLOCK","SPIKE"].includes(e.type)) stat.points += e.value;
       if (e.type === "ACE") stat.aces += 1;
       if (e.type === "BLOCK") stat.blocks += 1;
       if (e.type === "YELLOW_CARD") stat.yellowCards += 1;
@@ -384,7 +390,7 @@ export class MatchEventService {
     const rules = eventRules[sport];
     if (!rules) {
       throw new AppError(
-        "A súmula detalhada ainda não está disponível para este esporte.",
+        "A súmula detalhada ainda n\u00e3o est\u00e1 dispon\u00edvel para este esporte.",
         409,
         "MATCH_EVENTS_NOT_SUPPORTED_FOR_SPORT"
       );
@@ -395,7 +401,7 @@ export class MatchEventService {
   private async requireMatch(championshipId: string, matchId: string) {
     const match = await this.matches.findById(matchId);
     if (!match || match.championshipId !== championshipId) {
-      throw new AppError("Partida não encontrada.", 404, "MATCH_NOT_FOUND");
+      throw new AppError("Partida n\u00e3o encontrada.", 404, "MATCH_NOT_FOUND");
     }
     return match;
   }
@@ -407,7 +413,7 @@ export class MatchEventService {
     const match = await this.requireMatch(championshipId, matchId);
     if (match.status !== "SCHEDULED") {
       throw new AppError(
-        "Reabra a partida antes de alterar a súmula.",
+        "Reabra a partida antes de alterar a s\u00famula.",
         409,
         "MATCH_EVENT_REQUIRES_SCHEDULED_MATCH"
       );

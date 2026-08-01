@@ -9,7 +9,8 @@ import {
   listMatches,
   listMatchAudit,
   matchQueryKey,
-  recordScore
+  recordScore,
+  updateMatchMvp
 } from "../../features/matches/match-api";
 import {
   createMatchEvent,
@@ -53,6 +54,11 @@ const eventLabels: Record<string, string> = {
   VOLLEYBALL_POINT: "Ponto",
   ACE: "Ace",
   BLOCK: "Ponto de bloqueio",
+  ERROR: "Erro do adversário",
+  SPIKE: "Ataque convertido",
+  SERVE_ERROR: "Erro de saque",
+  ATTACK_ERROR: "Erro de ataque",
+  RECEPTION_ERROR: "Erro de recepção",
   PERSONAL_FOUL: "Falta pessoal",
   ASSIST: "Assist\u00eancia",
   SUBSTITUTION: "Substitui\u00e7\u00e3o",
@@ -64,12 +70,12 @@ const sportEventTypes: Record<string, MatchEventType[]> = {
   Futebol: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD", "ASSIST", "SUBSTITUTION", "PENALTY_CONVERTED", "PENALTY_MISSED"],
   Futsal: ["GOAL", "OWN_GOAL", "YELLOW_CARD", "RED_CARD", "ASSIST", "SUBSTITUTION", "PENALTY_CONVERTED", "PENALTY_MISSED"],
   Basquete: ["FREE_THROW", "TWO_POINT_SHOT", "THREE_POINT_SHOT", "PERSONAL_FOUL"],
-  "Vôlei": ["VOLLEYBALL_POINT", "ACE", "BLOCK"]
+  "Vôlei": ["VOLLEYBALL_POINT", "ACE", "BLOCK", "ERROR", "SPIKE", "SERVE_ERROR", "ATTACK_ERROR", "RECEPTION_ERROR"]
 };
 
-const periodConfig: Record<string, { count: number; label: (p: number) => string }> = {
+const periodConfig: Record<string, { count: number; label: (p: number, total?: number) => string }> = {
   Basquete: { count: 4, label: (p) => (p <= 4 ? `${p}º quarto` : `${p - 4}ª pror.`) },
-  "Vôlei": { count: 5, label: (p) => `${p}º set` }
+  "V\u00f4lei": { count: 5, label: (p, total) => p >= (total ?? 5) ? `${p}º set (Tie-break)` : `${p}º set` }
 };
 
 export function AdminMatchPage() {
@@ -126,6 +132,12 @@ export function AdminMatchPage() {
   const teams = registrationsQuery.data?.teams ?? [];
   const metadata = opsQuery.data?.metadata ?? null;
   const lineups = opsQuery.data?.lineup ?? [];
+  const homeTeam = teams.find((t) => t.id === match?.homeEntry.teamId);
+  const awayTeam = teams.find((t) => t.id === match?.awayEntry.teamId);
+  const mvpCandidates = [
+    ...(homeTeam?.members ?? []).map((m) => ({ ...m, teamName: match?.homeEntry.displayName ?? "" })),
+    ...(awayTeam?.members ?? []).map((m) => ({ ...m, teamName: match?.awayEntry.displayName ?? "" }))
+  ];
 
   function showError(error: Error) {
     setMessage({ type: "error", text: error instanceof ApiError ? error.message : "Não foi possível concluir a ação." });
@@ -209,6 +221,12 @@ export function AdminMatchPage() {
     onError: showError
   });
 
+  const mvpMutation = useMutation({
+    mutationFn: (mvpId: string | null) => updateMatchMvp(id, matchId, mvpId),
+    onSuccess: async () => { await refreshAll(); showSuccess("MVP definido."); },
+    onError: showError
+  });
+
   if (championshipQuery.isPending || matchesQuery.isPending) {
     return <div className={styles.state}>Carregando partida...</div>;
   }
@@ -282,6 +300,32 @@ export function AdminMatchPage() {
           </form>
         </section>
 
+        {/* MVP */}
+        <section className={styles.panel}>
+          <header><span>DESTAQUES</span><h2>MVP da partida</h2></header>
+          {mvpCandidates.length ? (
+            <form className={styles.metaForm} onSubmit={(e) => {
+              e.preventDefault();
+              const data = new FormData(e.currentTarget);
+              const value = String(data.get("mvpId") ?? "");
+              mvpMutation.mutate(value ? value : null);
+            }}>
+              <label>
+                Jogador destaque
+                <select defaultValue={match.mvpId ?? ""} name="mvpId">
+                  <option value="">Sem MVP</option>
+                  {mvpCandidates.map((member) => (
+                    <option key={member.id} value={member.id}>{member.teamName} — {member.displayName}</option>
+                  ))}
+                </select>
+              </label>
+              <button disabled={mvpMutation.isPending} type="submit">{mvpMutation.isPending ? "Salvando..." : "Definir MVP"}</button>
+            </form>
+          ) : (
+            <p className={styles.empty}>Cadastre as equipes para escolher o MVP.</p>
+          )}
+        </section>
+
         {/* LINEUPS */}
         <section className={styles.panel}>
           <header><span>ESCALAÇÃO</span><h2>Titulares e reservas</h2></header>
@@ -316,7 +360,7 @@ export function AdminMatchPage() {
                 const period = periodsQuery.data?.periods?.find((p) => p.periodNumber === num);
                 const periodLabel = championship.sport === "Basquete"
                   ? (num <= 4 ? `${num}º quarto` : `${num - 4}ª prorrogação`)
-                  : periodConfig[championship.sport].label(num);
+                  : periodConfig[championship.sport].label(num, championship.bestOfSets ?? 5);
                 return (
                   <form key={num} className={styles.periodForm} onSubmit={(e) => {
                     e.preventDefault();

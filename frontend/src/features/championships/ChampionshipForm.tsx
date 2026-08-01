@@ -53,6 +53,7 @@ export function ChampionshipForm({
       drawPoints: Number(formData.get("drawPoints")),
       lossPoints: Number(formData.get("lossPoints")),
       allowsDraw: formData.get("allowsDraw") === "on",
+      bestOfSets: Number(formData.get("bestOfSets") ?? 5),
       thirdPlace: formData.get("thirdPlace") === "on",
       maxYellowCards,
       startsAt: toIsoDate(formData.get("startsAt")),
@@ -174,6 +175,13 @@ export function ChampionshipForm({
             type="checkbox"
           />
           Este campeonato permite partidas empatadas
+        </label>
+        <label>
+          Sets para vencer (vôlei)
+          <select defaultValue={initial?.bestOfSets ?? 5} name="bestOfSets">
+            <option value={3}>Melhor de 3</option>
+            <option value={5}>Melhor de 5</option>
+          </select>
         </label>
         <label className={styles.checkbox}>
           <input

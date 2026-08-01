@@ -176,6 +176,19 @@ export const matchRoutes: FastifyPluginAsync<MatchRoutesOptions> = async (
     );
     return { match };
   });
+  app.put("/championships/:id/matches/:matchId/mvp", async (request) => {
+    const user = await getUser(request);
+    const params = matchParams.safeParse(request.params);
+    const input = z.object({ mvpId: z.union([z.string().uuid(), z.null()]) }).safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+    const match = await options.matchService.updateMvp(
+      user.id,
+      params.data.id,
+      params.data.matchId,
+      input.data.mvpId
+    );
+    return { match };
+  });
 };
 
 function validationError() {

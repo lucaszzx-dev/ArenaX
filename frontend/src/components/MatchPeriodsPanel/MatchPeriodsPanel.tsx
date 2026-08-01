@@ -16,6 +16,7 @@ type Props = {
   homeName: string;
   awayName: string;
   disabled: boolean;
+  bestOfSets?: number;
 };
 
 export function MatchPeriodsPanel(props: Props) {
@@ -73,7 +74,7 @@ export function MatchPeriodsPanel(props: Props) {
                   });
                 }}
               >
-                <strong>{config.label(periodNumber)}</strong>
+                <strong>{config.label(periodNumber, props.bestOfSets)}</strong>
                 <input aria-label={`${props.homeName}, ${config.label(periodNumber)}`} defaultValue={period?.homeScore ?? ""} disabled={props.disabled} min="0" name="homeScore" required type="number" />
                 <span>×</span>
                 <input aria-label={`${props.awayName}, ${config.label(periodNumber)}`} defaultValue={period?.awayScore ?? ""} disabled={props.disabled} min="0" name="awayScore" required type="number" />
@@ -99,7 +100,7 @@ export function MatchPeriodsPanel(props: Props) {
 
 const periodConfig: Record<
   string,
-  { count: number; title: string; label: (period: number) => string }
+  { count: number; title: string; label: (period: number, total?: number) => string }
 > = {
   Basquete: {
     count: 8,
@@ -109,6 +110,6 @@ const periodConfig: Record<
   "Vôlei": {
     count: 5,
     title: "Placar por sets",
-    label: (period) => `${period}º set`
+    label: (period, total) => period >= (total ?? 5) ? `${period}º set (Tie-break)` : `${period}º set`
   }
 };
