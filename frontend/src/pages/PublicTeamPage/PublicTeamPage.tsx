@@ -2,6 +2,7 @@
 import { Link, useParams } from "react-router-dom";
 
 import { getPublicTeam } from "../../features/championships/public-championship-api";
+import { useSeo } from "../../lib/use-seo";
 import styles from "./PublicTeamPage.module.css";
 
 export function PublicTeamPage() {
@@ -10,6 +11,12 @@ export function PublicTeamPage() {
     queryKey: ["public-team", slug, teamId],
     queryFn: () => getPublicTeam(slug, teamId),
     enabled: Boolean(slug && teamId)
+  });
+  useSeo({
+    title: query.data ? `${query.data.team.name} — ArenaX` : "Equipe — ArenaX",
+    description: query.data
+      ? `Equipe ${query.data.team.name} em ${query.data.championship.name}.`
+      : "Equipe em um campeonato no ArenaX."
   });
   if (query.isPending) return <div className={styles.state}>Carregando equipe...</div>;
   if (query.isError) return <div className={styles.state}>Equipe não encontrada.</div>;
@@ -24,6 +31,11 @@ export function PublicTeamPage() {
         <span>{championship.sport} / equipe</span>
         <h1>{team.name}</h1>
         <p>{team.members.length} jogadores no elenco</p>
+        {team.sourceClubId && (
+          <Link className={styles.clubLink} to={`/clubes/${team.sourceClubId}`}>
+            Ver perfil do clube
+          </Link>
+        )}
       </header>
       <section className={styles.roster}>
         <h2>Elenco</h2>
@@ -44,3 +56,5 @@ export function PublicTeamPage() {
     </section>
   );
 }
+
+

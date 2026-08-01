@@ -2,6 +2,7 @@
 import { Link, useParams } from "react-router-dom";
 
 import { getPublicChampionship, getPublicPlayer } from "../../features/championships/public-championship-api";
+import { useSeo } from "../../lib/use-seo";
 import styles from "./PublicPlayerPage.module.css";
 
 const statColumns: Record<string, Array<{ key: string; label: string }>> = {
@@ -23,6 +24,12 @@ export function PublicPlayerPage() {
     queryFn: () => getPublicChampionship(slug),
     enabled: Boolean(slug)
   });
+  useSeo({
+    title: playerQuery.data ? `${playerQuery.data.statistics.actorName} — ArenaX` : "Jogador — ArenaX",
+    description: playerQuery.data
+      ? `Estatísticas de ${playerQuery.data.statistics.actorName} em ${playerQuery.data.championship.name}.`
+      : "Estatísticas de um jogador no ArenaX."
+  });
   if (playerQuery.isPending || championshipQuery.isPending) {
     return <div className={styles.state}>Carregando jogador...</div>;
   }
@@ -42,6 +49,9 @@ export function PublicPlayerPage() {
         <span>{championship.sport} - {championship.name}</span>
         <h1>{statistics.actorName}</h1>
         <p>{entryName}</p>
+        <Link className={styles.history} to={`/jogadores/${memberId}/historico`}>
+          Ver histórico de partidas
+        </Link>
       </header>
       <section className={styles.panel}>
         <header><span>ESTATISTICAS</span><h2>Desempenho na arena</h2></header>
@@ -74,3 +84,4 @@ export function PublicPlayerPage() {
     </div>
   );
 }
+

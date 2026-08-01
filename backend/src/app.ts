@@ -14,6 +14,7 @@ import type { MatchAuditService } from "./match-audit/match-audit-service.js";
 import type { ClubService } from "./clubs/club-service.js";
 import type { KnockoutService } from "./knockout/knockout-service.js";
 import type { MatchOperationService } from "./match-operations/match-operation-service.js";
+import type { PublicProfileService } from "./public-profiles/public-profile-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
@@ -30,6 +31,7 @@ import { adminStatisticsRoutes } from "./routes/admin-statistics.js";
 import { clubRoutes } from "./routes/clubs.js";
 import { knockoutRoutes } from "./routes/knockout.js";
 import { matchOperationRoutes } from "./routes/match-operations.js";
+import { publicProfileRoutes } from "./routes/public-profiles.js";
 
 type BuildAppOptions = {
   authService?: AuthService;
@@ -43,6 +45,7 @@ type BuildAppOptions = {
   clubService?: ClubService;
   knockoutService?: KnockoutService;
   matchOperationService?: MatchOperationService;
+  publicProfileService?: PublicProfileService | undefined;
   env?: Env;
 };
 
@@ -186,6 +189,13 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     });
   }
 
+  if (options.publicProfileService) {
+    app.register(publicProfileRoutes, {
+      prefix: "/api",
+      publicProfileService: options.publicProfileService
+    });
+  }
+
   app.setErrorHandler((error, request, reply) => {
     if (error instanceof AppError) {
       return reply.status(error.statusCode).send({
@@ -208,3 +218,5 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
 
   return app;
 }
+
+

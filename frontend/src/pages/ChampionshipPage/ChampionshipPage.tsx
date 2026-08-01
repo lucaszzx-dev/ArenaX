@@ -5,6 +5,7 @@ import { getPublicChampionship } from "../../features/championships/public-champ
 import { getStandingLabels } from "../../features/matches/standing-labels";
 import { Bracket } from "../../components/Bracket/Bracket";
 import { getPublicBracket } from "../../features/knockout/knockout-api";
+import { useSeo } from "../../lib/use-seo";
 import styles from "./ChampionshipPage.module.css";
 
 export function ChampionshipPage() {
@@ -18,6 +19,11 @@ export function ChampionshipPage() {
     queryKey: ["public-bracket", slug],
     queryFn: () => getPublicBracket(slug),
     enabled: Boolean(slug) && query.data?.championship.format === "KNOCKOUT"
+  });
+
+  useSeo({
+    title: query.data ? `${query.data.championship.name} — ArenaX` : "Campeonato — ArenaX",
+    description: query.data?.championship.description || "Campeonato amador no ArenaX."
   });
 
   if (query.isPending) return <div className={styles.state}>Carregando arena...</div>;
@@ -184,3 +190,5 @@ function statColumns(sport: string): Array<{
   }
   return [{ key: "points", label: "Pontos" }];
 }
+
+

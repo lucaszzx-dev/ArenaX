@@ -12,6 +12,8 @@ import { ParticipantService } from "./participants/participant-service.js";
 import { DrizzleMatchRepository } from "./matches/drizzle-match-repository.js";
 import { MatchService } from "./matches/match-service.js";
 import { DrizzleMatchEventRepository } from "./match-events/drizzle-match-event-repository.js";
+import { DrizzlePublicProfileRepository } from "./public-profiles/drizzle-public-profile-repository.js";
+import { PublicProfileService } from "./public-profiles/public-profile-service.js";
 import { MatchEventService } from "./match-events/match-event-service.js";
 import { StatisticsService } from "./match-events/statistics-service.js";
 import { DrizzleMatchPeriodRepository } from "./match-periods/drizzle-match-period-repository.js";
@@ -80,6 +82,13 @@ const statisticsService = new StatisticsService(
   matchRepository,
   championshipService
 );
+const publicProfileRepository = new DrizzlePublicProfileRepository(database.db);
+const publicProfileService = new PublicProfileService(
+  publicProfileRepository,
+  matchRepository,
+  matchEventRepository,
+  championshipRepository
+);
 const matchPeriodRepository = new DrizzleMatchPeriodRepository(database.db);
 const matchPeriodService = new MatchPeriodService(
   matchPeriodRepository,
@@ -100,6 +109,7 @@ const app = buildApp({
   clubService,
   knockoutService,
   matchOperationService,
+  publicProfileService,
   env
 });
 
@@ -116,3 +126,4 @@ try {
   app.log.error(error);
   process.exit(1);
 }
+

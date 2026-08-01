@@ -19,6 +19,9 @@ import { PublicMatchPage } from "./pages/PublicMatchPage/PublicMatchPage";
 import { ExploreChampionshipsPage } from "./pages/ExploreChampionshipsPage/ExploreChampionshipsPage";
 import { PublicPlayerPage } from "./pages/PublicPlayerPage/PublicPlayerPage";
 import { PublicTeamPage } from "./pages/PublicTeamPage/PublicTeamPage";
+import { PublicPlayerHistoryPage } from "./pages/PublicPlayerHistoryPage/PublicPlayerHistoryPage";
+import { PublicOrganizerPage } from "./pages/PublicOrganizerPage/PublicOrganizerPage";
+import { PublicClubPage } from "./pages/PublicClubPage/PublicClubPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
 import { ClubsPage } from "./pages/ClubsPage/ClubsPage";
 
@@ -64,6 +67,9 @@ export function App() {
         <Route path="campeonatos/:slug" element={<ChampionshipPage />} />
         <Route path="campeonatos/:slug/jogadores/:memberId" element={<PublicPlayerPage />} />
         <Route path="campeonatos/:slug/equipes/:teamId" element={<PublicTeamPage />} />
+        <Route path="jogadores/:memberId/historico" element={<PublicPlayerHistoryPage />} />
+        <Route path="organizadores/:organizerId" element={<PublicOrganizerPage />} />
+        <Route path="clubes/:clubId" element={<PublicClubPage />} />
         <Route
           path="campeonatos/:slug/partidas/:matchId"
           element={<PublicMatchPage />}

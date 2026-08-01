@@ -14,3 +14,5 @@
 .roster article span { color: var(--color-text-muted); font-size: .7rem; }
 .roster article em { color: var(--color-primary); font-size: .65rem; font-style: normal; font-weight: 900; text-transform: uppercase; }
 .state { display: grid; min-height: calc(100vh - 4rem); place-items: center; color: var(--color-text-muted); }
+
+.clubLink { display: inline-block; margin-top: 1rem; color: var(--color-primary); font-size: .82rem; text-decoration: none; }

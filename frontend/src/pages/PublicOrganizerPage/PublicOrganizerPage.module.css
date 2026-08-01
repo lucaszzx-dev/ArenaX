@@ -1,0 +1,23 @@
+﻿.page {
+  width: min(960px, calc(100% - 2rem));
+  min-height: calc(100vh - 4rem);
+  margin: 0 auto;
+  padding: 4rem 0;
+}
+.heading { margin-bottom: 2.5rem; text-align: center; }
+.heading > span { color: var(--color-primary); font-family: var(--font-mono); font-size: .68rem; font-weight: 800; text-transform: uppercase; }
+.heading h1 { margin: .6rem 0 .2rem; font-size: clamp(1.8rem, 4vw, 2.8rem); letter-spacing: -.04em; line-height: 1; }
+.heading p { color: var(--color-text-muted); max-width: 60ch; margin: 0 auto; }
+.avatar, .avatarPlaceholder { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; margin: 0 auto 1rem; }
+.avatarPlaceholder { display: grid; place-items: center; background: var(--color-primary); color: #fff; font-size: 1.8rem; font-weight: 900; }
+.sports { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; margin-top: 1rem; }
+.sports span { padding: .3rem .7rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); font-family: var(--font-mono); font-size: .72rem; }
+.section { margin-bottom: 2rem; }
+.section h2 { font-size: 1.1rem; margin: 0 0 .8rem; }
+.list { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.list li { border: 1px solid var(--color-border); background: var(--color-surface-elevated); }
+.list a { display: flex; justify-content: space-between; align-items: center; padding: .9rem 1rem; text-decoration: none; color: inherit; }
+.list strong { font-size: .95rem; }
+.list span { font-family: var(--font-mono); font-size: .72rem; color: var(--color-text-muted); }
+.empty { color: var(--color-text-muted); }
+.state { display: grid; min-height: calc(100vh - 4rem); place-items: center; color: var(--color-text-muted); }

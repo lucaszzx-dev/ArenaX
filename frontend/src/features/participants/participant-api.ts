@@ -21,6 +21,7 @@ export type Team = {
   name: string;
   shortName: string | null;
   logoUrl: string | null;
+  sourceClubId?: string | null;
   members: TeamMember[];
 };
 
@@ -103,3 +104,4 @@ export const deleteTeamMember = (
     `/championships/${id}/teams/${teamId}/members/${memberId}`,
     { method: "DELETE" }
   );
+

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getPublicMatch } from "../../features/championships/public-championship-api";
+import { useSeo } from "../../lib/use-seo";
 import styles from "./PublicMatchPage.module.css";
 
 export function PublicMatchPage() {
@@ -10,6 +11,13 @@ export function PublicMatchPage() {
     queryKey: ["public-match", slug, matchId],
     queryFn: () => getPublicMatch(slug, matchId),
     enabled: Boolean(slug && matchId)
+  });
+
+  useSeo({
+    title: query.data ? `Partida — ${query.data.championship.name}` : "Partida — ArenaX",
+    description: query.data
+      ? `Partida de ${query.data.championship.sport} em ${query.data.championship.name} no ArenaX.`
+      : "Partida de um campeonato no ArenaX."
   });
 
   if (query.isPending) {
