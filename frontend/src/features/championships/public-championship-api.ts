@@ -3,6 +3,7 @@ import type { Championship } from "./championship-api";
 import type { ArenaMatch, MatchEntry, Standing } from "../matches/match-api";
 import type { MatchEvent } from "../matches/match-event-api";
 import type { MatchPeriod } from "../matches/match-period-api";
+import type { MatchOperations } from "../matches/match-operation-api";
 import type { Team } from "../participants/participant-api";
 
 export type PublicChampionship = Omit<
@@ -65,6 +66,7 @@ export const getPublicMatch = (slug: string, matchId: string) =>
     match: ArenaMatch;
     events: MatchEvent[];
     periods: MatchPeriod[];
+    operations: MatchOperations;
   }>(`/public/championships/${slug}/matches/${matchId}`);
 
 export const getPublicTeam = (slug: string, teamId: string) =>

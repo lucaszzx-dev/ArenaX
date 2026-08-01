@@ -27,7 +27,7 @@ export function PublicMatchPage() {
     return <div className={styles.state}>Esta partida não foi encontrada.</div>;
   }
 
-  const { championship, match, events, periods } = query.data;
+  const { championship, match, events, periods, operations } = query.data;
 
   return (
     <main className={styles.page}>
@@ -43,6 +43,42 @@ export function PublicMatchPage() {
           }).format(new Date(match.scheduledAt))
           : "Data e horário a definir"}</p>
       </header>
+      {operations.metadata && (
+        <section className={styles.operations}>
+          <div className={styles.timelineHeading}>
+            <div>
+              <span>INFORMAÇÕES</span>
+              <h2>Dados da partida</h2>
+            </div>
+          </div>
+          {operations.metadata.venue && (
+            <p className={styles.opRow}><b>Local</b><span>{operations.metadata.venue}</span></p>
+          )}
+          {operations.metadata.referee && (
+            <p className={styles.opRow}><b>Árbitro</b><span>{operations.metadata.referee}</span></p>
+          )}
+          {operations.metadata.operationalNotes && (
+            <p className={styles.opRow}><b>Observações</b><span>{operations.metadata.operationalNotes}</span></p>
+          )}
+        </section>
+      )}
+      {operations.lineup.length > 0 && (
+        <section className={styles.operations}>
+          <div className={styles.timelineHeading}>
+            <div>
+              <span>ESCALAÇÕES</span>
+              <h2>Formações definidas</h2>
+            </div>
+            <b>{operations.lineup.length} jogadores</b>
+          </div>
+          {groupLineup(operations.lineup, match).map((group) => (
+            <p className={styles.opRow} key={group.entryId}>
+              <b>{group.teamName}</b>
+              <span>{group.starters} titulares · {group.substitutes} reservas</span>
+            </p>
+          ))}
+        </section>
+      )}
       <section className={styles.scoreboard}>
         <strong>{match.homeEntry.displayName}</strong>
         <div>
@@ -103,6 +139,36 @@ export function PublicMatchPage() {
       </footer>
     </main>
   );
+}
+
+type PublicLineupItem = {
+  entryId: string;
+  teamMemberId: string;
+  role: "STARTER" | "SUBSTITUTE";
+};
+
+type LineupMatch = {
+  homeEntryId: string;
+  awayEntryId: string;
+  homeEntry: { displayName: string };
+  awayEntry: { displayName: string };
+};
+
+function groupLineup(lineup: PublicLineupItem[], match: LineupMatch) {
+  const groups = new Map<string, { entryId: string; teamName: string; starters: number; substitutes: number }>();
+  for (const item of lineup) {
+    const entry = item.entryId === match.homeEntryId ? match.homeEntry : match.awayEntry;
+    const existing = groups.get(item.entryId) ?? {
+      entryId: item.entryId,
+      teamName: entry?.displayName ?? "Participante",
+      starters: 0,
+      substitutes: 0
+    };
+    if (item.role === "STARTER") existing.starters += 1;
+    else existing.substitutes += 1;
+    groups.set(item.entryId, existing);
+  }
+  return [...groups.values()];
 }
 
 function periodLabel(sport: string, period: number) {

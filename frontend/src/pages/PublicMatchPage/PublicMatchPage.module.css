@@ -33,3 +33,11 @@
   .event { padding: .8rem 0; grid-template-columns: 1fr; gap: .35rem; }
   .event > b { text-align: left; }
 }
+.operations { margin-top: 1rem; padding: 1.3rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); }
+.opRow { display: flex; margin: 0; padding: .7rem 0; border-top: 1px solid var(--color-border); align-items: baseline; justify-content: space-between; gap: 1rem; }
+.opRow b { color: var(--color-text-strong); font-size: .8rem; }
+.opRow span { color: var(--color-text-muted); font-size: .78rem; text-align: right; }
+@media (max-width: 620px) {
+  .opRow { flex-direction: column; align-items: flex-start; gap: .25rem; }
+  .opRow span { text-align: left; }
+}

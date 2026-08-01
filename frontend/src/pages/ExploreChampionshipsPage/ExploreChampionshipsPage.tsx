@@ -3,12 +3,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { listPublicChampionships } from "../../features/championships/public-championship-api";
+import { useFavorites } from "../../lib/use-favorites";
 import styles from "./ExploreChampionshipsPage.module.css";
 
 const sports = ["Futebol", "Futsal", "Basquete", "Vôlei", "eSports", "Outro"];
 
 export function ExploreChampionshipsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const favorites = useFavorites();
+  const favoritesOnly = searchParams.get("favorites") === "1";
   const queryString = searchParams.toString();
   const query = useQuery({
     queryKey: ["public-championships", queryString],
@@ -29,11 +32,27 @@ export function ExploreChampionshipsPage() {
   const page = Number(searchParams.get("page") ?? "1");
   const result = query.data;
   const totalPages = result ? Math.max(1, Math.ceil(result.total / result.limit)) : 1;
+  const shownItems = favoritesOnly
+    ? (result?.items ?? []).filter((item) => favorites.isFavorite(item.slug))
+    : result?.items ?? [];
+  const favoriteCount = (result?.items ?? []).filter((item) =>
+    favorites.isFavorite(item.slug)
+  ).length;
 
   function goToPage(nextPage: number) {
     const next = new URLSearchParams(searchParams);
     if (nextPage <= 1) next.delete("page");
     else next.set("page", String(nextPage));
+    setSearchParams(next);
+  }
+
+  function toggleFavorites() {
+    const next = new URLSearchParams(searchParams);
+    if (favoritesOnly) next.delete("favorites");
+    else {
+      next.set("favorites", "1");
+      next.delete("page");
+    }
     setSearchParams(next);
   }
 
@@ -89,6 +108,15 @@ export function ExploreChampionshipsPage() {
       <div className={styles.resultHeading}>
         <h2>Campeonatos</h2>
         <span>{result?.total ?? 0} encontrados</span>
+        <button
+          type="button"
+          className={styles.favoritesToggle}
+          aria-pressed={favoritesOnly}
+          onClick={toggleFavorites}
+        >
+          ★ Favoritas
+          {favoritesOnly && favoriteCount > 0 ? " (" + favoriteCount + ")" : ""}
+        </button>
       </div>
 
       {query.isPending && <p className={styles.state}>Buscando arenas...</p>}
@@ -98,7 +126,7 @@ export function ExploreChampionshipsPage() {
       {result && (
         <>
           <div className={styles.grid}>
-            {result.items.map((championship) => (
+            {shownItems.map((championship) => (
               <Link
                 className={styles.card}
                 key={championship.id}
@@ -117,8 +145,12 @@ export function ExploreChampionshipsPage() {
               </Link>
             ))}
           </div>
-          {!result.items.length && (
-            <p className={styles.state}>Nenhuma arena corresponde aos filtros.</p>
+          {!shownItems.length && (
+            <p className={styles.state}>
+              {favoritesOnly
+                ? "Nenhuma arena favorita ainda. Use a estrela na página do campeonato."
+                : "Nenhuma arena corresponde aos filtros."}
+            </p>
           )}
           {totalPages > 1 && (
             <nav className={styles.pagination} aria-label="Paginação">

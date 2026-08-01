@@ -22,7 +22,7 @@ test("visitor follows the public arena and match result", async ({ page }) => {
   await expect(page.getByText("4 inscritos")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Tabela geral" })).toBeVisible();
 
-  await page.getByRole("link", { name: /Raios Azuis.*3.*1.*Fênix Urbana/ }).click();
+  await page.getByRole("link", { name: /Raios Azuis.*3.*1.*Fênix Urbana/ }).first().click();
   await expect(page.getByText("resultado final")).toBeVisible();
   await expect(page.getByText("Raios Azuis")).toBeVisible();
   await expect(page.getByText("Fênix Urbana")).toBeVisible();

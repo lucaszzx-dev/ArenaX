@@ -10,6 +10,8 @@
 .resultHeading { display: flex; margin-bottom: 1rem; align-items: baseline; justify-content: space-between; }
 .resultHeading h2 { margin: 0; color: var(--color-text-strong); }
 .resultHeading span { color: var(--color-text-muted); font-family: var(--font-mono); font-size: .68rem; }
+.favoritesToggle { padding: .4rem .75rem; border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-surface); color: var(--color-text-muted); font-size: .74rem; cursor: pointer; }
+.favoritesToggle[aria-pressed="true"] { border-color: var(--color-accent); color: var(--color-accent); font-weight: 700; }
 .grid { display: grid; gap: 1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .card { display: flex; min-height: 245px; padding: 1.25rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); color: inherit; flex-direction: column; text-decoration: none; transition: border-color .18s ease, transform .18s ease; }
 .card:hover { border-color: var(--color-primary); transform: translateY(-3px); }
