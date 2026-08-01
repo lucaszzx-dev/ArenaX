@@ -148,6 +148,10 @@ export const clubs = pgTable(
     name: text("name").notNull(),
     shortName: text("short_name"),
     logoUrl: text("logo_url"),
+    primaryColor: text("primary_color"),
+    secondaryColor: text("secondary_color"),
+    homeKit: text("home_kit"),
+    awayKit: text("away_kit"),
     ...timestamps
   },
   (table) => [
@@ -155,6 +159,104 @@ export const clubs = pgTable(
   ]
 );
 
+
+export const clubSeasons = pgTable(
+  "club_seasons",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    clubId: uuid("club_id")
+      .notNull()
+      .references(() => clubs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    unique("club_seasons_club_name_unique").on(table.clubId, table.name),
+    check(
+      "club_season_dates_order",
+      sql`${table.endsAt} is null or ${table.startsAt} is null or ${table.endsAt} >= ${table.startsAt}`
+    )
+  ]
+);
+
+export const clubSquads = pgTable(
+  "club_squads",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    clubId: uuid("club_id")
+      .notNull()
+      .references(() => clubs.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    category: text("category"),
+    sport: text("sport"),
+    seasonId: uuid("season_id").references(() => clubSeasons.id, {
+      onDelete: "set null"
+    }),
+    isPrimary: boolean("is_primary").notNull().default(false),
+    ...timestamps
+  },
+  (table) => [
+    unique("club_squads_club_name_unique").on(table.clubId, table.name)
+  ]
+);
+
+export const clubSquadMembers = pgTable(
+  "club_squad_members",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    squadId: uuid("squad_id")
+      .notNull()
+      .references(() => clubSquads.id, { onDelete: "cascade" }),
+    clubMemberId: uuid("club_member_id")
+      .notNull()
+      .references(() => clubMembers.id, { onDelete: "cascade" }),
+    role: text("role").notNull().default("PLAYER"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    unique("club_squad_members_squad_member_unique").on(
+      table.squadId,
+      table.clubMemberId
+    )
+  ]
+);
+
+export const clubStaff = pgTable(
+  "club_staff",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    clubId: uuid("club_id")
+      .notNull()
+      .references(() => clubs.id, { onDelete: "cascade" }),
+    displayName: text("display_name").notNull(),
+    role: text("role").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    unique("club_staff_club_name_unique").on(table.clubId, table.displayName)
+  ]
+);
+
+export const clubAuditLogs = pgTable("club_audit_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  clubId: uuid("club_id")
+    .notNull()
+    .references(() => clubs.id, { onDelete: "cascade" }),
+  actorId: uuid("actor_id").notNull().references(() => users.id, {
+    onDelete: "restrict"
+  }),
+  action: text("action").notNull(),
+  details: jsonb("details").$type<Record<string, unknown>>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+});
 export const clubMembers = pgTable("club_members", {
   id: uuid("id").primaryKey().defaultRandom(),
   clubId: uuid("club_id")
@@ -413,3 +515,5 @@ export const matchEvents = pgTable(
     )
   ]
 );
+
+
