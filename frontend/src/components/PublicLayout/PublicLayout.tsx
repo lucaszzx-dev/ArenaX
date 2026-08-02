@@ -6,6 +6,7 @@ import {
   currentUserQueryKey,
   useCurrentUser
 } from "../../features/auth/auth-query";
+import { useUnreadCount } from "../../features/notifications/notification-query";
 import { Brand } from "../Brand/Brand";
 import { ServerStatusNotice } from "../ServerStatusNotice/ServerStatusNotice";
 import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
@@ -35,6 +36,7 @@ export function PublicLayout() {
             <ThemeToggle />
             {user ? (
               <div className={styles.account}>
+                <NotificationsBell />
                 <NavLink className={styles.accountLink} to="/perfil">
                   <span className={styles.accountAvatar} aria-hidden="true">
                     {user.avatarUrl ? (
@@ -83,5 +85,28 @@ export function PublicLayout() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function NotificationsBell() {
+  const unreadQuery = useUnreadCount();
+  const unread = unreadQuery.data?.unread ?? 0;
+  const label = unread > 0
+    ? "Notificações (" + unread + (unread === 1 ? " não lida)" : " não lidas)")
+    : "Notificações";
+
+  return (
+    <NavLink
+      aria-label={label}
+      className={styles.notificationsLink}
+      to="/painel/notificacoes"
+    >
+      <span aria-hidden="true">Sino</span>
+      {unread > 0 && (
+        <b className={styles.notificationsBadge} aria-hidden="true">
+          {unread > 99 ? "99+" : unread}
+        </b>
+      )}
+    </NavLink>
   );
 }

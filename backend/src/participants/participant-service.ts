@@ -1,4 +1,6 @@
 import type { ChampionshipService } from "../championships/championship-service.js";
+import type { Championship } from "../championships/championship-repository.js";
+import type { NotificationService } from "../notifications/notification-service.js";
 import { AppError } from "../errors/app-error.js";
 import type {
   IndividualParticipant,
@@ -10,7 +12,8 @@ import type {
 export class ParticipantService {
   constructor(
     private readonly repository: ParticipantRepository,
-    private readonly championships: ChampionshipService
+    private readonly championships: ChampionshipService,
+    private readonly notifications?: NotificationService
   ) {}
 
   async list(organizerId: string, championshipId: string) {
@@ -103,12 +106,26 @@ export class ParticipantService {
     teamId: string,
     memberId: string
   ) {
-    await this.requireEntryType(organizerId, championshipId, "TEAM");
+    const championship = await this.requireEntryType(
+      organizerId,
+      championshipId,
+      "TEAM"
+    );
     const team = await this.requireTeam(championshipId, teamId);
     if (!team.members.some((member) => member.id === memberId)) {
       throw new AppError("Jogador não encontrado.", 404, "TEAM_MEMBER_NOT_FOUND");
     }
-    return this.repository.setCaptain(teamId, memberId);
+    const updated = await this.repository.setCaptain(teamId, memberId);
+    await this.notifications?.notifySquadUpdated(organizerId, championship, {
+      teamId,
+      event: "CAPTAIN_CHANGED",
+      memberId,
+      memberDisplayName:
+        team.members.find((member) => member.id === memberId)?.displayName ??
+        null,
+      teamName: team.name
+    });
+    return updated;
   }
 
   async getPublicTeam(championshipId: string, teamId: string) {
@@ -131,7 +148,11 @@ export class ParticipantService {
     jerseyNumber: number | null = null,
     position: string | null = null
   ): Promise<TeamMember> {
-    await this.requireEntryType(organizerId, championshipId, "TEAM");
+    const championship = await this.requireEntryType(
+      organizerId,
+      championshipId,
+      "TEAM"
+    );
     const team = await this.requireTeam(championshipId, teamId);
 
     if (this.hasName(team.members.map((member) => member.displayName), displayName)) {
@@ -142,12 +163,20 @@ export class ParticipantService {
       );
     }
 
-    return this.repository.addTeamMember(
+    const member = await this.repository.addTeamMember(
       teamId,
       displayName,
       jerseyNumber,
       position
     );
+    await this.notifications?.notifySquadUpdated(organizerId, championship, {
+      teamId,
+      event: "MEMBER_ADDED",
+      memberId: member.id,
+      memberDisplayName: displayName,
+      teamName: team.name
+    });
+    return member;
   }
 
   async deleteTeamMember(
@@ -156,19 +185,32 @@ export class ParticipantService {
     teamId: string,
     memberId: string
   ) {
-    await this.requireEntryType(organizerId, championshipId, "TEAM");
-    await this.requireTeam(championshipId, teamId);
+    const championship = await this.requireEntryType(
+      organizerId,
+      championshipId,
+      "TEAM"
+    );
+    const team = await this.requireTeam(championshipId, teamId);
 
     if (!await this.repository.deleteTeamMember(teamId, memberId)) {
       throw new AppError("Jogador não encontrado.", 404, "TEAM_MEMBER_NOT_FOUND");
     }
+    await this.notifications?.notifySquadUpdated(organizerId, championship, {
+      teamId,
+      event: "MEMBER_REMOVED",
+      memberId,
+      memberDisplayName:
+        team.members.find((member) => member.id === memberId)?.displayName ??
+        null,
+      teamName: team.name
+    });
   }
 
   private async requireEntryType(
     organizerId: string,
     championshipId: string,
     expected: "INDIVIDUAL" | "TEAM"
-  ) {
+  ): Promise<Championship> {
     const championship = await this.championships.getMine(
       organizerId,
       championshipId
@@ -183,6 +225,8 @@ export class ParticipantService {
         "INVALID_ENTRY_TYPE"
       );
     }
+
+    return championship;
   }
 
   private async requireTeam(championshipId: string, teamId: string) {

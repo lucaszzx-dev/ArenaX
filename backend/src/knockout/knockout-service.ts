@@ -1,4 +1,5 @@
 import type { ChampionshipService } from "../championships/championship-service.js";
+import type { NotificationService } from "../notifications/notification-service.js";
 import { AppError } from "../errors/app-error.js";
 import type { MatchRepository } from "../matches/match-repository.js";
 import type {
@@ -10,7 +11,8 @@ export class KnockoutService {
   constructor(
     private readonly repository: KnockoutRepository,
     private readonly matches: MatchRepository,
-    private readonly championships: ChampionshipService
+    private readonly championships: ChampionshipService,
+    private readonly notifications?: NotificationService
   ) {}
 
   async getMine(organizerId: string, championshipId: string) {
@@ -124,12 +126,43 @@ export class KnockoutService {
     };
   }
 
-  advanceWinner(matchId: string, winnerEntryId: string) {
-    return this.repository.advanceWinner(matchId, winnerEntryId);
+  async advanceWinner(
+    organizerId: string,
+    matchId: string,
+    winnerEntryId: string
+  ) {
+    await this.repository.advanceWinner(matchId, winnerEntryId);
+    await this.notifyAdvance(organizerId, matchId, winnerEntryId, "NEXT_ROUND");
   }
 
-  advanceLoser(matchId: string, loserEntryId: string) {
-    return this.repository.advanceLoser(matchId, loserEntryId);
+  async advanceLoser(
+    organizerId: string,
+    matchId: string,
+    loserEntryId: string
+  ) {
+    await this.repository.advanceLoser(matchId, loserEntryId);
+    await this.notifyAdvance(organizerId, matchId, loserEntryId, "THIRD_PLACE");
+  }
+
+  private async notifyAdvance(
+    organizerId: string,
+    matchId: string,
+    entryId: string,
+    phase: "NEXT_ROUND" | "THIRD_PLACE"
+  ) {
+    if (!this.notifications) return;
+    const match = await this.matches.findById(matchId);
+    const championship = match
+      ? await this.championships.getChampionshipById(match.championshipId)
+      : null;
+    if (!match || !championship) return;
+    await this.notifications.notifyKnockoutAdvance(
+      organizerId,
+      championship,
+      match,
+      entryId,
+      phase
+    );
   }
 
   async getChampion(championshipId: string) {

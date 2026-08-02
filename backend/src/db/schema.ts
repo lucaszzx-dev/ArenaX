@@ -1,6 +1,7 @@
 import {
   boolean,
   check,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -516,4 +517,32 @@ export const matchEvents = pgTable(
   ]
 );
 
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+    link: text("link").notNull(),
+    readAt: timestamp("read_at", { withTimezone: true }),
+    dedupKey: text("dedup_key"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+  },
+  (table) => [
+    uniqueIndex("notifications_user_dedup_unique").on(
+      table.userId,
+      table.dedupKey
+    ),
+    index("notifications_user_created_idx").on(
+      table.userId,
+      table.createdAt
+    )
+  ]
+);
 

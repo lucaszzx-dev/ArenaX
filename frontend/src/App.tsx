@@ -24,6 +24,7 @@ import { PublicOrganizerPage } from "./pages/PublicOrganizerPage/PublicOrganizer
 import { PublicClubPage } from "./pages/PublicClubPage/PublicClubPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
 import { ClubsPage } from "./pages/ClubsPage/ClubsPage";
+import { NotificationsPage } from "./pages/NotificationsPage/NotificationsPage";
 
 export function App() {
   return (
@@ -38,6 +39,7 @@ export function App() {
           <Route path="painel" element={<DashboardPage />} />
           <Route path="perfil" element={<ProfilePage />} />
           <Route path="painel/clubes" element={<ClubsPage />} />
+          <Route path="painel/notificacoes" element={<NotificationsPage />} />
           <Route
             path="painel/campeonatos/novo"
             element={<CreateChampionshipPage />}

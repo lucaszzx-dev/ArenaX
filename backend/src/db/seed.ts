@@ -8,6 +8,7 @@ import {
   championshipEntries,
   championships,
   matches,
+  notifications,
   profiles,
   teamMembers,
   teams,
@@ -55,6 +56,26 @@ try {
           displayName: "Organizador ArenaX",
           bio: "Conta demonstrativa do ArenaX.",
           updatedAt: new Date()
+        }
+      });
+
+    await transaction
+      .insert(notifications)
+      .values({
+        userId: user.id,
+        type: "MATCH_RESULT",
+        title: "Resultado registrado",
+        message: "Raios Azuis venceu Fênix Urbana por 3 a 1 na Copa ArenaX Demo.",
+        link: `/campeonatos/${demoSlug}`,
+        dedupKey: "seed:demo:match-result"
+      })
+      .onConflictDoUpdate({
+        target: [notifications.userId, notifications.dedupKey],
+        set: {
+          readAt: null,
+          title: "Resultado registrado",
+          message: "Raios Azuis venceu Fênix Urbana por 3 a 1 na Copa ArenaX Demo.",
+          link: `/campeonatos/${demoSlug}`
         }
       });
 

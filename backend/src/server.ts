@@ -25,6 +25,8 @@ import { DrizzleKnockoutRepository } from "./knockout/drizzle-knockout-repositor
 import { KnockoutService } from "./knockout/knockout-service.js";
 import { DrizzleMatchOperationRepository } from "./match-operations/drizzle-match-operation-repository.js";
 import { MatchOperationService } from "./match-operations/match-operation-service.js";
+import { DrizzleNotificationRepository } from "./notifications/drizzle-notification-repository.js";
+import { NotificationService } from "./notifications/notification-service.js";
 
 try {
   loadEnvFile();
@@ -38,10 +40,16 @@ const authRepository = new DrizzleAuthRepository(database.db);
 const authService = new AuthService(authRepository, env.SESSION_TTL_DAYS);
 const championshipRepository = new DrizzleChampionshipRepository(database.db);
 const championshipService = new ChampionshipService(championshipRepository);
+const notificationRepository = new DrizzleNotificationRepository(database.db);
+const notificationService = new NotificationService(
+  notificationRepository,
+  championshipService
+);
 const participantRepository = new DrizzleParticipantRepository(database.db);
 const participantService = new ParticipantService(
   participantRepository,
-  championshipService
+  championshipService,
+  notificationService
 );
 const clubRepository = new DrizzleClubRepository(database.db);
 const clubService = new ClubService(clubRepository, championshipService);
@@ -50,7 +58,8 @@ const knockoutRepository = new DrizzleKnockoutRepository(database.db);
 const knockoutService = new KnockoutService(
   knockoutRepository,
   matchRepository,
-  championshipService
+  championshipService,
+  notificationService
 );
 const matchAuditService = new MatchAuditService(
   database.db,
@@ -68,7 +77,8 @@ const matchService = new MatchService(
   matchRepository,
   championshipService,
   matchAuditService,
-  knockoutService
+  knockoutService,
+  notificationService
 );
 const matchEventRepository = new DrizzleMatchEventRepository(database.db);
 const matchEventService = new MatchEventService(
@@ -110,10 +120,19 @@ const app = buildApp({
   knockoutService,
   matchOperationService,
   publicProfileService,
+  notificationService,
   env
 });
 
+// Notificações de partidas próximas: varredura periódica (sem push).
+const upcomingMatchTimer = setInterval(() => {
+  void notificationService.notifyUpcomingMatches().catch((error: unknown) => {
+    app.log.error(error);
+  });
+}, 30 * 60 * 1000);
+
 app.addHook("onClose", async () => {
+  clearInterval(upcomingMatchTimer);
   await database.close();
 });
 

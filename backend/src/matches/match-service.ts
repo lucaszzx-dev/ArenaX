@@ -9,6 +9,7 @@ import type {
 } from "./match-repository.js";
 import type { MatchAuditService } from "../match-audit/match-audit-service.js";
 import type { KnockoutService } from "../knockout/knockout-service.js";
+import type { NotificationService } from "../notifications/notification-service.js";
 
 export type ScheduleMatchInput = Omit<CreateMatchInput, "championshipId">;
 export type GenerateLeagueInput = {
@@ -22,7 +23,8 @@ export class MatchService {
     private readonly repository: MatchRepository,
     private readonly championships: ChampionshipService,
     private readonly audit?: MatchAuditService,
-    private readonly knockout?: KnockoutService
+    private readonly knockout?: KnockoutService,
+    private readonly notifications?: NotificationService
   ) {}
 
   async list(organizerId: string, championshipId: string) {
@@ -221,14 +223,23 @@ export class MatchService {
     });
     if (championship.format === "KNOCKOUT") {
       await this.knockout?.advanceWinner(
+        organizerId,
         matchId,
         homeScore > awayScore ? match.homeEntryId : match.awayEntryId
       );
       await this.knockout?.advanceLoser(
+        organizerId,
         matchId,
         homeScore > awayScore ? match.awayEntryId : match.homeEntryId
       );
     }
+    await this.notifications?.notifyMatchResult(
+      organizerId,
+      championship,
+      match,
+      homeScore,
+      awayScore
+    );
     return updated;
   }
 
@@ -238,7 +249,10 @@ export class MatchService {
     matchId: string,
     scheduledAt: Date | null
   ) {
-    await this.championships.getMine(organizerId, championshipId);
+    const championship = await this.championships.getMine(
+      organizerId,
+      championshipId
+    );
     const match = await this.requireMatch(championshipId, matchId);
     if (match.status !== "SCHEDULED") {
       throw new AppError(
@@ -247,7 +261,14 @@ export class MatchService {
         "MATCH_NOT_SCHEDULED"
       );
     }
-    return this.repository.updateSchedule(matchId, scheduledAt);
+    const updated = await this.repository.updateSchedule(matchId, scheduledAt);
+    await this.notifications?.notifyMatchScheduleChanged(
+      organizerId,
+      championship,
+      match,
+      scheduledAt
+    );
+    return updated;
   }
 
   async changeMatchStatus(

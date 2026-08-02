@@ -64,6 +64,41 @@
   gap: 1rem;
 }
 
+.notificationsLink {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.notificationsLink span {
+  display: grid;
+  width: 1.9rem;
+  height: 1.9rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 900;
+}
+
+.notificationsBadge {
+  position: absolute;
+  top: -0.35rem;
+  right: -0.45rem;
+  min-width: 1rem;
+  padding: 0.1rem 0.28rem;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+
 .navigation .accountLink {
   display: flex;
   align-items: center;
@@ -145,6 +180,10 @@
   .account > a:not(.accountLink),
   .account button {
     display: none;
+  }
+
+  .account > a.notificationsLink {
+    display: grid;
   }
 
   .footerContent {

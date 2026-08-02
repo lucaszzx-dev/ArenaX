@@ -15,6 +15,7 @@ import type { ClubService } from "./clubs/club-service.js";
 import type { KnockoutService } from "./knockout/knockout-service.js";
 import type { MatchOperationService } from "./match-operations/match-operation-service.js";
 import type { PublicProfileService } from "./public-profiles/public-profile-service.js";
+import type { NotificationService } from "./notifications/notification-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
 import { authRoutes } from "./routes/auth.js";
@@ -32,6 +33,7 @@ import { clubRoutes } from "./routes/clubs.js";
 import { knockoutRoutes } from "./routes/knockout.js";
 import { matchOperationRoutes } from "./routes/match-operations.js";
 import { publicProfileRoutes } from "./routes/public-profiles.js";
+import { notificationRoutes } from "./routes/notifications.js";
 
 type BuildAppOptions = {
   authService?: AuthService;
@@ -46,6 +48,7 @@ type BuildAppOptions = {
   knockoutService?: KnockoutService;
   matchOperationService?: MatchOperationService;
   publicProfileService?: PublicProfileService | undefined;
+  notificationService?: NotificationService | undefined;
   env?: Env;
 };
 
@@ -186,6 +189,15 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       prefix: "/api",
       championshipService: options.championshipService,
       statisticsService: options.statisticsService
+    });
+  }
+
+  if (options.authService && options.notificationService && options.env) {
+    app.register(notificationRoutes, {
+      prefix: "/api",
+      authService: options.authService,
+      notificationService: options.notificationService,
+      env: options.env
     });
   }
 
