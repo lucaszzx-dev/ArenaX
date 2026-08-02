@@ -1,5 +1,5 @@
-﻿.page { width: min(1120px, calc(100% - 2rem)); min-height: calc(100vh - 4rem); margin: 0 auto; padding: 4rem 0; }
-.welcome { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-bottom: 2.5rem; }
+.page { width: min(1120px, calc(100% - 2rem)); min-height: calc(100vh - 4rem); margin: 0 auto; padding: 4rem 0; }
+.welcome { display: flex; align-items: start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem; }
 .welcome > div > span { color: var(--color-primary); font-family: var(--font-mono); font-size: .68rem; font-weight: 800; text-transform: uppercase; }
 .welcome h1 { margin: .6rem 0 .2rem; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -.04em; line-height: 1; }
 .welcome p { margin: 0; color: var(--color-text-muted); }
@@ -14,7 +14,8 @@
 .section h2 { margin: 0; font-size: 1.2rem; }
 
 .grid { display: grid; gap: .8rem; }
-.card { display: grid; gap: .6rem; padding: 1.2rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); text-decoration: none; color: inherit; }
+.card { display: grid; gap: .6rem; padding: 1.2rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); text-decoration: none; color: inherit; position: relative; }
+.cardLink { position: absolute; inset: 0; z-index: 1; }
 .card header { display: flex; align-items: center; gap: .6rem; }
 .card header > span { color: var(--color-primary); font-family: var(--font-mono); font-size: .65rem; text-transform: uppercase; font-weight: 700; }
 .card header b { padding: .15rem .45rem; font-size: .6rem; text-transform: uppercase; border-radius: .15rem; }
@@ -26,7 +27,7 @@
 .card footer { display: flex; align-items: center; justify-content: space-between; font-size: .72rem; }
 .card footer > span { color: var(--color-text-muted); }
 .card footer > div { display: flex; align-items: center; gap: .5rem; }
-.alert { color: #d97706; font-weight: 700; font-size: .62rem; }
+.alert { color: #d97706; font-weight: 700; font-size: .62rem; text-decoration: none; position: relative; z-index: 2; } .alert:hover { text-decoration: underline; }
 .emptyState { display: grid; place-items: center; text-align: center; padding: 3rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); }
 .emptyState span { display: grid; place-items: center; width: 3rem; height: 3rem; background: var(--color-primary-soft); color: var(--color-primary); font-weight: 900; }
 .emptyState h2 { margin: .8rem 0 .2rem; }

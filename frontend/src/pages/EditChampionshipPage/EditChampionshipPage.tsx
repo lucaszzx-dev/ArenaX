@@ -8,7 +8,10 @@ import {
   type ChampionshipInput
 } from "../../features/championships/championship-api";
 import { ChampionshipForm } from "../../features/championships/ChampionshipForm";
-import { championshipListQueryKey } from "../../features/championships/championship-query";
+import {
+  championshipDetailQueryKey,
+  championshipListQueryKey
+} from "../../features/championships/championship-query";
 import { ApiError } from "../../lib/api";
 import styles from "../CreateChampionshipPage/CreateChampionshipPage.module.css";
 
@@ -18,7 +21,7 @@ export function EditChampionshipPage() {
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const championshipQuery = useQuery({
-    queryKey: ["championships", "detail", id],
+    queryKey: championshipDetailQueryKey(id),
     queryFn: () => getChampionship(id),
     enabled: Boolean(id)
   });
@@ -26,7 +29,7 @@ export function EditChampionshipPage() {
     mutationFn: (input: ChampionshipInput) => updateChampionship(id, input),
     onSuccess: async (data) => {
       queryClient.setQueryData(
-        ["championships", "detail", id],
+        championshipDetailQueryKey(id),
         data
       );
       await queryClient.invalidateQueries({

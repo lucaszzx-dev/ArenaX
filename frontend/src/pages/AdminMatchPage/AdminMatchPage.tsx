@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getChampionship } from "../../features/championships/championship-api";
+import { championshipDetailQueryKey } from "../../features/championships/championship-query";
 import {
   changeMatchStatus,
   deleteMatch,
@@ -85,7 +86,7 @@ export function AdminMatchPage() {
   const [overtimePeriods, setOvertimePeriods] = useState(0);
 
   const championshipQuery = useQuery({
-    queryKey: ["championships", "detail", id],
+    queryKey: championshipDetailQueryKey(id),
     queryFn: () => getChampionship(id),
     enabled: Boolean(id)
   });

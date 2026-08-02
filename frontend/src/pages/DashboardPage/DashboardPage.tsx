@@ -1,8 +1,13 @@
-﻿import { Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { useCurrentUser } from "../../features/auth/auth-query";
 import { useChampionships } from "../../features/championships/championship-query";
 import { type ChampionshipStatus } from "../../features/championships/championship-api";
+import {
+  computeDashboardStats,
+  dashboardAlert,
+  dashboardAlertHref
+} from "../../features/championships/dashboard-stats";
 import styles from "./DashboardPage.module.css";
 
 const statusLabels: Record<ChampionshipStatus, string> = {
@@ -16,9 +21,7 @@ export function DashboardPage() {
   const championshipQuery = useChampionships();
   const user = userQuery.data?.user;
   const championships = championshipQuery.data?.championships ?? [];
-  const draftCount = championships.filter((c) => c.status === "DRAFT").length;
-  const activeCount = championships.filter((c) => c.status === "PUBLISHED").length;
-  const finishedCount = championships.filter((c) => c.status === "FINISHED").length;
+  const stats = computeDashboardStats(championships);
 
   if (!user) return null;
 
@@ -57,28 +60,34 @@ export function DashboardPage() {
         <>
           <div className={styles.summary}>
             <div className={styles.summaryCard}>
-              <b>{championships.length}</b>
+              <b>{stats.total}</b>
               <span>Total</span>
             </div>
             <div className={styles.summaryCard}>
-              <b>{draftCount}</b>
+              <b>{stats.draft}</b>
               <span>Rascunho</span>
             </div>
             <div className={styles.summaryCard}>
-              <b>{activeCount}</b>
+              <b>{stats.published}</b>
               <span>Ativas</span>
             </div>
             <div className={styles.summaryCard}>
-              <b>{finishedCount}</b>
+              <b>{stats.finished}</b>
               <span>Finalizadas</span>
             </div>
           </div>
 
           <div className={styles.grid}>
             {championships.map((championship) => {
-              const hasMissingData = !championship.description || !championship.startsAt;
+              const alert = dashboardAlert(championship);
+              const alertHref = dashboardAlertHref(championship);
               return (
-                <Link className={styles.card} key={championship.id} to={`/painel/campeonatos/${championship.id}`}>
+                <div className={styles.card} key={championship.id}>
+                  <Link
+                    aria-label={`Abrir ${championship.name}`}
+                    className={styles.cardLink}
+                    to={`/painel/campeonatos/${championship.id}`}
+                  />
                   <header>
                     <span>{championship.sport}</span>
                     <b data-status={championship.status}>{statusLabels[championship.status]}</b>
@@ -88,12 +97,18 @@ export function DashboardPage() {
                   <footer>
                     <span>{championship.entryType === "TEAM" ? "Equipes" : "Individual"}</span>
                     <div>
-                      {championship.status === "DRAFT" && <span className={styles.alert}>Publicar pendente</span>}
-                      {hasMissingData && championship.status === "PUBLISHED" && <span className={styles.alert}>Dados incompletos</span>}
+                      {alert && alertHref && (
+                        <Link
+                          className={styles.alert}
+                          to={alertHref}
+                        >
+                          {alert.label} →
+                        </Link>
+                      )}
                       <strong>Abrir →</strong>
                     </div>
                   </footer>
-                </Link>
+                </div>
               );
             })}
           </div>

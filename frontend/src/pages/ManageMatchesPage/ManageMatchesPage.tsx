@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getChampionship } from "../../features/championships/championship-api";
+import { championshipDetailQueryKey } from "../../features/championships/championship-query";
 import { MatchEventsPanel } from "../../components/MatchEventsPanel/MatchEventsPanel";
 import { MatchPeriodsPanel } from "../../components/MatchPeriodsPanel/MatchPeriodsPanel";
 import { MatchAuditPanel } from "../../components/MatchAuditPanel/MatchAuditPanel";
@@ -37,7 +38,7 @@ export function ManageMatchesPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const championshipQuery = useQuery({
-    queryKey: ["championships", "detail", id],
+    queryKey: championshipDetailQueryKey(id),
     queryFn: () => getChampionship(id),
     enabled: Boolean(id)
   });
