@@ -1,4 +1,4 @@
-﻿import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync } from "fastify";
 import { z, type ZodType } from "zod";
 
 import type { AuthService } from "../auth/auth-service.js";
@@ -44,45 +44,47 @@ export const adminStatisticsRoutes: FastifyPluginAsync<
     requireUser(request, options.authService, options.env.SESSION_COOKIE_NAME);
 
   app.get("/championships/:id/statistics", async (request) => {
-    await getUser(request);
+    const user = await getUser(request);
     const params = parse(championshipParams, request.params);
     const query = parse(pageQuery.extend(sportQuery.shape), request.query);
     const result = await options.statisticsService.statistics(
       params.id,
       { sport: query.sport, teamId: query.teamId, playerId: query.playerId },
       query.page,
-      query.limit
+      query.limit,
+      user.id
     );
     return { statistics: result.items, ...result };
   });
 
   app.get("/championships/:id/statistics/standings", async (request) => {
-    await getUser(request);
+    const user = await getUser(request);
     const params = parse(championshipParams, request.params);
     const query = parse(z.object({ teamId: z.uuid().optional() }), request.query);
     const rows = await options.statisticsService.clubStandings(params.id, {
       teamId: query.teamId
-    });
+    }, user.id);
     return { items: rows, total: rows.length };
   });
 
   app.get("/championships/:id/statistics/streaks", async (request) => {
-    await getUser(request);
+    const user = await getUser(request);
     const params = parse(championshipParams, request.params);
     const query = parse(z.object({ teamId: z.uuid().optional() }), request.query);
     const rows = await options.statisticsService.streakStats(params.id, {
       teamId: query.teamId
-    });
+    }, user.id);
     return { items: rows, total: rows.length };
   });
 
   app.get("/championships/:id/statistics/head-to-head/:entryAId/:entryBId", async (request) => {
-    await getUser(request);
+    const user = await getUser(request);
     const params = parse(headToHeadParams, request.params);
     const rows = await options.statisticsService.headToHead(
       params.id,
       params.entryAId,
-      params.entryBId
+      params.entryBId,
+      user.id
     );
     return {
       entryAId: params.entryAId,
@@ -93,17 +95,17 @@ export const adminStatisticsRoutes: FastifyPluginAsync<
   });
 
   app.get("/championships/:id/statistics/highlights", async (request) => {
-    await getUser(request);
+    const user = await getUser(request);
     const params = parse(championshipParams, request.params);
     const query = parse(sportQuery, request.query);
     const items = await options.statisticsService.highlights(params.id, {
       sport: query.sport
-    });
+    }, user.id);
     return { items, total: items.length };
   });
 
   app.get("/championships/:id/statistics/rankings/:kind", async (request) => {
-    await getUser(request);
+    const user = await getUser(request);
     const params = parse(
       championshipParams.extend({
         kind: z.enum(["scorer", "aces", "blocks", "points"])
@@ -117,7 +119,8 @@ export const adminStatisticsRoutes: FastifyPluginAsync<
       params.kind,
       { sport: query.sport, teamId: query.teamId, playerId: query.playerId },
       query.page,
-      query.limit
+      query.limit,
+      user.id
     );
     return {
       kind: params.kind,

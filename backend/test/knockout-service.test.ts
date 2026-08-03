@@ -1,4 +1,4 @@
-﻿import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import { ChampionshipService } from "../src/championships/championship-service.js";
 import { KnockoutService } from "../src/knockout/knockout-service.js";
@@ -189,15 +189,23 @@ describe("KnockoutService", () => {
     await knockout.generate("organizer-1", arena.id, false);
     const final = matches.matches[0];
     await matchService.recordScore("organizer-1", arena.id, final.id, 3, 1);
-    const championId = await knockout.getChampion(arena.id);
+    const championId = await knockout.getChampion("organizer-1", arena.id);
     expect(championId).toBe("entry-1");
   });
 
   it("returns null champion before final is finished", async () => {
     const arena = await createArena(2);
     await knockout.generate("organizer-1", arena.id, false);
-    const championId = await knockout.getChampion(arena.id);
+    const championId = await knockout.getChampion("organizer-1", arena.id);
     expect(championId).toBeNull();
+  });
+
+  it("blocks another organizer from reading the champion", async () => {
+    const arena = await createArena(2);
+    await knockout.generate("organizer-1", arena.id, false);
+    await expect(
+      knockout.getChampion("organizer-2", arena.id)
+    ).rejects.toMatchObject({ code: "CHAMPIONSHIP_NOT_FOUND" });
   });
 
   it("handles byes with third place enabled", async () => {

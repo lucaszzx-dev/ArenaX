@@ -5,6 +5,7 @@ import type { AuthService } from "../auth/auth-service.js";
 import { requireUser } from "../auth/require-user.js";
 import type { Env } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
+import { httpUrl } from "../validation/http-url.js";
 import type { ParticipantService } from "../participants/participant-service.js";
 
 const championshipParamsSchema = z.object({ id: z.uuid() });
@@ -28,9 +29,7 @@ const teamSchema = z.object({
   shortName: z
     .union([z.string().trim().max(12), z.null()])
     .transform((value) => value || null),
-  logoUrl: z
-    .union([z.url().max(500), z.literal(""), z.null()])
-    .transform((value) => value || null)
+  logoUrl: httpUrl
 });
 const captainSchema = z.object({ memberId: z.uuid() });
 

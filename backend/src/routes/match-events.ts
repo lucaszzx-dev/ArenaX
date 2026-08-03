@@ -1,4 +1,4 @@
-﻿import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 
 import type { AuthService } from "../auth/auth-service.js";
@@ -88,6 +88,7 @@ export const matchEventRoutes: FastifyPluginAsync<
 
   app.post(
     "/championships/:id/matches/:matchId/events",
+    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const user = await getUser(request);
       const params = matchParams.safeParse(request.params);
@@ -106,6 +107,7 @@ export const matchEventRoutes: FastifyPluginAsync<
 
   app.delete(
     "/championships/:id/matches/:matchId/events/:eventId",
+    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const user = await getUser(request);
       const params = eventParams.safeParse(request.params);
@@ -123,6 +125,7 @@ export const matchEventRoutes: FastifyPluginAsync<
 
   app.put(
     "/championships/:id/matches/:matchId/events/:eventId",
+    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request) => {
       const user = await getUser(request);
       const params = eventParams.safeParse(request.params);

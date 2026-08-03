@@ -11,14 +11,14 @@
   --color-surface-elevated: #ffffff;
   --color-text: #24304a;
   --color-text-strong: #0b1224;
-  --color-text-muted: #69748a;
+  --color-text-muted: #5c6677;
   --color-border: #dce2ed;
   --color-border-strong: #b9c3d5;
   --color-primary: #155eef;
   --color-primary-dark: #0b48bd;
   --color-primary-soft: rgba(21, 94, 239, 0.1);
-  --color-accent: #ff5a3c;
-  --color-danger: #d93838;
+  --color-accent: #cc3d0e;
+  --color-danger: #c42f2f;
   --shadow-medium: 0 16px 40px rgba(17, 34, 68, 0.09);
   --shadow-large: 0 30px 80px rgba(17, 34, 68, 0.15);
 }
@@ -78,8 +78,8 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--color-primary) 38%, transparent);
-  outline-offset: 3px;
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 button:disabled {

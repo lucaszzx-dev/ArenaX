@@ -41,7 +41,10 @@ export const matchPeriodRoutes: FastifyPluginAsync<
     return { periods };
   });
 
-  app.put("/championships/:id/matches/:matchId/periods", async (request) => {
+  app.put(
+    "/championships/:id/matches/:matchId/periods",
+    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
+    async (request) => {
     const user = await getUser(request);
     const params = paramsSchema.safeParse(request.params);
     const input = periodSchema.safeParse(request.body);
@@ -57,6 +60,7 @@ export const matchPeriodRoutes: FastifyPluginAsync<
 
   app.delete(
     "/championships/:id/matches/:matchId/periods/:periodNumber",
+    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const user = await getUser(request);
       const params = periodParamsSchema.safeParse(request.params);

@@ -165,7 +165,8 @@ export class KnockoutService {
     );
   }
 
-  async getChampion(championshipId: string) {
+  async getChampion(organizerId: string, championshipId: string) {
+    await this.championships.getMine(organizerId, championshipId);
     const bracket = await this.getBracket(championshipId);
     const maxRound = Math.max(...bracket.nodes.map((n) => n.roundNumber));
     const finalNode = bracket.nodes.find((n) =>

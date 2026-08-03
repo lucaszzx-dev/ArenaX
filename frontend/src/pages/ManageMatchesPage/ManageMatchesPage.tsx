@@ -484,7 +484,7 @@ function ScheduleForm({
       const value = String(new FormData(event.currentTarget).get("schedule") ?? "");
       onSave(value ? new Date(value).toISOString() : null);
     }}>
-      <input defaultValue={defaultValue} name="schedule" type="datetime-local" />
+      <input aria-label="Data e hora da partida" defaultValue={defaultValue} name="schedule" type="datetime-local" />
       <button disabled={disabled}>Alterar data</button>
     </form>
   );

@@ -6,6 +6,7 @@ import { requireUser } from "../auth/require-user.js";
 import type { ClubService } from "../clubs/club-service.js";
 import type { Env } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
+import { httpUrl } from "../validation/http-url.js";
 
 const clubParams = z.object({ clubId: z.uuid() });
 const memberParams = clubParams.extend({ memberId: z.uuid() });
@@ -28,8 +29,7 @@ const colorSchema = z.union([
 const identitySchema = z.object({
   name: z.string().trim().min(2).max(80),
   shortName: nullableText(12),
-  logoUrl: z.union([z.url().max(500), z.literal(""), z.null()])
-    .transform((value) => value || null),
+  logoUrl: httpUrl,
   primaryColor: colorSchema.default(null),
   secondaryColor: colorSchema.default(null),
   homeKit: nullableText(120).default(null),

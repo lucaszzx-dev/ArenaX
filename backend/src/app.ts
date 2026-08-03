@@ -1,4 +1,4 @@
-﻿import cookie from "@fastify/cookie";
+import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import Fastify, { type FastifyInstance } from "fastify";
@@ -75,6 +75,27 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       origin: options.env.FRONTEND_URL,
       credentials: true,
       methods: ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"]
+    });
+  }
+  if (options.env) {
+    const allowedOrigin = new URL(options.env.FRONTEND_URL).origin;
+    app.addHook("onRequest", async (request, reply) => {
+      if (["GET", "HEAD", "OPTIONS"].includes(request.method)) return;
+      const origin = request.headers.origin;
+      if (!origin) return;
+      let requestOrigin: string;
+      try {
+        requestOrigin = new URL(origin).origin;
+      } catch {
+        return reply.status(403).send({
+          error: { code: "FORBIDDEN_ORIGIN", message: "Origem não autorizada." }
+        });
+      }
+      if (requestOrigin !== allowedOrigin) {
+        return reply.status(403).send({
+          error: { code: "FORBIDDEN_ORIGIN", message: "Origem não autorizada." }
+        });
+      }
     });
   }
 

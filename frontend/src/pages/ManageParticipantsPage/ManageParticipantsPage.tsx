@@ -253,9 +253,9 @@ export function ManageParticipantsPage() {
                     successMessage: "Identidade da equipe atualizada."
                   });
                 }}>
-                  <input defaultValue={team.name} name="name" required />
-                  <input defaultValue={team.shortName ?? ""} name="shortName" placeholder="Sigla" />
-                  <input defaultValue={team.logoUrl ?? ""} name="logoUrl" placeholder="URL do escudo" type="url" />
+                  <input aria-label="Nome do time" defaultValue={team.name} name="name" required />
+                  <input aria-label="Sigla do time" defaultValue={team.shortName ?? ""} name="shortName" placeholder="Sigla" />
+                  <input aria-label="Escudo do time (URL)" defaultValue={team.logoUrl ?? ""} name="logoUrl" placeholder="URL do escudo" type="url" />
                   <button>Salvar identidade</button>
                 </form>
                 <MemberForm disabled={actionMutation.isPending} onAdd={(input) =>

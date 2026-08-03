@@ -43,7 +43,7 @@ export class ClubService {
   async delete(ownerId: string, clubId: string) {
     await this.requireOwned(ownerId, clubId);
     if (!await this.repository.delete(clubId)) {
-      throw new AppError("Clube nÃƒÆ’Ã‚Â£o encontrado.", 404, "CLUB_NOT_FOUND");
+      throw new AppError("Clube não encontrado.", 404, "CLUB_NOT_FOUND");
     }
   }
 
@@ -67,7 +67,7 @@ export class ClubService {
     const club = await this.requireOwned(ownerId, clubId);
     const current = club.members.find((member) => member.id === memberId);
     if (!current) {
-      throw new AppError("Jogador nÃƒÆ’Ã‚Â£o encontrado.", 404, "CLUB_MEMBER_NOT_FOUND");
+      throw new AppError("Jogador não encontrado.", 404, "CLUB_MEMBER_NOT_FOUND");
     }
     const renamed =
       this.normalize(input.displayName) !== this.normalize(current.displayName);
@@ -94,7 +94,7 @@ export class ClubService {
   async deleteMember(ownerId: string, clubId: string, memberId: string) {
     await this.requireOwned(ownerId, clubId);
     if (!await this.repository.deleteMember(clubId, memberId)) {
-      throw new AppError("Jogador nÃƒÆ’Ã‚Â£o encontrado.", 404, "CLUB_MEMBER_NOT_FOUND");
+      throw new AppError("Jogador não encontrado.", 404, "CLUB_MEMBER_NOT_FOUND");
     }
     await this.audit(ownerId, clubId, "CLUB_MEMBER_REMOVED", { memberId });
   }
@@ -102,7 +102,7 @@ export class ClubService {
   async setCaptain(ownerId: string, clubId: string, memberId: string) {
     const club = await this.requireOwned(ownerId, clubId);
     if (!club.members.some((member) => member.id === memberId)) {
-      throw new AppError("Jogador nÃƒÆ’Ã‚Â£o encontrado.", 404, "CLUB_MEMBER_NOT_FOUND");
+      throw new AppError("Jogador não encontrado.", 404, "CLUB_MEMBER_NOT_FOUND");
     }
     const updated = await this.repository.setCaptain(clubId, memberId);
     await this.audit(ownerId, clubId, "CLUB_CAPTAIN_CHANGED", { memberId });
@@ -116,7 +116,7 @@ export class ClubService {
       this.normalize(season.name) === this.normalize(input.name)
     )) {
       throw new AppError(
-        "JÃƒÆ’Ã‚Â¡ existe uma temporada com esse nome.",
+        "Já existe uma temporada com esse nome.",
         409,
         "CLUB_SEASON_NAME_IN_USE"
       );
@@ -139,7 +139,7 @@ export class ClubService {
       this.normalize(season.name) === this.normalize(input.name)
     )) {
       throw new AppError(
-        "JÃƒÆ’Ã‚Â¡ existe uma temporada com esse nome.",
+        "Já existe uma temporada com esse nome.",
         409,
         "CLUB_SEASON_NAME_IN_USE"
       );
@@ -152,7 +152,7 @@ export class ClubService {
   async deleteSeason(ownerId: string, clubId: string, seasonId: string) {
     await this.requireOwned(ownerId, clubId);
     if (!await this.repository.deleteSeason(clubId, seasonId)) {
-      throw new AppError("Temporada nÃƒÆ’Ã‚Â£o encontrada.", 404, "CLUB_SEASON_NOT_FOUND");
+      throw new AppError("Temporada não encontrada.", 404, "CLUB_SEASON_NOT_FOUND");
     }
     await this.audit(ownerId, clubId, "CLUB_SEASON_REMOVED", { seasonId });
   }
@@ -163,7 +163,7 @@ export class ClubService {
       this.normalize(squad.name) === this.normalize(input.name)
     )) {
       throw new AppError(
-        "JÃƒÆ’Ã‚Â¡ existe um elenco com esse nome.",
+        "Já existe um elenco com esse nome.",
         409,
         "CLUB_SQUAD_NAME_IN_USE"
       );
@@ -185,7 +185,7 @@ export class ClubService {
       this.normalize(squad.name) === this.normalize(input.name)
     )) {
       throw new AppError(
-        "JÃƒÆ’Ã‚Â¡ existe um elenco com esse nome.",
+        "Já existe um elenco com esse nome.",
         409,
         "CLUB_SQUAD_NAME_IN_USE"
       );
@@ -198,7 +198,7 @@ export class ClubService {
   async deleteSquad(ownerId: string, clubId: string, squadId: string) {
     await this.requireOwned(ownerId, clubId);
     if (!await this.repository.deleteSquad(clubId, squadId)) {
-      throw new AppError("Elenco nÃƒÆ’Ã‚Â£o encontrado.", 404, "CLUB_SQUAD_NOT_FOUND");
+      throw new AppError("Elenco não encontrado.", 404, "CLUB_SQUAD_NOT_FOUND");
     }
     await this.audit(ownerId, clubId, "CLUB_SQUAD_REMOVED", { squadId });
   }
@@ -213,7 +213,7 @@ export class ClubService {
     const uniqueIds = new Set(members.map((member) => member.clubMemberId));
     if (uniqueIds.size !== members.length) {
       throw new AppError(
-        "Um jogador nÃ£o pode aparecer duas vezes no mesmo elenco.",
+        "Um jogador não pode aparecer duas vezes no mesmo elenco.",
         400,
         "DUPLICATE_SQUAD_MEMBER"
       );
@@ -232,7 +232,7 @@ export class ClubService {
       this.normalize(staff.displayName) === this.normalize(input.displayName)
     )) {
       throw new AppError(
-        "JÃƒÆ’Ã‚Â¡ existe um membro da comissÃƒÆ’Ã‚Â£o com esse nome.",
+        "Já existe um membro da comissão com esse nome.",
         409,
         "CLUB_STAFF_NAME_IN_USE"
       );
@@ -246,7 +246,7 @@ export class ClubService {
     await this.requireOwned(ownerId, clubId);
     if (!await this.repository.deleteStaff(clubId, staffId)) {
       throw new AppError(
-        "Membro da comissÃƒÆ’Ã‚Â£o nÃƒÆ’Ã‚Â£o encontrado.",
+        "Membro da comissão não encontrado.",
         404,
         "CLUB_STAFF_NOT_FOUND"
       );
@@ -285,7 +285,7 @@ export class ClubService {
     ).catch((error: unknown) => {
       if (isUniqueViolation(error)) {
         throw new AppError(
-          "Este clube jÃƒÆ’Ã‚Â¡ foi importado ou existe uma equipe com o mesmo nome.",
+          "Este clube já foi importado ou existe uma equipe com o mesmo nome.",
           409,
           "CLUB_ALREADY_IMPORTED"
         );
@@ -309,7 +309,7 @@ export class ClubService {
     const team = await this.repository.findTeamWithMembers(teamId);
     if (!team || team.sourceClubId !== clubId) {
       throw new AppError(
-        "Equipe nÃƒÆ’Ã‚Â£o encontrada ou nÃƒÆ’Ã‚Â£o originada deste clube.",
+        "Equipe não encontrada ou não originada deste clube.",
         404,
         "TEAM_NOT_FOUND"
       );
@@ -455,7 +455,7 @@ export class ClubService {
     const valid = new Set(club.members.map((member) => member.id));
     if (memberIds.some((id) => !valid.has(id))) {
       throw new AppError(
-        "Um dos jogadores selecionados nÃƒÆ’Ã‚Â£o pertence ao clube.",
+        "Um dos jogadores selecionados não pertence ao clube.",
         400,
         "INVALID_MEMBER_SELECTION"
       );
@@ -465,7 +465,7 @@ export class ClubService {
   private validateSeasonDates(input: ClubSeasonInput) {
     if (input.startsAt && input.endsAt && input.endsAt < input.startsAt) {
       throw new AppError(
-        "A data final deve ser posterior ÃƒÆ’Ã‚Â  data inicial.",
+        "A data final deve ser posterior à data inicial.",
         400,
         "INVALID_CLUB_SEASON_DATES"
       );
@@ -491,7 +491,7 @@ export class ClubService {
     }
     const rows = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
     if (rows.length === 0) {
-      throw new AppError("O CSV estÃƒÆ’Ã‚Â¡ vazio.", 400, "INVALID_ROSTER_FORMAT");
+      throw new AppError("O CSV está vazio.", 400, "INVALID_ROSTER_FORMAT");
     }
     const header = rows[0]!.split(",").map((cell) => cell.trim().toLowerCase());
     const nameIndex = header.indexOf("nome");
@@ -570,7 +570,7 @@ export class ClubService {
     const parsed = typeof value === "number" ? value : Number(value);
     if (!Number.isInteger(parsed) || parsed < 0 || parsed > 999) {
       throw new AppError(
-        "NÃƒÆ’Ã‚Âºmero de camisa invÃƒÆ’Ã‚Â¡lido.",
+        "Número de camisa inválido.",
         400,
         "INVALID_ROSTER_FORMAT"
       );
@@ -589,7 +589,7 @@ export class ClubService {
       const key = this.normalize(row.displayName);
       if (seen.has(key)) {
         throw new AppError(
-          `Jogador duplicado na importaÃƒÆ’Ã‚Â§ÃƒÆ’Ã‚Â£o: ${row.displayName}.`,
+          `Jogador duplicado na importação: ${row.displayName}.`,
           409,
           "DUPLICATE_ROSTER_ROW"
         );
@@ -601,7 +601,7 @@ export class ClubService {
   private async requireOwned(ownerId: string, clubId: string) {
     const club = await this.repository.findById(clubId);
     if (!club || club.ownerId !== ownerId) {
-      throw new AppError("Clube nÃƒÆ’Ã‚Â£o encontrado.", 404, "CLUB_NOT_FOUND");
+      throw new AppError("Clube não encontrado.", 404, "CLUB_NOT_FOUND");
     }
     return club;
   }
@@ -610,7 +610,7 @@ export class ClubService {
     const clubs = await this.repository.listByOwner(ownerId);
     if (clubs.some((club) => club.id !== ignoredId && this.hasName([club.name], name))) {
       throw new AppError(
-        "VocÃƒÆ’Ã‚Âª jÃƒÆ’Ã‚Â¡ possui um clube com esse nome.",
+        "Você já possui um clube com esse nome.",
         409,
         "CLUB_NAME_IN_USE"
       );
@@ -625,7 +625,7 @@ export class ClubService {
     const others = club.members.filter((member) => member.id !== ignoredId);
     if (this.hasName(others.map((member) => member.displayName), name)) {
       throw new AppError(
-        "Esse jogador jÃƒÆ’Ã‚Â¡ estÃƒÆ’Ã‚Â¡ cadastrado no clube.",
+        "Esse jogador já está cadastrado no clube.",
         409,
         "CLUB_MEMBER_NAME_IN_USE"
       );

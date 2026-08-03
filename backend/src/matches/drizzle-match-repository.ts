@@ -1,4 +1,4 @@
-﻿import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 import type { Database } from "../db/client.js";
 import { championshipEntries, matches, teamMembers } from "../db/schema.js";
@@ -81,7 +81,7 @@ export class DrizzleMatchRepository implements MatchRepository {
   async updateScore(matchId: string, homeScore: number, awayScore: number) {
     const [match] = await this.db
       .update(matches)
-      .set({ homeScore, awayScore, updatedAt: new Date() })
+      .set({ homeScore, awayScore, status: "FINISHED", updatedAt: new Date() })
       .where(eq(matches.id, matchId))
       .returning();
     if (!match) throw new Error("Partida não encontrada.");

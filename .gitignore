@@ -27,3 +27,6 @@ Thumbs.db
 # Local database and Docker data
 *.sqlite
 .docker-data/
+
+# Local pnpm store cache
+.pnpm-store/

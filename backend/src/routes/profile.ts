@@ -5,12 +5,11 @@ import type { AuthService } from "../auth/auth-service.js";
 import { requireUser } from "../auth/require-user.js";
 import type { Env } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
+import { httpUrl } from "../validation/http-url.js";
 
 const updateProfileSchema = z.object({
   displayName: z.string().trim().min(2).max(80),
-  avatarUrl: z
-    .union([z.url(), z.literal(""), z.null()])
-    .transform((value) => value || null),
+  avatarUrl: httpUrl,
   bio: z
     .union([z.string().trim().max(240), z.null()])
     .transform((value) => value || null)

@@ -1,4 +1,4 @@
-﻿import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import {
   ChampionshipService,
@@ -344,6 +344,24 @@ describe("StatisticsService", () => {
     expect(page.page).toBe(1);
     expect(page.limit).toBe(1);
     expect(page.items[0]?.actorName).toBe("Jogador A");
+  });
+
+  it("blocks another organizer from reading statistics", async () => {
+    addEntry("entry-a", "Azul", "team-a");
+    addEntry("entry-b", "Raio", "team-b");
+
+    await expect(
+      service.statistics(arenaId, {}, 1, 20, "organizer-2")
+    ).rejects.toMatchObject({ code: "CHAMPIONSHIP_NOT_FOUND" });
+    await expect(
+      service.clubStandings(arenaId, {}, "organizer-2")
+    ).rejects.toMatchObject({ code: "CHAMPIONSHIP_NOT_FOUND" });
+    await expect(
+      service.headToHead(arenaId, "entry-a", "entry-b", "organizer-2")
+    ).rejects.toMatchObject({ code: "CHAMPIONSHIP_NOT_FOUND" });
+    await expect(
+      service.ranking(arenaId, "scorer", {}, 1, 20, "organizer-2")
+    ).rejects.toMatchObject({ code: "CHAMPIONSHIP_NOT_FOUND" });
   });
 });
 

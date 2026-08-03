@@ -1,4 +1,4 @@
-﻿import type { Championship } from "../championships/championship-repository.js";
+import type { Championship } from "../championships/championship-repository.js";
 import type { ChampionshipService } from "../championships/championship-service.js";
 import { AppError } from "../errors/app-error.js";
 import type { MatchRepository } from "../matches/match-repository.js";
@@ -43,9 +43,10 @@ export class StatisticsService {
     championshipId: string,
     filters: StatisticsFilters = {},
     page = 1,
-    limit = 20
+    limit = 20,
+    ownerId?: string
   ): Promise<Page<PlayerStatistic>> {
-    const championship = await this.requireChampionship(championshipId);
+    const championship = await this.requireChampionship(championshipId, ownerId);
     const [events, entries, matches] = await Promise.all([
       this.repository.listByChampionship(championshipId),
       this.matches.listEntries(championshipId),
@@ -76,9 +77,10 @@ export class StatisticsService {
 
   async clubStandings(
     championshipId: string,
-    filters: StatisticsFilters = {}
+    filters: StatisticsFilters = {},
+    ownerId?: string
   ): Promise<ClubStandingRow[]> {
-    const championship = await this.requireChampionship(championshipId);
+    const championship = await this.requireChampionship(championshipId, ownerId);
     const [entries, matches] = await Promise.all([
       this.matches.listEntries(championshipId),
       this.matches.listByChampionship(championshipId)
@@ -92,17 +94,19 @@ export class StatisticsService {
 
   async streakStats(
     championshipId: string,
-    filters: StatisticsFilters = {}
+    filters: StatisticsFilters = {},
+    ownerId?: string
   ): Promise<ClubStandingRow[]> {
-    return this.clubStandings(championshipId, filters);
+    return this.clubStandings(championshipId, filters, ownerId);
   }
 
   async headToHead(
     championshipId: string,
     entryAId: string,
-    entryBId: string
+    entryBId: string,
+    ownerId?: string
   ): Promise<HeadToHeadRow[]> {
-    await this.requireChampionship(championshipId);
+    await this.requireChampionship(championshipId, ownerId);
     const [entries, matches] = await Promise.all([
       this.matches.listEntries(championshipId),
       this.matches.listByChampionship(championshipId)
@@ -112,9 +116,10 @@ export class StatisticsService {
 
   async highlights(
     championshipId: string,
-    filters: StatisticsFilters = {}
+    filters: StatisticsFilters = {},
+    ownerId?: string
   ): Promise<Highlight[]> {
-    const championship = await this.requireChampionship(championshipId);
+    const championship = await this.requireChampionship(championshipId, ownerId);
     const [events, entries, matches] = await Promise.all([
       this.repository.listByChampionship(championshipId),
       this.matches.listEntries(championshipId),
@@ -148,9 +153,10 @@ export class StatisticsService {
     kind: RankingKind,
     filters: StatisticsFilters = {},
     page = 1,
-    limit = 20
+    limit = 20,
+    ownerId?: string
   ): Promise<Page<PlayerStatistic>> {
-    const championship = await this.requireChampionship(championshipId);
+    const championship = await this.requireChampionship(championshipId, ownerId);
     const [events, entries, matches] = await Promise.all([
       this.repository.listByChampionship(championshipId),
       this.matches.listEntries(championshipId),
@@ -195,10 +201,12 @@ export class StatisticsService {
   }
 
   private async requireChampionship(
-    championshipId: string
+    championshipId: string,
+    ownerId?: string
   ): Promise<Championship> {
-    const championship =
-      await this.championships.getChampionshipById(championshipId);
+    const championship = ownerId
+      ? await this.championships.getMine(ownerId, championshipId)
+      : await this.championships.getChampionshipById(championshipId);
     if (!championship) {
       throw new AppError(
         "Campeonato não encontrado.",

@@ -102,9 +102,9 @@ export function ClubsPage() {
                   message: "Identidade do clube atualizada."
                 });
               }}>
-                <input defaultValue={club.name} name="name" required />
-                <input defaultValue={club.shortName ?? ""} name="shortName" placeholder="Sigla" />
-                <input defaultValue={club.logoUrl ?? ""} name="logoUrl" placeholder="URL do escudo" type="url" />
+                <input aria-label="Nome do clube" defaultValue={club.name} name="name" required />
+                <input aria-label="Sigla do clube" defaultValue={club.shortName ?? ""} name="shortName" placeholder="Sigla" />
+                <input aria-label="Escudo do clube (URL)" defaultValue={club.logoUrl ?? ""} name="logoUrl" placeholder="URL do escudo" type="url" />
                 <button disabled={mutation.isPending}>Salvar identidade</button>
               </form>
               <ul>
@@ -146,9 +146,9 @@ export function ClubsPage() {
                   message: "Jogador adicionado ao clube."
                 }, { onSuccess: () => form.reset() });
               }}>
-                <input name="displayName" minLength={2} placeholder="Nome do jogador" required />
-                <input name="jerseyNumber" min={0} max={999} placeholder="Camisa" type="number" />
-                <input name="position" maxLength={40} placeholder="Posição" />
+                <input aria-label="Nome do jogador" name="displayName" minLength={2} placeholder="Nome do jogador" required />
+                <input aria-label="Número da camisa" name="jerseyNumber" min={0} max={999} placeholder="Camisa" type="number" />
+                <input aria-label="Posição" name="position" maxLength={40} placeholder="Posição" />
                 <button disabled={mutation.isPending}>Adicionar</button>
               </form>
             </article>

@@ -27,6 +27,9 @@ export function PublicLayout() {
 
   return (
     <div className={styles.shell}>
+      <a className={styles.skipLink} href="#conteudo">
+        Pular para o conteúdo
+      </a>
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <Brand />
@@ -71,7 +74,7 @@ export function PublicLayout() {
 
       <ServerStatusNotice />
 
-      <main>
+      <main id="conteudo">
         <Outlet />
       </main>
 
