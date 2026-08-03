@@ -28,3 +28,12 @@
   .itemHeader { flex-direction: column; gap: .2rem; }
   .actions { flex-direction: column; align-items: flex-start; }
 }
+
+.actions button:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.pagination button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}

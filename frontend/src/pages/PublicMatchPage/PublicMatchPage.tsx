@@ -81,10 +81,10 @@ export function PublicMatchPage() {
       )}
       <section className={styles.scoreboard}>
         <strong>{match.homeEntry.displayName}</strong>
-        <div>
-          <span>{match.homeScore ?? "–"}</span>
+        <div className={styles.scoreWrap}>
+          <span key={`home-${match.homeScore}`}>{match.homeScore ?? "–"}</span>
           <b>×</b>
-          <span>{match.awayScore ?? "–"}</span>
+          <span key={`away-${match.awayScore}`}>{match.awayScore ?? "–"}</span>
         </div>
         <strong>{match.awayEntry.displayName}</strong>
       </section>

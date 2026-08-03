@@ -43,3 +43,24 @@
   .memberForm { grid-template-columns: 1fr; }
   .identityForm { grid-template-columns: 1fr; }
 }
+
+.createForm button,
+.memberForm button,
+.identityForm button {
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.createForm button:hover:not(:disabled),
+.memberForm button:hover:not(:disabled),
+.identityForm button:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-card);
+}
+
+.list button:hover:not(:disabled),
+.team header button:hover:not(:disabled),
+.team li button:hover:not(:disabled) {
+  color: var(--color-primary-dark);
+}

@@ -214,3 +214,29 @@
   outline-offset: 2px;
   transform: translateY(0);
 }
+
+.navigation a {
+  text-underline-offset: 0.35rem;
+}
+
+.navigation a:hover,
+.navigation a[aria-current="page"] {
+  color: var(--color-text-strong);
+  text-decoration: underline;
+}
+
+.navigation .primaryLink:hover {
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-card);
+}
+
+.notificationsLink span {
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+
+.notificationsLink:hover span {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}

@@ -73,19 +73,25 @@ export function Bracket({ bracket }: { bracket: BracketData }) {
               <div className={styles.games}>
                 {nodes.map((node) => {
                   const match = bracket.matches.find((item) => item.id === node.matchId);
+                  const winnerId = match?.status === "FINISHED" &&
+                    match.homeScore !== null &&
+                    match.awayScore !== null
+                    ? match.homeScore > match.awayScore
+                      ? match.homeEntryId
+                      : match.awayEntryId
+                    : null;
+                  const isBye = !node.matchId && node.homeEntryId && !node.awayEntryId;
                   return (
                     <article className={styles.game} key={node.id}>
-                      <div>
+                      <div className={winnerId === node.homeEntryId ? styles.winner : undefined}>
                         <span>{entryName(node.homeEntryId)}</span>
                         <b>{match?.homeScore ?? "–"}</b>
                       </div>
-                      <div>
+                      <div className={winnerId === node.awayEntryId ? styles.winner : undefined}>
                         <span>{entryName(node.awayEntryId)}</span>
                         <b>{match?.awayScore ?? "–"}</b>
                       </div>
-                      {!node.matchId && node.homeEntryId && !node.awayEntryId && (
-                        <small>Avança por folga</small>
-                      )}
+                      {isBye && <small>Classifica por folga</small>}
                     </article>
                   );
                 })}

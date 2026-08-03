@@ -1,22 +1,195 @@
-.scroll { overflow-x: auto; padding: 1rem 0; }
-.bracket { display: flex; min-width: max-content; padding: .5rem; gap: 1rem; align-items: stretch; }
-.round { display: flex; width: 230px; flex-direction: column; }
-.round h3 { margin: 0 0 .8rem; color: var(--color-primary); font-family: var(--font-mono); font-size: .68rem; text-transform: uppercase; }
-.games { display: flex; height: 100%; flex-direction: column; justify-content: space-around; gap: 1rem; }
-.game { position: relative; padding: .65rem; border: 1px solid var(--color-border); border-radius: .35rem; background: var(--color-surface); }
-.game::after { position: absolute; width: 1rem; height: 1px; top: 50%; right: -1.05rem; background: var(--color-border); content: ""; }
-.round:last-child .game::after { display: none; }
-.game div { display: flex; min-height: 2rem; padding: .35rem; align-items: center; justify-content: space-between; gap: .7rem; }
-.game div + div { border-top: 1px solid var(--color-border); }
-.game span { max-width: 165px; overflow: hidden; font-size: .75rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-.game b { color: var(--color-primary); font-family: var(--font-mono); }
-.game small { display: block; padding: .35rem; color: var(--color-text-muted); font-size: .6rem; }
-.empty { padding: 1rem; color: var(--color-text-muted); }
-.champion { display: flex; margin: 1rem .5rem 0; padding: 1rem; border: 1px solid var(--color-primary); border-radius: .35rem; align-items: center; justify-content: space-between; background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)); }
-.champion span { color: var(--color-primary); font-family: var(--font-mono); font-size: .65rem; font-weight: 800; text-transform: uppercase; }
+.scroll {
+  overflow-x: auto;
+  padding: 1rem 0 1.25rem;
+  -webkit-overflow-scrolling: touch;
+}
 
-.thirdPlace { display: flex; margin: .5rem .5rem 0; padding: .75rem 1rem; border: 1px solid var(--color-border); border-radius: .35rem; align-items: center; gap: 1rem; background: var(--color-surface); }
-.thirdPlace > span:first-child { color: var(--color-text-muted); font-family: var(--font-mono); font-size: .6rem; font-weight: 800; text-transform: uppercase; }
-.thirdPlace strong { font-size: .75rem; }
-.thirdPlace span { font-size: .65rem; color: var(--color-text-muted); }
-.championTrophy { font-size: 1.2rem; }
+.bracket {
+  display: flex;
+  min-width: max-content;
+  padding: 0.5rem;
+  align-items: stretch;
+  gap: 1.25rem;
+}
+
+.round {
+  display: flex;
+  width: 230px;
+  flex-direction: column;
+}
+
+.round h3 {
+  margin: 0 0 0.9rem;
+  color: var(--color-primary-dark);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.games {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.game {
+  position: relative;
+  padding: 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.game::after {
+  position: absolute;
+  width: 1.25rem;
+  height: 1px;
+  top: 50%;
+  right: -1.3rem;
+  background: var(--color-border-strong);
+  content: "";
+}
+
+.round:last-child .game::after {
+  display: none;
+}
+
+.game:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-medium);
+}
+
+.game div {
+  display: flex;
+  min-height: 2.1rem;
+  padding: 0.4rem 0.45rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.7rem;
+  border-radius: 0.2rem;
+}
+
+.game div + div {
+  border-top: 1px solid var(--color-border);
+}
+
+.game span {
+  max-width: 150px;
+  overflow: hidden;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game b {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.game .winner {
+  background: var(--color-success-soft);
+}
+
+.game .winner span {
+  color: var(--color-text-strong);
+}
+
+.game .winner b {
+  color: var(--color-success);
+  font-weight: 900;
+}
+
+.game small {
+  display: block;
+  padding: 0.35rem;
+  color: var(--color-text-muted);
+  font-size: 0.6rem;
+}
+
+.empty {
+  padding: 1.5rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.champion {
+  display: flex;
+  margin: 1rem 0.5rem 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  box-shadow: var(--shadow-card);
+}
+
+.champion > span:not(.championTrophy) {
+  color: var(--color-primary-dark);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.championTrophy {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.thirdPlace {
+  display: flex;
+  margin: 0.5rem 0.5rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  align-items: center;
+  gap: 1rem;
+  background: var(--color-surface);
+}
+
+.thirdPlace > span:first-child {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.thirdPlace strong {
+  font-size: 0.75rem;
+}
+
+.thirdPlace span {
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+}
+
+@media (max-width: 560px) {
+  .game {
+    padding: 0.5rem;
+  }
+
+  .game span {
+    max-width: 120px;
+    font-size: 0.7rem;
+  }
+
+  .champion {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

@@ -55,3 +55,48 @@
   .matchActions, .scheduleForm { justify-content: stretch; }
   .scheduleForm { display: grid; grid-template-columns: 1fr; }
 }
+
+.createForm button {
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.createForm button:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  box-shadow: var(--shadow-card);
+}
+
+.scoreForm button {
+  transition:
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.scoreForm button:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.matchActions > button:hover:not(:disabled),
+.scheduleForm button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+.match {
+  transition:
+    border-color var(--duration-fast) var(--ease-out),
+    box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.match:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-card);
+}
+
+.standings tbody tr {
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.standings tbody tr:hover {
+  background: var(--color-surface-hover);
+}

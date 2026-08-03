@@ -1,4 +1,4 @@
-﻿import { useMemo } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
@@ -170,7 +170,11 @@ export function ChampionshipPage() {
                   <td><strong>{row.position}</strong></td>
                   <td>{row.displayName}</td><td>{row.played}</td>
                   <td>{row.wins}</td><td>{row.scoreDifference}</td>
-                  <td><strong>{row.points}</strong></td>
+                  <td>
+                    <strong className={styles.pointsCell} key={row.points}>
+                      {row.points}
+                    </strong>
+                  </td>
                 </tr>
               ))}</tbody>
             </table>
@@ -343,17 +347,25 @@ function CalendarView({ calendar, slug }: { calendar: CalendarRound[]; slug: str
 }
 
 function FixtureRow({ match, slug }: { match: ArenaMatch; slug: string }) {
+  const score = `${match.homeScore ?? "–"} × ${match.awayScore ?? "–"}`;
   return (
     <Link
       className={`${styles.fixture} ${styles[`status-${match.status}`]}`}
       key={match.id}
       to={`/campeonatos/${slug}/partidas/${match.id}`}
     >
-      <span>{formatMatchDateTime(match.scheduledAt)}</span>
-      <span className={styles.statusBadge}>{statusLabel(match.status)}</span>
-      <strong>{match.homeEntry.displayName}</strong>
-      <b>{match.homeScore ?? "–"} × {match.awayScore ?? "–"}</b>
-      <strong>{match.awayEntry.displayName}</strong>
+      <span className={styles.fixtureMeta}>
+        <span>{formatMatchDateTime(match.scheduledAt)}</span>
+        <span className={styles.statusBadge}>{statusLabel(match.status)}</span>
+      </span>
+      <strong className={styles.homeName}>{match.homeEntry.displayName}</strong>
+      <b
+        className={styles.fixtureScore}
+        key={`${match.homeScore}-${match.awayScore}`}
+      >
+        {score}
+      </b>
+      <strong className={styles.awayName}>{match.awayEntry.displayName}</strong>
     </Link>
   );
 }

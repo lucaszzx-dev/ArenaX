@@ -1,4 +1,4 @@
-﻿.page {
+.page {
   width: min(1120px, calc(100% - 2rem));
   min-height: calc(100vh - 4rem);
   margin: 0 auto;
@@ -504,4 +504,31 @@
   color: #dc2626;
   background: #fef2f2;
   border: 1px solid #fca5a5;
+}
+.actions button:hover:not(:disabled),
+.scoreForm button:hover:not(:disabled),
+.periodForm button:hover:not(:disabled),
+.metaForm button:hover:not(:disabled),
+.eventForm button:hover:not(:disabled),
+.lineupForm button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+}
+
+.dangerBtn:hover:not(:disabled) {
+  border-color: var(--color-danger) !important;
+  color: var(--color-danger) !important;
+}
+
+.warningBtn:hover:not(:disabled) {
+  border-color: #d97706 !important;
+  color: #d97706 !important;
+}
+
+.overtimeBtn:hover {
+  background: var(--color-primary-soft);
+}
+
+.tabList button[aria-selected="true"] {
+  background: var(--color-primary-soft);
 }
