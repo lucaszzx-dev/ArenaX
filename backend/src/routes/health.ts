@@ -1,9 +1,25 @@
 import type { FastifyPluginAsync } from "fastify";
 
-export const healthRoutes: FastifyPluginAsync = async (app) => {
-  const healthHandler = () => {
+type HealthRoutesOptions = {
+  checkDatabase?: () => Promise<void>;
+};
+
+export const healthRoutes: FastifyPluginAsync<HealthRoutesOptions> = async (
+  app,
+  options
+) => {
+  const healthHandler = async () => {
+    if (options.checkDatabase) {
+      try {
+        await options.checkDatabase();
+      } catch {
+        return { status: "degraded", database: "unreachable" };
+      }
+    }
+
     return {
-      status: "ok"
+      status: "ok",
+      database: options.checkDatabase ? "ok" : "skipped"
     };
   };
 

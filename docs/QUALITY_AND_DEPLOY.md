@@ -6,8 +6,8 @@
 
 - Build TypeScript do frontend e backend.
 - Lint do frontend e backend.
-- 38 testes automatizados do backend.
-- 4 testes Playwright em desktop e viewport móvel.
+- Testes automatizados do backend (Vitest) e do frontend.
+- Testes Playwright em desktop e viewport móvel.
 - Seed demonstrativo executado duas vezes sem duplicar dados.
 - Cookie de sessão `HttpOnly`, `SameSite=None` e `Secure` em produção.
 - CORS restrito à URL configurada do frontend.
@@ -45,6 +45,7 @@ O seed não deve ser executado em produção sem uma decisão explícita.
 
 ```text
 NODE_ENV=production
+LOG_LEVEL=info
 HOST=0.0.0.0
 PORT=<porta fornecida pela hospedagem>
 DATABASE_URL=<URL PostgreSQL de produção>
@@ -70,7 +71,7 @@ Variáveis `VITE_` são públicas. Nunca colocar segredos nelas.
   de armazenamento e processamento adequados para o MVP.
 - Backend: Render Web Service. O plano gratuito pode suspender o serviço após
   um período sem acessos; a primeira requisição após a suspensão pode demorar.
-- Frontend: hospedagem estática do Codex Sites.
+- Frontend: Vercel (estático, `frontend/`).
 
 O arquivo `render.yaml` descreve o backend sem incluir credenciais. As
 variáveis marcadas como segredo devem ser preenchidas diretamente no painel
@@ -79,12 +80,27 @@ do Render.
 Em produção, frontend e backend ficam em domínios diferentes. Por isso, o
 cookie usa `SameSite=None` e `Secure`; o navegador só o envia por HTTPS.
 
+## Pipeline de CI
+
+O GitHub Actions (`.github/workflows/ci.yml`) roda em todo push/PR:
+
+- install com lockfile congelado;
+- build (backend + frontend);
+- lint (backend + frontend);
+- testes Vitest (backend + frontend);
+- testes E2E (Playwright, chromium) contra um PostgreSQL de serviço.
+
+O deploy automático do Render é disparado por commits na `main` (apenas
+quando arquivos do backend mudam). Na Vercel, o deploy do frontend também é
+automático.
+
 ## Checklist do deploy
 
-1. Criar PostgreSQL hospedado e guardar a URL como segredo.
+1. Criar PostgreSQL hospedado (Neon) e guardar a URL como segredo.
 2. Publicar o backend com `NODE_ENV=production`.
-3. Executar `pnpm --dir backend db:migrate` no banco de produção.
-4. Verificar `GET /health`.
+3. Executar `pnpm --dir backend db:migrate:prod` no banco de produção
+   (o `startCommand` do Render já executa isso antes de subir).
+4. Verificar `GET /health` (checa `select 1` no banco).
 5. Publicar o frontend com a URL definitiva da API.
 6. Atualizar `FRONTEND_URL` no backend.
 7. Cadastrar no Google Cloud a origem do frontend e o callback HTTPS.
@@ -93,6 +109,8 @@ cookie usa `SameSite=None` e `Secure`; o navegador só o envia por HTTPS.
 10. Publicar a arena e abrir a URL em uma janela anônima.
 11. Verificar cookies `HttpOnly` e `Secure`.
 12. Remover os dados temporários usados na validação.
+
+Detalhes de ambientes, rollback, backups e escala: `docs/DEPLOY_ROLLBACK.md`.
 
 ## Auditoria de dependências
 

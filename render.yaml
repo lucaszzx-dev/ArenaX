@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     buildCommand: pnpm install --frozen-lockfile && pnpm --dir backend build
-    startCommand: pnpm --dir backend db:migrate && node backend/dist/server.js
+    startCommand: pnpm --dir backend db:migrate:prod && node backend/dist/server.js
     healthCheckPath: /health
     autoDeployTrigger: commit
     buildFilter:

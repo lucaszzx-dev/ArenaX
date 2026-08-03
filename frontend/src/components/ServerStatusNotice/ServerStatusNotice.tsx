@@ -25,8 +25,28 @@ export function ServerStatusNotice() {
     return () => window.clearTimeout(timeout);
   }, [healthQuery.isPending]);
 
-  if (!healthQuery.isError && !showWarmup) {
+  const degraded = healthQuery.data?.status === "degraded";
+
+  if (!healthQuery.isError && !degraded && !showWarmup) {
     return null;
+  }
+
+  if (degraded) {
+    return (
+      <aside className={styles.notice} role="alert">
+        <div>
+          <strong>O banco de dados está indisponível.</strong>
+          <span>As informações podem estar desatualizadas. Tente novamente em instantes.</span>
+        </div>
+        <button
+          disabled={healthQuery.isFetching}
+          onClick={() => void healthQuery.refetch()}
+          type="button"
+        >
+          {healthQuery.isFetching ? "Tentando..." : "Tentar novamente"}
+        </button>
+      </aside>
+    );
   }
 
   if (healthQuery.isError) {

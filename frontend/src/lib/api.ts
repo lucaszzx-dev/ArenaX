@@ -4,8 +4,13 @@ export function getApiUrl(path: string): string {
   return `${apiUrl}${path}`;
 }
 
+export type ApiHealth = {
+  status: "ok" | "degraded";
+  database?: "ok" | "unreachable" | "skipped";
+};
+
 export function getApiHealth() {
-  return apiRequest<{ status: "ok" }>("/health");
+  return apiRequest<ApiHealth>("/health");
 }
 
 type ApiErrorBody = {

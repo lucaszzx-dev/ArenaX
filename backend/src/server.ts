@@ -1,4 +1,4 @@
-﻿import { loadEnvFile } from "node:process";
+import { loadEnvFile } from "node:process";
 
 import { buildApp } from "./app.js";
 import { DrizzleAuthRepository } from "./auth/drizzle-auth-repository.js";
@@ -108,6 +108,7 @@ const matchPeriodService = new MatchPeriodService(
   matchAuditService
 );
 const app = buildApp({
+  checkDatabase: () => database.ping(),
   authService,
   championshipService,
   participantService,

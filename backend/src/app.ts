@@ -36,6 +36,7 @@ import { publicProfileRoutes } from "./routes/public-profiles.js";
 import { notificationRoutes } from "./routes/notifications.js";
 
 type BuildAppOptions = {
+  checkDatabase?: () => Promise<void>;
   authService?: AuthService;
   championshipService?: ChampionshipService;
   participantService?: ParticipantService;
@@ -54,7 +55,20 @@ type BuildAppOptions = {
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const app = Fastify({
-    logger: process.env.NODE_ENV !== "test",
+    logger: options.env
+      ? options.env.NODE_ENV === "test"
+        ? false
+        : {
+            level: options.env.LOG_LEVEL,
+            redact: {
+              paths: [
+                "req.headers.cookie",
+                "req.headers.authorization"
+              ],
+              censor: "[REDACTED]"
+            }
+          }
+      : process.env.NODE_ENV !== "test",
     trustProxy: options.env?.NODE_ENV === "production"
   });
 
@@ -99,7 +113,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     });
   }
 
-  app.register(healthRoutes);
+  if (options.checkDatabase) {
+    app.register(healthRoutes, { checkDatabase: options.checkDatabase });
+  } else {
+    app.register(healthRoutes);
+  }
 
   if (options.authService && options.env) {
     app.register(authRoutes, {

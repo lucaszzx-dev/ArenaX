@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    name: Build, lint e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm --recursive --if-present build
+
+      - name: Lint
+        run: pnpm --recursive --if-present lint
+
+      - name: Backend tests
+        run: pnpm --dir backend test
+
+      - name: Frontend tests
+        run: pnpm --dir frontend test
+
+  e2e:
+    name: Testes E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      DATABASE_URL: postgresql://arenax:arenax_dev@localhost:5432/arenax
+      FRONTEND_URL: http://localhost:5173
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: arenax
+          POSTGRES_USER: arenax
+          POSTGRES_PASSWORD: arenax_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U arenax -d arenax"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Prepare backend environment
+        run: |
+          pnpm --dir backend db:migrate:prod
+
+      - name: Run E2E tests
+        run: pnpm test:e2e -- --project=chromium
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

@@ -13,7 +13,8 @@
     "db:studio": "dotenv -e .env -- drizzle-kit studio",
     "lint": "eslint src test",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:migrate:prod": "drizzle-kit migrate"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.2",

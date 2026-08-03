@@ -13,7 +13,7 @@ describe("GET /health", () => {
     await app.close();
   });
 
-  it("returns the API health status", async () => {
+  it("returns the API health status without a database check", async () => {
     const response = await app.inject({
       method: "GET",
       url: "/health"
@@ -21,7 +21,8 @@ describe("GET /health", () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
-      status: "ok"
+      status: "ok",
+      database: "skipped"
     });
   });
 
@@ -34,7 +35,50 @@ describe("GET /health", () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({ status: "ok" });
+    expect(response.json()).toEqual({
+      status: "ok",
+      database: "skipped"
+    });
+
+    await app.close();
+  });
+
+  it("reports ok when the database is reachable", async () => {
+    const app = buildApp({
+      checkDatabase: async () => undefined
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/health"
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      status: "ok",
+      database: "ok"
+    });
+
+    await app.close();
+  });
+
+  it("reports degraded when the database is unreachable", async () => {
+    const app = buildApp({
+      checkDatabase: async () => {
+        throw new Error("database down");
+      }
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/health"
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      status: "degraded",
+      database: "unreachable"
+    });
 
     await app.close();
   });
