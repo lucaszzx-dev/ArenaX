@@ -108,7 +108,7 @@ export class NotificationService {
       excludeUserId: null,
       type: "MATCH_UPCOMING",
       title: "Partida próxima",
-      message: `O confronto entre ${match.homeEntry.displayName} e ${match.awayEntry.displayName} começa em breve na arena ${championship.name}.`,
+      message: `O confronto entre ${match.homeEntry.displayName} e ${match.awayEntry.displayName} começa em breve na competição ${championship.name}.`,
       link: publicMatchLink(championship, match.id),
       dedupKey: `match:${match.id}:upcoming`
     });
@@ -127,8 +127,8 @@ export class NotificationService {
         ? match.awayEntry.displayName
         : entryId;
     const message = phase === "NEXT_ROUND"
-      ? `${entryName} avançou para a próxima fase do mata-mata na arena ${championship.name}.`
-      : `${entryName} disputará o terceiro lugar do mata-mata na arena ${championship.name}.`;
+      ? `${entryName} avançou para a próxima fase do mata-mata na competição ${championship.name}.`
+      : `${entryName} disputará o terceiro lugar do mata-mata na competição ${championship.name}.`;
 
     await this.notifyEntryUsers({
       championship,
@@ -156,10 +156,10 @@ export class NotificationService {
     const { teamId, event, memberId, memberDisplayName, teamName } = input;
     const title = "Elenco atualizado";
     const message = event === "MEMBER_ADDED"
-      ? `${memberDisplayName ?? "Um jogador"} foi convocado para o time ${teamName} na arena ${championship.name}.`
+      ? `${memberDisplayName ?? "Um jogador"} foi convocado para o time ${teamName} na competição ${championship.name}.`
       : event === "MEMBER_REMOVED"
-        ? `${memberDisplayName ?? "Um jogador"} foi removido do time ${teamName} na arena ${championship.name}.`
-        : `O capitão do time ${teamName} foi alterado na arena ${championship.name}.`;
+        ? `${memberDisplayName ?? "Um jogador"} foi removido do time ${teamName} na competição ${championship.name}.`
+        : `O capitão do time ${teamName} foi alterado na competição ${championship.name}.`;
 
     const memberUsers = await this.repository.findTeamMemberUserIds(teamId);
     const notified = new Set<string>();

@@ -103,7 +103,7 @@ export function ClubsPage() {
         <span>Biblioteca do organizador</span>
         <h1>Meus clubes</h1>
         <p>
-          Cadastre uma vez e importe o clube com seu elenco para diferentes arenas.
+          Cadastre uma vez e importe o clube com seu elenco para diferentes competições.
           Cada importação cria uma cópia segura para preservar o histórico.
         </p>
       </header>
@@ -475,7 +475,7 @@ function ClubCard({ club, disabled, onFeedback, runAction }: ClubCardProps) {
       </section>
 
       <section className={styles.section}>
-        <h3>Importar clube para uma arena</h3>
+        <h3>Importar clube para uma competição</h3>
         <ImportToChampionshipForm club={club} disabled={disabled} onFeedback={onFeedback} />
       </section>
 
@@ -587,7 +587,7 @@ function ImportToChampionshipForm({
     const members = chosenMembers();
     void importClubIntoChampionship(club.id, championshipId, members.length ? members : undefined)
       .then(() => {
-        onFeedback({ kind: "success", text: "Equipe criada na arena." });
+        onFeedback({ kind: "success", text: "Equipe criada na competição." });
         setConfirming(false);
       })
       .catch((cause: unknown) => {
@@ -602,9 +602,9 @@ function ImportToChampionshipForm({
   return (
     <div className={styles.importChampionship}>
       <label>
-        Arena
+        Competição
         <select value={championshipId} onChange={(event) => setChampionshipId(event.target.value)}>
-          <option value="">Escolha uma arena de equipes</option>
+          <option value="">Escolha uma competição de equipes</option>
           {teamArenas.map((championship) => (
             <option key={championship.id} value={championship.id}>{championship.name}</option>
           ))}
@@ -654,11 +654,11 @@ function ImportToChampionshipForm({
         disabled={disabled || !championshipId || (selection === "squad" && !squadId) || (selection === "players" && selected.size === 0)}
         onClick={() => setConfirming(true)}
       >
-        Importar para a arena
+        Importar para a competição
       </button>
       {confirming && (
         <p className={styles.confirm}>
-          Criar equipe "{club.name}" na arena com {chosenMembers().length || "todos os"} jogador(es)?
+          Criar equipe "{club.name}" na competição com {chosenMembers().length || "todos os"} jogador(es)?
           <button type="button" onClick={handleConfirm} disabled={disabled}>Confirmar</button>
           <button type="button" onClick={() => setConfirming(false)}>Cancelar</button>
         </p>

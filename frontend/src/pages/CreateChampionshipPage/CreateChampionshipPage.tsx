@@ -27,7 +27,7 @@ export function CreateChampionshipPage() {
       setErrorMessage(
         error instanceof ApiError
           ? error.message
-          : "Não foi possível criar a arena."
+          : "Não foi possível criar a competição."
       );
     }
   });
@@ -41,7 +41,7 @@ export function CreateChampionshipPage() {
     <section className={styles.page}>
       <header className={styles.heading}>
         <Link to="/painel">← Voltar ao painel</Link>
-        <span>Nova arena / configuração inicial</span>
+        <span>Nova competição / configuração inicial</span>
         <h1>Prepare o palco da competição.</h1>
         <p>
           Comece pelas regras essenciais. Participantes e partidas serão
@@ -53,7 +53,7 @@ export function CreateChampionshipPage() {
         errorMessage={errorMessage}
         isPending={mutation.isPending}
         onSubmit={handleSubmit}
-        submitLabel="Criar arena em rascunho"
+        submitLabel="Criar competição em rascunho"
       />
     </section>
   );

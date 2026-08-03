@@ -182,7 +182,7 @@ export function ManageMatchesPage() {
   return (
     <section className={styles.page}>
       <Link className={styles.back} to={`/painel/campeonatos/${id}`}>
-        ← Voltar à arena
+        ← Voltar à competição
       </Link>
       <header className={styles.heading}>
         <span>03 / partidas</span>

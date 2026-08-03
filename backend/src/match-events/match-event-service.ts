@@ -1,4 +1,4 @@
-﻿import type { ChampionshipService } from "../championships/championship-service.js";
+import type { ChampionshipService } from "../championships/championship-service.js";
 import { AppError } from "../errors/app-error.js";
 import type { MatchRepository } from "../matches/match-repository.js";
 import type {
@@ -80,7 +80,7 @@ export class MatchEventService {
     const eventValue = rules[input.type];
     if (eventValue === undefined) {
       throw new AppError(
-        "Esse tipo de evento não é aceito para o esporte da arena.",
+        "Esse tipo de evento não é aceito para o esporte da competição.",
         400,
         "INVALID_MATCH_EVENT_TYPE"
       );
@@ -170,7 +170,7 @@ export class MatchEventService {
     const eventValue = rules[input.type];
     if (eventValue === undefined) {
       throw new AppError(
-        "Esse tipo de evento não é aceito para o esporte da arena.",
+        "Esse tipo de evento não é aceito para o esporte da competição.",
         400,
         "INVALID_MATCH_EVENT_TYPE"
       );

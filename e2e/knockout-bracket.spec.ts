@@ -13,12 +13,12 @@ async function createArena(
   name: string,
   format: "LEAGUE" | "KNOCKOUT"
 ) {
-  await page.getByRole("link", { name: "Nova arena" }).click();
+  await page.getByRole("link", { name: "Nova competição" }).click();
   await expect(page.getByRole("heading", { name: "Prepare o palco da competição." })).toBeVisible();
-  await page.getByLabel("Nome da arena").fill(name);
+  await page.getByLabel("Nome da competição").fill(name);
   await page.getByLabel("Esporte").selectOption("Futsal");
   await page.getByLabel("Formato").selectOption(format);
-  await page.getByRole("button", { name: "Criar arena em rascunho" }).click();
+  await page.getByRole("button", { name: "Criar competição em rascunho" }).click();
   await expect(page).toHaveURL(/\/painel\/campeonatos\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name })).toBeVisible();
 }
@@ -34,7 +34,7 @@ async function addTeams(
   }
 }
 
-test("organizer creates a knockout arena, generates the bracket and advances a result", async ({ page }) => {
+test("organizer creates a knockout competition, generates the bracket and advances a result", async ({ page }) => {
   await login(page);
 
   const name = `Mata-mata E2E ${Date.now()}`;
@@ -44,7 +44,7 @@ test("organizer creates a knockout arena, generates the bracket and advances a r
   await expect(page).toHaveURL(/\/painel\/campeonatos\/.+\/participantes/);
   await addTeams(page, ["Leões E2E", "Tubarões E2E", "Águias E2E", "Panteras E2E"]);
 
-  await page.getByRole("link", { name: "Voltar à arena" }).click();
+  await page.getByRole("link", { name: "Voltar à competição" }).click();
   await expect(page.getByRole("link", { name: "Gerenciar partidas" })).toBeVisible();
   await page.getByRole("link", { name: "Gerenciar partidas" }).click();
   await expect(page).toHaveURL(/\/painel\/campeonatos\/.+\/partidas/);
@@ -65,12 +65,12 @@ test("organizer creates a knockout arena, generates the bracket and advances a r
   await expect(page.getByText("2 : 0").first()).toBeVisible();
   await expect(page.getByText("Finalizada", { exact: true }).first()).toBeVisible();
 
-  // Publica a arena e confere o chaveamento na página pública.
-  await page.getByRole("link", { name: "Voltar à arena" }).click();
+  // Publica a competição e confere o chaveamento na página pública.
+  await page.getByRole("link", { name: "Voltar à competição" }).click();
   await expect(page.getByRole("heading", { name })).toBeVisible();
   page.on("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "Publicar arena" }).click();
-  await expect(page.getByText("Status da arena atualizado.")).toBeVisible();
+  await page.getByRole("button", { name: "Publicar competição" }).click();
+  await expect(page.getByText("Status da competição atualizado.")).toBeVisible();
 
   const publicLink = page.getByRole("link", { name: /Abrir página pública/ });
   const [publicPage] = await Promise.all([

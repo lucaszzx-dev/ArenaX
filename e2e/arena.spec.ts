@@ -7,7 +7,7 @@ test("visitor discovers a published arena by sport", async ({ page }) => {
     name: "Encontre o próximo campeonato."
   })).toBeVisible();
   await page.getByLabel("Esporte").selectOption("Futsal");
-  await page.getByRole("button", { name: "Buscar arenas" }).click();
+  await page.getByRole("button", { name: "Buscar competições" }).click();
 
   const arena = page.getByRole("link", { name: /Copa ArenaX Demo/ });
   await expect(arena).toBeVisible();

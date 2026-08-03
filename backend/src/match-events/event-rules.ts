@@ -1,4 +1,4 @@
-﻿import type { MatchEventType } from "./match-event-repository.js";
+import type { MatchEventType } from "./match-event-repository.js";
 
 export const eventRules: Record<
   string,

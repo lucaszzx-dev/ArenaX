@@ -1,4 +1,4 @@
-﻿import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getPublicChampionship, getPublicPlayer } from "../../features/championships/public-championship-api";
@@ -54,7 +54,7 @@ export function PublicPlayerPage() {
         </Link>
       </header>
       <section className={styles.panel}>
-        <header><span>ESTATISTICAS</span><h2>Desempenho na arena</h2></header>
+        <header><span>ESTATISTICAS</span><h2>Desempenho na competição</h2></header>
         <div className={styles.statsGrid}>
           <div className={styles.statCard}><b>{statistics.events}</b><span>Eventos</span></div>
           {columns.map((col) => (

@@ -1,4 +1,4 @@
-﻿import { randomBytes } from "node:crypto";
+import { randomBytes } from "node:crypto";
 
 import type {
   Championship,
@@ -23,11 +23,16 @@ export class ChampionshipService {
   ): Promise<Championship> {
     this.validateDates(input.startsAt, input.endsAt);
 
+    const sportRules = this.normalizeSportRules(input.sport, {
+      bestOfSets: input.bestOfSets,
+      maxYellowCards: input.maxYellowCards
+    });
+
     return this.repository.create({
       ...input,
+      ...sportRules,
       allowsDraw: input.format === "KNOCKOUT" ? false : input.allowsDraw,
       thirdPlace: input.format === "KNOCKOUT" ? (input.thirdPlace ?? true) : false,
-      bestOfSets: input.bestOfSets ?? 5,
       format: input.format ?? "LEAGUE",
       organizerId,
       slug: this.createSlug(input.name)
@@ -50,7 +55,7 @@ export class ChampionshipService {
 
     if (!championship || championship.organizerId !== organizerId) {
       throw new AppError(
-        "Campeonato n�o encontrado.",
+        "Campeonato não encontrado.",
         404,
         "CHAMPIONSHIP_NOT_FOUND"
       );
@@ -63,7 +68,7 @@ export class ChampionshipService {
     const championship = await this.repository.findBySlug(slug);
     if (!championship || championship.status === "DRAFT") {
       throw new AppError(
-        "Campeonato n�o encontrado.",
+        "Campeonato não encontrado.",
         404,
         "CHAMPIONSHIP_NOT_FOUND"
       );
@@ -96,16 +101,35 @@ export class ChampionshipService {
     const championship = await this.getMine(organizerId, championshipId);
     this.validateDates(input.startsAt, input.endsAt);
 
+    const sportRules = this.normalizeSportRules(input.sport, {
+      bestOfSets: input.bestOfSets,
+      maxYellowCards: input.maxYellowCards
+    });
+
     return this.repository.update(championshipId, {
       ...input,
+      ...sportRules,
       allowsDraw: championship.format === "KNOCKOUT" ? false : input.allowsDraw
     });
+  }
+
+  private normalizeSportRules(
+    sport: string,
+    rules: { bestOfSets?: number | undefined; maxYellowCards?: number | undefined }
+  ) {
+    const isVolleyball = sport === "Vôlei";
+    const isFootballLike = sport === "Futebol" || sport === "Futsal";
+
+    return {
+      bestOfSets: isVolleyball ? (rules.bestOfSets ?? 5) : 5,
+      maxYellowCards: isFootballLike ? (rules.maxYellowCards ?? 0) : 0
+    };
   }
 
   private validateDates(startsAt: Date | null, endsAt: Date | null) {
     if (startsAt && endsAt && endsAt < startsAt) {
       throw new AppError(
-        "A data final deve ser posterior � data inicial.",
+        "A data final deve ser posterior à data inicial.",
         400,
         "INVALID_CHAMPIONSHIP_DATES"
       );
@@ -122,6 +146,6 @@ export class ChampionshipService {
       .slice(0, 60);
     const suffix = randomBytes(3).toString("hex");
 
-    return `${base || "arena"}-${suffix}`;
+    return `${base || "competicao"}-${suffix}`;
   }
 }

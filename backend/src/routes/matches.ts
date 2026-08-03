@@ -16,7 +16,7 @@ const nullableDate = z
 const createMatchSchema = z.object({
   homeEntryId: z.uuid(),
   awayEntryId: z.uuid(),
-  scheduledAt: nullableDate
+  scheduledAt: nullableDate.default(null)
 });
 const scoreSchema = z.object({
   homeScore: z.number().int().min(0).max(9999),
@@ -31,7 +31,7 @@ const matchActionSchema = z.object({
 const scheduleSchema = z.object({ scheduledAt: nullableDate });
 const generateSchema = z.object({
   legs: z.union([z.literal(1), z.literal(2)]).default(1),
-  startsAt: nullableDate,
+  startsAt: nullableDate.default(null),
   intervalDays: z.number().int().min(1).max(30).default(7)
 });
 

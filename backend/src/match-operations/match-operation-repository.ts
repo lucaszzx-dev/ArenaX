@@ -1,4 +1,4 @@
-﻿export type LineupRole = "STARTER" | "SUBSTITUTE";
+export type LineupRole = "STARTER" | "SUBSTITUTE";
 
 export type MatchLineup = {
   id: string;

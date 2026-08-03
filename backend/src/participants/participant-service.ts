@@ -219,8 +219,8 @@ export class ParticipantService {
     if (championship.entryType !== expected) {
       throw new AppError(
         expected === "TEAM"
-          ? "Esta arena aceita somente participantes individuais."
-          : "Esta arena aceita somente equipes.",
+          ? "Esta competição aceita somente participantes individuais."
+          : "Esta competição aceita somente equipes.",
         409,
         "INVALID_ENTRY_TYPE"
       );

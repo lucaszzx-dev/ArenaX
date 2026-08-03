@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
@@ -346,7 +346,7 @@ export function AdminMatchPage() {
               />
             );
           })}
-          {!teams.length && <p className={styles.empty}>Escalações disponíveis apenas para arenas por equipes.</p>}
+          {!teams.length && <p className={styles.empty}>Escalações disponíveis apenas para competições por equipes.</p>}
         </section>
 
         {/* PERIODS */}

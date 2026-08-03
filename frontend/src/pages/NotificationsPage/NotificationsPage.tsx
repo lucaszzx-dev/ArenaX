@@ -58,7 +58,7 @@ export function NotificationsPage() {
       {notifications.length === 0 && (
         <div className={styles.empty}>
           <strong>Nenhuma notificação por aqui.</strong>
-          <p>Você será avisado quando houver novidades nas suas arenas.</p>
+          <p>Você será avisado quando houver novidades nas suas competições.</p>
         </div>
       )}
 

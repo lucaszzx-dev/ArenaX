@@ -1,4 +1,4 @@
-﻿export type PublicMemberContext = {
+export type PublicMemberContext = {
   memberId: string;
   displayName: string;
   teamId: string;

@@ -121,7 +121,7 @@ export function ManageParticipantsPage() {
 
   return (
     <section className={styles.page}>
-      <Link className={styles.back} to={`/painel/campeonatos/${id}`}>← Voltar à arena</Link>
+      <Link className={styles.back} to={`/painel/campeonatos/${id}`}>← Voltar à competição</Link>
       <header className={styles.heading}>
         <span>02 / participantes</span>
         <h1>{championship.name}</h1>
@@ -165,7 +165,7 @@ export function ManageParticipantsPage() {
           <form className={styles.createForm} onSubmit={submitTeam}>
             <div className={styles.importBlock}>
               <strong>Importar da biblioteca</strong>
-              <p>Cria uma cópia do clube e do elenco nesta arena.</p>
+              <p>Cria uma cópia do clube e do elenco nesta competição.</p>
               <select defaultValue="" name="clubId">
                 <option disabled value="">Selecione um clube</option>
                 {(clubsQuery.data?.clubs ?? []).map((club) => (
@@ -183,7 +183,7 @@ export function ManageParticipantsPage() {
                   }
                   actionMutation.mutate({
                     action: () => importClubIntoChampionship(clubId, id),
-                    successMessage: "Clube e elenco importados para a arena."
+                    successMessage: "Clube e elenco importados para a competição."
                   });
                 }}
                 type="button"
@@ -192,7 +192,7 @@ export function ManageParticipantsPage() {
               </button>
               <Link to="/painel/clubes">Gerenciar biblioteca de clubes</Link>
             </div>
-            <span className={styles.divider}>ou crie uma equipe somente nesta arena</span>
+            <span className={styles.divider}>ou crie uma equipe somente nesta competição</span>
             <label>Nome da equipe<input minLength={2} name="name" required /></label>
             <label>Sigla<input maxLength={12} name="shortName" placeholder="Ex.: RAI" /></label>
             <label>URL do escudo<input name="logoUrl" placeholder="https://..." type="url" /></label>

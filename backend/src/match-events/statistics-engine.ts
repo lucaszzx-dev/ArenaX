@@ -1,4 +1,4 @@
-﻿import type { Championship } from "../championships/championship-repository.js";
+import type { Championship } from "../championships/championship-repository.js";
 import type { Match, MatchEntry } from "../matches/match-repository.js";
 import type { MatchEvent } from "./match-event-repository.js";
 import {

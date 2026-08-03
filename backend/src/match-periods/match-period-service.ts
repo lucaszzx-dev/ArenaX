@@ -1,4 +1,4 @@
-﻿import type { ChampionshipService } from "../championships/championship-service.js";
+import type { ChampionshipService } from "../championships/championship-service.js";
 import { AppError } from "../errors/app-error.js";
 import type { MatchAuditService } from "../match-audit/match-audit-service.js";
 import type { MatchRepository } from "../matches/match-repository.js";

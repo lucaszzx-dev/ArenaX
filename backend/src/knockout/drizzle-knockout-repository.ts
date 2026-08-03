@@ -1,4 +1,4 @@
-﻿import { and, asc, eq, max } from "drizzle-orm";
+import { and, asc, eq, max } from "drizzle-orm";
 
 import type { Database } from "../db/client.js";
 import { knockoutNodes, matches } from "../db/schema.js";

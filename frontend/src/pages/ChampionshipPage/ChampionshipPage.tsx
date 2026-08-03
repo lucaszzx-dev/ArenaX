@@ -96,8 +96,8 @@ export function ChampionshipPage() {
 
   const favorite = championship ? favorites.isFavorite(championship.slug) : false;
 
-  if (query.isPending) return <div className={styles.state}>Carregando arena...</div>;
-  if (query.isError) return <div className={styles.state}>Esta arena não foi encontrada.</div>;
+  if (query.isPending) return <div className={styles.state}>Carregando competição...</div>;
+  if (query.isError) return <div className={styles.state}>Esta competição não foi encontrada.</div>;
   if (!championship) return null;
 
   return (
@@ -184,7 +184,7 @@ export function ChampionshipPage() {
 
         <aside className={styles.panel}>
           <div className={styles.panelHeading}>
-            <div><span>Participantes</span><h2>Inscritos na arena</h2></div>
+            <div><span>Participantes</span><h2>Inscritos na competição</h2></div>
           </div>
           <ol className={styles.entries}>{entries.map((entry, index) => (
             <li key={entry.id}>

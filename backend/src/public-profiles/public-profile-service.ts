@@ -1,4 +1,4 @@
-﻿import type { ChampionshipRepository } from "../championships/championship-repository.js";
+import type { ChampionshipRepository } from "../championships/championship-repository.js";
 import { AppError } from "../errors/app-error.js";
 import type { Match, MatchRepository } from "../matches/match-repository.js";
 import type { MatchEvent, MatchEventRepository } from "../match-events/match-event-repository.js";

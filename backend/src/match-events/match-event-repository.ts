@@ -1,4 +1,4 @@
-﻿export type MatchEventType =
+export type MatchEventType =
   | "GOAL"
   | "OWN_GOAL"
   | "YELLOW_CARD"

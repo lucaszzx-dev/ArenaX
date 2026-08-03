@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 
 function setMeta(name: string, content: string) {
   let tag = document.head.querySelector<HTMLMetaElement>(`meta[name="${name}"]`);

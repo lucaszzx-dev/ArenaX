@@ -271,7 +271,7 @@ export class ClubService {
     ]);
     if (championship.entryType !== "TEAM") {
       throw new AppError(
-        "Esta arena aceita somente participantes individuais.",
+        "Esta competição aceita somente participantes individuais.",
         409,
         "INVALID_ENTRY_TYPE"
       );

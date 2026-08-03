@@ -1,4 +1,4 @@
-﻿import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 
 import { AppError } from "../errors/app-error.js";

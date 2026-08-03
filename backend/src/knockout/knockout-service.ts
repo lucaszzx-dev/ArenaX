@@ -29,14 +29,14 @@ export class KnockoutService {
     const championship = await this.championships.getMine(organizerId, championshipId);
     if (championship.format !== "KNOCKOUT") {
       throw new AppError(
-        "Esta arena não utiliza o formato mata-mata.",
+        "Esta competição não utiliza o formato mata-mata.",
         409,
         "CHAMPIONSHIP_IS_NOT_KNOCKOUT"
       );
     }
     if (championship.status !== "DRAFT") {
       throw new AppError(
-        "O chaveamento só pode ser gerado enquanto a arena é rascunho.",
+        "O chaveamento só pode ser gerado enquanto a competição é rascunho.",
         409,
         "BRACKET_REQUIRES_DRAFT"
       );

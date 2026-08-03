@@ -73,8 +73,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   });
 
   app.register(cookie);
+  const rateLimitMax = options.env?.NODE_ENV === "test" ? 100_000 : 600;
   app.register(rateLimit, {
-    max: 180,
+    max: rateLimitMax,
     timeWindow: "1 minute",
     errorResponseBuilder: () => ({
       error: {
@@ -257,9 +258,26 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       });
     }
 
-    request.log.error(error);
+    const statusCode =
+      typeof error === "object" && error !== null &&
+      "statusCode" in error && typeof error.statusCode === "number"
+        ? error.statusCode
+        : 500;
 
-    return reply.status(500).send({
+    if (statusCode >= 500) {
+      request.log.error(error);
+    }
+
+    if (statusCode === 429) {
+      return reply.status(429).send({
+        error: {
+          code: "RATE_LIMIT_EXCEEDED",
+          message: "Muitas tentativas. Aguarde um minuto e tente novamente."
+        }
+      });
+    }
+
+    return reply.status(statusCode).send({
       error: {
         code: "INTERNAL_SERVER_ERROR",
         message: "Não foi possível concluir a operação."

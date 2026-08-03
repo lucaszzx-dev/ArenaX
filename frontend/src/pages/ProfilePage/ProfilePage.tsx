@@ -53,7 +53,7 @@ export function ProfilePage() {
     <section className={styles.page}>
       <header className={styles.heading}>
         <span>Minha conta / perfil</span>
-        <h1>Sua identidade na arena.</h1>
+        <h1>Sua identidade na competição.</h1>
         <p>
           Esses dados aparecerão nas áreas públicas das competições.
         </p>

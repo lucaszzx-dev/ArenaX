@@ -1,4 +1,4 @@
-﻿import type { ChampionshipService } from "../championships/championship-service.js";
+import type { ChampionshipService } from "../championships/championship-service.js";
 import type { Championship } from "../championships/championship-repository.js";
 import { AppError } from "../errors/app-error.js";
 import type {
@@ -74,7 +74,7 @@ export class MatchService {
       awayEntry.championshipId !== championshipId
     ) {
       throw new AppError(
-        "Um dos adversários não pertence a esta arena.",
+        "Um dos adversários não pertence a esta competição.",
         400,
         "ENTRY_NOT_IN_CHAMPIONSHIP"
       );
@@ -94,7 +94,7 @@ export class MatchService {
     );
     if (championship.status !== "DRAFT") {
       throw new AppError(
-        "A geração automática só está disponível enquanto a arena é rascunho.",
+        "A geração automática só está disponível enquanto a competição é rascunho.",
         409,
         "FIXTURES_REQUIRE_DRAFT"
       );
@@ -199,7 +199,7 @@ export class MatchService {
     }
     if (!championship.allowsDraw && homeScore === awayScore) {
       throw new AppError(
-        "Esta arena não permite partidas empatadas.",
+        "Esta competição não permite partidas empatadas.",
         400,
         "DRAW_NOT_ALLOWED"
       );

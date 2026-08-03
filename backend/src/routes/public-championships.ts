@@ -63,7 +63,7 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
   app.get("/public/championships/:slug", async (request) => {
     const params = slugParams.safeParse(request.params);
     if (!params.success) {
-      throw new AppError("Endereço de arena inválido.", 400, "VALIDATION_ERROR");
+      throw new AppError("Endereço de competição inválido.", 400, "VALIDATION_ERROR");
     }
 
     const championship = await options.championshipService.getPublic(

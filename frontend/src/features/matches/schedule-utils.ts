@@ -1,4 +1,4 @@
-﻿import type { ArenaMatch } from "./match-api";
+import type { ArenaMatch } from "./match-api";
 
 export function toLocalDateKey(date: Date): string {
   const year = date.getFullYear();

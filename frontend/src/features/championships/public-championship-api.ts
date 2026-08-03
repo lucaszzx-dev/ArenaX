@@ -1,4 +1,4 @@
-﻿import { apiRequest } from "../../lib/api";
+import { apiRequest } from "../../lib/api";
 import type { Championship } from "./championship-api";
 import type { ArenaMatch, MatchEntry, Standing } from "../matches/match-api";
 import type { MatchEvent } from "../matches/match-event-api";

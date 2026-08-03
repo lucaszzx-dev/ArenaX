@@ -102,7 +102,7 @@ try {
       })
       .returning();
 
-    if (!championship) throw new Error("Não foi possível preparar a arena demo.");
+    if (!championship) throw new Error("Não foi possível preparar a competição demo.");
 
     const createdTeams = await transaction
       .insert(teams)
@@ -171,7 +171,7 @@ try {
   console.log("Seed concluído.");
   console.log(`Login: ${demoEmail}`);
   console.log(`Senha: ${demoPassword}`);
-  console.log(`Arena: http://localhost:5173/campeonatos/${demoSlug}`);
+  console.log(`ArenaX: http://localhost:5173/campeonatos/${demoSlug}`);
 } finally {
   await database.close();
 }

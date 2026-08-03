@@ -100,4 +100,59 @@ describe("championship routes", () => {
       listResponse.json<{ championships: unknown[] }>().championships
     ).toHaveLength(1);
   });
+
+  it("creates championships per sport with sport-specific rules", async () => {
+    const cookie = await createSessionCookie();
+    const cases = [
+      { sport: "Futebol", maxYellowCards: 3, bestOfSets: 3, expectedYellow: 3, expectedSets: 5 },
+      { sport: "Futsal", maxYellowCards: 2, bestOfSets: 5, expectedYellow: 2, expectedSets: 5 },
+      { sport: "Vôlei", maxYellowCards: 4, bestOfSets: 3, expectedYellow: 0, expectedSets: 3 },
+      { sport: "Basquete", maxYellowCards: 5, bestOfSets: 3, expectedYellow: 0, expectedSets: 5 }
+    ];
+
+    for (const testCase of cases) {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/championships",
+        headers: { cookie },
+        payload: {
+          ...payload,
+          name: `Liga ${testCase.sport}`,
+          sport: testCase.sport,
+          maxYellowCards: testCase.maxYellowCards,
+          bestOfSets: testCase.bestOfSets
+        }
+      });
+      expect(response.statusCode).toBe(201);
+      const body = response.json<{
+        championship: { maxYellowCards: number; bestOfSets: number };
+      }>();
+      expect(body.championship.maxYellowCards).toBe(testCase.expectedYellow);
+      expect(body.championship.bestOfSets).toBe(testCase.expectedSets);
+    }
+  });
+
+  it("updates sport rules when the sport changes", async () => {
+    const cookie = await createSessionCookie();
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/api/championships",
+      headers: { cookie },
+      payload: { ...payload, name: "Troca de esporte", sport: "Futebol", maxYellowCards: 3 }
+    });
+    const id = createResponse.json<{ championship: { id: string } }>().championship.id;
+
+    const updateResponse = await app.inject({
+      method: "PUT",
+      url: `/api/championships/${id}`,
+      headers: { cookie },
+      payload: { ...payload, name: "Troca de esporte", sport: "Vôlei", bestOfSets: 3, maxYellowCards: 2 }
+    });
+    expect(updateResponse.statusCode).toBe(200);
+    const body = updateResponse.json<{
+      championship: { maxYellowCards: number; bestOfSets: number };
+    }>();
+    expect(body.championship.maxYellowCards).toBe(0);
+    expect(body.championship.bestOfSets).toBe(3);
+  });
 });

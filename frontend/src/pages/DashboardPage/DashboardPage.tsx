@@ -31,11 +31,11 @@ export function DashboardPage() {
         <div>
           <span>Painel do organizador</span>
           <h1>Olá, {user.displayName}.</h1>
-          <p>Suas arenas e indicadores.</p>
+          <p>Suas competições e indicadores.</p>
         </div>
         <Link className={styles.createButton} to="/painel/campeonatos/novo">
           <span aria-hidden="true">+</span>
-          Nova arena
+          Nova competição
         </Link>
       </div>
 
@@ -44,15 +44,15 @@ export function DashboardPage() {
       )}
 
       {championshipQuery.isError && (
-        <div className={styles.state} role="alert">Não foi possível carregar suas arenas.</div>
+        <div className={styles.state} role="alert">Não foi possível carregar suas competições.</div>
       )}
 
       {!championshipQuery.isPending && !championshipQuery.isError && championships.length === 0 && (
         <div className={styles.emptyState}>
           <span aria-hidden="true">AX</span>
-          <h2>Sua primeira arena começa aqui.</h2>
+          <h2>Sua primeira competição começa aqui.</h2>
           <p>Defina o esporte, o formato e as regras básicas.</p>
-          <Link to="/painel/campeonatos/novo">Criar primeira arena</Link>
+          <Link to="/painel/campeonatos/novo">Criar primeira competição</Link>
         </div>
       )}
 
@@ -93,7 +93,7 @@ export function DashboardPage() {
                     <b data-status={championship.status}>{statusLabels[championship.status]}</b>
                   </header>
                   <h2>{championship.name}</h2>
-                  <p>{championship.description || "Adicione uma descrição para sua arena."}</p>
+                  <p>{championship.description || "Adicione uma descrição para sua competição."}</p>
                   <footer>
                     <span>{championship.entryType === "TEAM" ? "Equipes" : "Individual"}</span>
                     <div>

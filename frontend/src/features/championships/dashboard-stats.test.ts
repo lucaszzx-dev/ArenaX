@@ -80,7 +80,7 @@ describe("dashboardAlert", () => {
     });
   });
 
-  it("alerts incomplete data only for published arenas", () => {
+  it("alerts incomplete data only for published championships", () => {
     expect(
       dashboardAlert(championship({ status: "PUBLISHED", description: null }))
     ).toEqual({ label: "Dados incompletos", action: "complete-data" });
@@ -92,7 +92,7 @@ describe("dashboardAlert", () => {
     ).toBeNull();
   });
 
-  it("returns null for published arenas with complete data", () => {
+  it("returns null for published championships with complete data", () => {
     expect(dashboardAlert(championship({ status: "PUBLISHED" }))).toBeNull();
   });
 });

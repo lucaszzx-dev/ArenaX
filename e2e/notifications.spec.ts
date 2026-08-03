@@ -1,11 +1,22 @@
 import { execSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import path from "node:path";
 
 import { expect, test } from "@playwright/test";
 
 test.beforeAll(() => {
   // Cada projeto roda a suíte de forma isolada; o seed global só roda uma vez
   // e o projeto anterior marca as notificações como lidas.
-  execSync("pnpm --dir backend run db:seed", { stdio: "inherit" });
+  const distSeed = path.join(process.cwd(), "backend", "dist", "db", "seed.js");
+  const command = existsSync(distSeed)
+    ? `node "${distSeed}"`
+    : "pnpm --dir backend run db:seed";
+  execSync(command, {
+    cwd: existsSync(distSeed)
+      ? path.join(process.cwd(), "backend")
+      : process.cwd(),
+    stdio: "inherit"
+  });
 });
 
 test("organizer opens the notification center and marks everything as read", async ({ page }) => {

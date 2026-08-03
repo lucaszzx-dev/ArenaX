@@ -5,7 +5,7 @@ export function RegisterPage() {
   return (
     <AuthCard
       description="Crie seu perfil e comece a organizar sua primeira competição."
-      title="Entre para a arena."
+      title="Entre para o ArenaX."
     >
       <AuthForm mode="register" />
     </AuthCard>

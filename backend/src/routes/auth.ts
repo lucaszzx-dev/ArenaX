@@ -72,8 +72,13 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
     return { clientId, clientSecret, redirectUri };
   }
 
+  const limit = (max: number) => ({
+    max: options.env.NODE_ENV === "test" ? 100_000 : max,
+    timeWindow: "1 minute" as const
+  });
+
   app.post("/auth/register", {
-    config: { rateLimit: { max: 8, timeWindow: "1 minute" } }
+    config: { rateLimit: limit(30) }
   }, async (request, reply) => {
     const input = registerSchema.safeParse(request.body);
 
@@ -97,7 +102,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
   });
 
   app.post("/auth/login", {
-    config: { rateLimit: { max: 10, timeWindow: "1 minute" } }
+    config: { rateLimit: limit(40) }
   }, async (request, reply) => {
     const input = loginSchema.safeParse(request.body);
 
@@ -143,7 +148,7 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
   });
 
   app.get("/auth/google", {
-    config: { rateLimit: { max: 20, timeWindow: "1 minute" } }
+    config: { rateLimit: limit(60) }
   }, async (_request, reply) => {
     let config: GoogleOAuthConfig;
     try {

@@ -59,11 +59,11 @@ export function ExploreChampionshipsPage() {
   return (
     <section className={styles.page}>
       <header className={styles.heading}>
-        <span>ARENAS PÚBLICAS</span>
+        <span>COMPETIÇÕES PÚBLICAS</span>
         <h1>Encontre o próximo campeonato.</h1>
         <p>
           Explore competições publicadas, acompanhe resultados e descubra
-          arenas por esporte.
+          competições por esporte.
         </p>
       </header>
 
@@ -102,7 +102,7 @@ export function ExploreChampionshipsPage() {
             <option value="FINISHED">Finalizadas</option>
           </select>
         </label>
-        <button type="submit">Buscar arenas</button>
+        <button type="submit">Buscar competições</button>
       </form>
 
       <div className={styles.resultHeading}>
@@ -119,9 +119,9 @@ export function ExploreChampionshipsPage() {
         </button>
       </div>
 
-      {query.isPending && <p className={styles.state}>Buscando arenas...</p>}
+      {query.isPending && <p className={styles.state}>Buscando competições...</p>}
       {query.isError && (
-        <p className={styles.state}>Não foi possível carregar as arenas.</p>
+        <p className={styles.state}>Não foi possível carregar as competições.</p>
       )}
       {result && (
         <>
@@ -140,7 +140,7 @@ export function ExploreChampionshipsPage() {
                 <p>{championship.description || "Campeonato organizado com ArenaX."}</p>
                 <footer>
                   <span>{championship.entryType === "TEAM" ? "Equipes" : "Individual"}</span>
-                  <strong>Ver arena →</strong>
+                  <strong>Ver competição →</strong>
                 </footer>
               </Link>
             ))}
@@ -148,8 +148,8 @@ export function ExploreChampionshipsPage() {
           {!shownItems.length && (
             <p className={styles.state}>
               {favoritesOnly
-                ? "Nenhuma arena favorita ainda. Use a estrela na página do campeonato."
-                : "Nenhuma arena corresponde aos filtros."}
+                ? "Nenhuma competição favorita ainda. Use a estrela na página do campeonato."
+                : "Nenhuma competição corresponde aos filtros."}
             </p>
           )}
           {totalPages > 1 && (

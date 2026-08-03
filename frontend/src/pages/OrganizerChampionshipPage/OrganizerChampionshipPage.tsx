@@ -29,7 +29,7 @@ export function OrganizerChampionshipPage() {
     onSuccess: async (data) => {
       queryClient.setQueryData(championshipDetailQueryKey(id), data);
       await queryClient.invalidateQueries({ queryKey: championshipListQueryKey });
-      setMessage("Status da arena atualizado.");
+      setMessage("Status da competição atualizado.");
     },
     onError: (error) => setMessage(
       error instanceof ApiError ? error.message : "Não foi possível alterar o status."
@@ -47,23 +47,23 @@ export function OrganizerChampionshipPage() {
   }
 
   if (championshipQuery.isPending) {
-    return <div className={styles.state}>Carregando arena...</div>;
+    return <div className={styles.state}>Carregando competição...</div>;
   }
 
   if (championshipQuery.isError) {
-    return <div className={styles.state}>Não foi possível abrir esta arena.</div>;
+    return <div className={styles.state}>Não foi possível abrir esta competição.</div>;
   }
 
   const { championship } = championshipQuery.data;
 
   return (
     <section className={styles.page}>
-      <Link className={styles.back} to="/painel">← Minhas arenas</Link>
+      <Link className={styles.back} to="/painel">← Minhas competições</Link>
       <header className={styles.heading}>
         <div>
           <span>{championship.sport} / {statusLabel(championship.status)}</span>
           <h1>{championship.name}</h1>
-          <p>{championship.description || "Arena sem descrição."}</p>
+          <p>{championship.description || "Competição sem descrição."}</p>
         </div>
         <b>{statusLabel(championship.status)}</b>
       </header>
@@ -87,12 +87,12 @@ export function OrganizerChampionshipPage() {
           <button
             disabled={statusMutation.isPending}
             onClick={() => confirmStatus(
-              "Publicar esta arena e liberar a página pública?",
+              "Publicar esta competição e liberar a página pública?",
               "PUBLISHED"
             )}
             type="button"
           >
-            Publicar arena
+            Publicar competição
           </button>
         )}
         {championship.status === "PUBLISHED" && (

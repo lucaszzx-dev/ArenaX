@@ -34,7 +34,7 @@ export function HomePage() {
               className={styles.primaryAction}
               to={isAuthenticated ? "/painel" : "/cadastro"}
             >
-              {isAuthenticated ? "Ir para meu painel" : "Abrir uma arena"}
+              {isAuthenticated ? "Ir para meu painel" : "Criar uma competição"}
               <span aria-hidden="true">↗</span>
             </Link>
             <Link className={styles.textAction} to="/campeonatos">
@@ -114,7 +114,7 @@ export function HomePage() {
           endereço próprio.
         </p>
         <Link to={isAuthenticated ? "/painel" : "/cadastro"}>
-          {isAuthenticated ? "Acessar minhas arenas →" : "Criar conta gratuita →"}
+          {isAuthenticated ? "Acessar minhas competições →" : "Criar conta gratuita →"}
         </Link>
       </section>
     </div>

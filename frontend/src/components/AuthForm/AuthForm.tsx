@@ -90,7 +90,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           <input
             autoComplete="name"
             name="displayName"
-            placeholder="Como você aparecerá na arena"
+            placeholder="Como você aparecerá na competição"
             required
           />
         </label>

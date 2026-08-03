@@ -41,7 +41,7 @@ export function EditChampionshipPage() {
       setErrorMessage(
         error instanceof ApiError
           ? error.message
-          : "Não foi possível atualizar a arena."
+          : "Não foi possível atualizar a competição."
       );
     }
   });
@@ -51,15 +51,15 @@ export function EditChampionshipPage() {
   }
 
   if (championshipQuery.isError) {
-    return <section className={styles.page}>Arena não encontrada.</section>;
+    return <section className={styles.page}>Competição não encontrada.</section>;
   }
 
   return (
     <section className={styles.page}>
       <header className={styles.heading}>
-        <Link to={`/painel/campeonatos/${id}`}>← Voltar à arena</Link>
+        <Link to={`/painel/campeonatos/${id}`}>← Voltar à competição</Link>
         <span>Configuração / edição</span>
-        <h1>Ajuste as regras da arena.</h1>
+        <h1>Ajuste as regras da competição.</h1>
         <p>As alterações serão refletidas no painel do organizador.</p>
       </header>
 

@@ -1,4 +1,4 @@
-﻿export type MatchEntry = {
+export type MatchEntry = {
   id: string;
   championshipId: string;
   displayName: string;

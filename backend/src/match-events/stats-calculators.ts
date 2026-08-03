@@ -1,4 +1,4 @@
-﻿import type { Match } from "../matches/match-repository.js";
+import type { Match } from "../matches/match-repository.js";
 import type { MatchEventType } from "./match-event-repository.js";
 
 export type PointsEventType =

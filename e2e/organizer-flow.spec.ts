@@ -13,12 +13,12 @@ async function createArena(
   name: string,
   format: "LEAGUE" | "KNOCKOUT"
 ) {
-  await page.getByRole("link", { name: "Nova arena" }).click();
+  await page.getByRole("link", { name: "Nova competição" }).click();
   await expect(page.getByRole("heading", { name: "Prepare o palco da competição." })).toBeVisible();
-  await page.getByLabel("Nome da arena").fill(name);
+  await page.getByLabel("Nome da competição").fill(name);
   await page.getByLabel("Esporte").selectOption("Futsal");
   await page.getByLabel("Formato").selectOption(format);
-  await page.getByRole("button", { name: "Criar arena em rascunho" }).click();
+  await page.getByRole("button", { name: "Criar competição em rascunho" }).click();
   await expect(page).toHaveURL(/\/painel\/campeonatos\/[0-9a-f-]+$/);
   await expect(page.getByRole("heading", { name })).toBeVisible();
 }
@@ -34,7 +34,7 @@ async function addTeams(
   }
 }
 
-test("organizer creates a league arena, adds teams, generates rounds and records a score", async ({ page }) => {
+test("organizer creates a league competition, adds teams, generates rounds and records a score", async ({ page }) => {
   await login(page);
 
   const name = `Liga E2E ${Date.now()}`;
@@ -44,13 +44,13 @@ test("organizer creates a league arena, adds teams, generates rounds and records
   await expect(page).toHaveURL(/\/painel\/campeonatos\/.+\/participantes/);
   await addTeams(page, ["Leões E2E", "Tubarões E2E", "Águias E2E", "Panteras E2E"]);
 
-  await page.getByRole("link", { name: "Voltar à arena" }).click();
+  await page.getByRole("link", { name: "Voltar à competição" }).click();
   await expect(page.getByRole("link", { name: "Gerenciar partidas" })).toBeVisible();
   await page.getByRole("link", { name: "Gerenciar partidas" }).click();
   await expect(page).toHaveURL(/\/painel\/campeonatos\/.+\/partidas/);
 
   await page.getByRole("button", { name: "Gerar todas as rodadas" }).click();
-  await expect(page.getByText("6 partidas")).toBeVisible();
+  await expect(page.getByText("6 partidas", { exact: true })).toBeVisible();
 
   const firstScoreForm = page.locator("form").filter({
     has: page.getByRole("button", { name: "Finalizar", exact: true })
