@@ -47,9 +47,11 @@ export function AuthForm({ mode }: AuthFormProps) {
       );
     }
   });
-  const googleError = searchParams.has("erro")
-    ? "Não foi possível entrar com o Google. Tente novamente."
-    : null;
+  const googleError = searchParams.get("erro") === "google_not_configured"
+    ? "O login com Google ainda não foi configurado neste ambiente."
+    : searchParams.has("erro")
+      ? "Não foi possível entrar com o Google. Tente novamente."
+      : null;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

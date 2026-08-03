@@ -1,6 +1,6 @@
 # Qualidade e preparação para deploy
 
-Última revisão: 28 de julho de 2026.
+Última revisão: 3 de agosto de 2026.
 
 ## Estado verificado
 
@@ -64,6 +64,9 @@ VITE_API_URL=https://<domínio-do-backend>/api
 ```
 
 Variáveis `VITE_` são públicas. Nunca colocar segredos nelas.
+
+Em desenvolvimento local, `VITE_API_URL` não precisa ser definida: o Vite faz
+proxy de `/api` para `http://localhost:3333` automaticamente (veja `vite.config.ts`).
 
 ## Plataformas escolhidas
 

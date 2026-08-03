@@ -389,6 +389,7 @@ export class ClubService {
     clubMembers: Club["members"],
     teamMembers: Array<{
       id: string;
+      sourceClubMemberId: string | null;
       displayName: string;
       jerseyNumber: number | null;
       position: string | null;
@@ -401,11 +402,16 @@ export class ClubService {
     const protectedMembers: TeamSyncDiff["protectedMembers"] = [];
     let unchanged = 0;
 
+    const matchedClubMemberIds = new Set<string>();
     for (const teamMember of teamMembers) {
-      const clubMember = clubMembers.find((member) =>
-        this.normalize(member.displayName) === this.normalize(teamMember.displayName)
-      );
-      if (!clubMember) {
+      const clubMember = teamMember.sourceClubMemberId
+        ? clubMembers.find((member) => member.id === teamMember.sourceClubMemberId)
+        : undefined;
+      const resolvedClubMember = clubMember
+        ?? clubMembers.find((member) =>
+          this.normalize(member.displayName) === this.normalize(teamMember.displayName)
+        );
+      if (!resolvedClubMember) {
         if (protectedIds.has(teamMember.id)) {
           protectedMembers.push({
             teamMemberId: teamMember.id,
@@ -419,28 +425,37 @@ export class ClubService {
         }
         continue;
       }
+      matchedClubMemberIds.add(resolvedClubMember.id);
       if (
-        teamMember.jerseyNumber === clubMember.jerseyNumber &&
-        teamMember.position === clubMember.position &&
-        teamMember.isCaptain === clubMember.isCaptain
+        this.normalize(teamMember.displayName) ===
+          this.normalize(resolvedClubMember.displayName) &&
+        teamMember.jerseyNumber === resolvedClubMember.jerseyNumber &&
+        teamMember.position === resolvedClubMember.position &&
+        teamMember.isCaptain === resolvedClubMember.isCaptain
       ) {
         unchanged += 1;
       } else {
         toUpdate.push({
           teamMemberId: teamMember.id,
-          clubMemberId: clubMember.id,
-          displayName: clubMember.displayName,
-          jerseyNumber: clubMember.jerseyNumber,
-          position: clubMember.position,
-          isCaptain: clubMember.isCaptain
+          clubMemberId: resolvedClubMember.id,
+          sourceClubMemberId: resolvedClubMember.id,
+          displayName: resolvedClubMember.displayName,
+          jerseyNumber: resolvedClubMember.jerseyNumber,
+          position: resolvedClubMember.position,
+          isCaptain: resolvedClubMember.isCaptain
         });
       }
     }
 
-    const teamNames = new Set(teamMembers.map((member) => this.normalize(member.displayName)));
     const toAdd = clubMembers
-      .filter((member) => !teamNames.has(this.normalize(member.displayName)))
+      .filter((member) => !matchedClubMemberIds.has(member.id))
+      .filter((member) =>
+        !teamMembers.some((teamMember) =>
+          this.normalize(teamMember.displayName) === this.normalize(member.displayName)
+        )
+      )
       .map((member) => ({
+        clubMemberId: member.id,
         displayName: member.displayName,
         jerseyNumber: member.jerseyNumber,
         position: member.position,
@@ -489,11 +504,11 @@ export class ClubService {
       }
       return rows.map((item) => this.normalizeRosterRow(item));
     }
-    const rows = content.split(/\r?\n/).filter((line) => line.trim().length > 0);
+    const rows = parseCsvRows(content);
     if (rows.length === 0) {
       throw new AppError("O CSV está vazio.", 400, "INVALID_ROSTER_FORMAT");
     }
-    const header = rows[0]!.split(",").map((cell) => cell.trim().toLowerCase());
+    const header = rows[0]!.map((cell) => cell.trim().toLowerCase());
     const nameIndex = header.indexOf("nome");
     const numberIndex = header.indexOf("camisa");
     const positionIndex = header.indexOf("posicao");
@@ -505,10 +520,9 @@ export class ClubService {
         "INVALID_ROSTER_FORMAT"
       );
     }
-    return rows.slice(1).map((line) => {
-      const cells = line.split(",").map((cell) => cell.trim());
+    return rows.slice(1).map((cells) => {
       return this.normalizeRosterRow({
-        displayName: cells[nameIndex],
+        displayName: cells[nameIndex] ?? "",
         jerseyNumber: numberIndex >= 0 ? this.parseNumber(cells[numberIndex]) : null,
         position: positionIndex >= 0 ? cells[positionIndex] || null : null,
         isCaptain: captainIndex >= 0 ? this.parseCaptain(cells[captainIndex]) : false
@@ -656,6 +670,64 @@ function isUniqueViolation(error: unknown) {
     error.code === "23505";
 }
 
+function parseCsvRows(content: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let index = 0; index < content.length; index += 1) {
+    const char = content[index]!;
+    if (inQuotes) {
+      if (char === '"') {
+        if (content[index + 1] === '"') {
+          field += '"';
+          index += 1;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += char;
+      }
+      continue;
+    }
+    if (char === '"') {
+      inQuotes = true;
+      continue;
+    }
+    if (char === ",") {
+      row.push(field);
+      field = "";
+      continue;
+    }
+    if (char === "\r") {
+      if (content[index + 1] === "\n") continue;
+      row.push(field);
+      field = "";
+      rows.push(row);
+      row = [];
+      continue;
+    }
+    if (char === "\n") {
+      row.push(field);
+      field = "";
+      rows.push(row);
+      row = [];
+      continue;
+    }
+    field += char;
+  }
+
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+
+  return rows
+    .filter((cells) => cells.some((cell) => cell.trim().length > 0))
+    .map((cells) => cells.map((cell) => cell.trim()));
+}
+
 function slugify(name: string) {
   return name
     .normalize("NFD")
@@ -665,6 +737,5 @@ function slugify(name: string) {
     .replace(/^-|-$/g, "")
     .slice(0, 60) || "clube";
 }
-
 
 

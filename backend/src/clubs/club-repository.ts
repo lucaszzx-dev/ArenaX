@@ -104,6 +104,7 @@ export type SquadMemberRef = {
 export type TeamMemberChange = {
   teamMemberId: string;
   clubMemberId: string;
+  sourceClubMemberId: string | null;
   displayName: string;
   jerseyNumber: number | null;
   position: string | null;
@@ -111,7 +112,7 @@ export type TeamMemberChange = {
 };
 
 export type TeamSyncDiff = {
-  toAdd: ImportMemberRow[];
+  toAdd: Array<ImportMemberRow & { clubMemberId: string }>;
   toUpdate: TeamMemberChange[];
   toRemove: Array<{ teamMemberId: string; displayName: string }>;
   protectedMembers: Array<{ teamMemberId: string; displayName: string }>;
@@ -169,6 +170,7 @@ export interface ClubRepository {
     name: string;
     members: Array<{
       id: string;
+      sourceClubMemberId: string | null;
       displayName: string;
       jerseyNumber: number | null;
       position: string | null;

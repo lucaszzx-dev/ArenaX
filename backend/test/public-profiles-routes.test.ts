@@ -364,7 +364,6 @@ describe("public profile routes", () => {
 
     publicProfileRepository.clubs.push({
       id: clubId,
-      ownerId: organizerId,
       name: "Clube Azul",
       shortName: "AZU",
       logoUrl: null,
@@ -455,6 +454,48 @@ describe("public profile routes", () => {
 
     // No email anywhere
     expect(JSON.stringify(body)).not.toMatch(/@/);
+    await app.close();
+  });
+
+  it("hides clubs without public participations", async () => {
+    const championshipRepository = new InMemoryChampionshipRepository();
+    const championshipService = new ChampionshipService(championshipRepository);
+    const matchRepository = new InMemoryMatchRepository();
+    const eventRepository = new InMemoryMatchEventRepository();
+    const publicProfileRepository = new InMemoryPublicProfileRepository();
+
+    publicProfileRepository.clubs.push({
+      id: clubId,
+      name: "Clube Privado",
+      shortName: null,
+      logoUrl: null,
+      members: []
+    });
+
+    const publicProfileService = new PublicProfileService(
+      publicProfileRepository,
+      matchRepository,
+      eventRepository,
+      championshipRepository
+    );
+    const matchService = new MatchService(matchRepository, championshipService);
+    const app = buildApp({
+      championshipService,
+      matchService,
+      publicProfileService
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/public/clubs/" + clubId
+    });
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toEqual({
+      error: {
+        code: "CLUB_NOT_FOUND",
+        message: "Clube não encontrado."
+      }
+    });
     await app.close();
   });
 

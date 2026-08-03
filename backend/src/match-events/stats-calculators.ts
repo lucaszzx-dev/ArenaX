@@ -99,6 +99,17 @@ export function formatPercentage(
   return Math.round((score / played) * 10_000) / 100;
 }
 
+export function formatAproveitamento(
+  played: number,
+  points: number,
+  pointsPerWin: number
+): number | null {
+  if (played <= 0 || pointsPerWin <= 0) return null;
+  const maxPoints = played * pointsPerWin;
+  if (maxPoints <= 0) return null;
+  return Math.round((points / maxPoints) * 10_000) / 100;
+}
+
 export function rankSort<T>(rows: T[], score: (row: T) => number): T[] {
   return [...rows].sort((a, b) => score(b) - score(a));
 }

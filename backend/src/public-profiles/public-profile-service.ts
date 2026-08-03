@@ -226,17 +226,20 @@ export class PublicProfileService {
   }
 
   async clubProfile(clubId: string): Promise<ClubProfile> {
+    const participations = await this.repository.listClubParticipations(clubId);
+    const publicParticipations = participations.filter(
+      (participation) =>
+        participation.championshipStatus === "PUBLISHED" ||
+        participation.championshipStatus === "FINISHED"
+    );
+    if (publicParticipations.length === 0) {
+      throw new AppError("Clube não encontrado.", 404, "CLUB_NOT_FOUND");
+    }
     const club = await this.repository.findClub(clubId);
     if (!club) {
       throw new AppError("Clube não encontrado.", 404, "CLUB_NOT_FOUND");
     }
-    const participations = await this.repository.listClubParticipations(clubId);
-    const championships = participations
-      .filter(
-        (participation) =>
-          participation.championshipStatus === "PUBLISHED" ||
-          participation.championshipStatus === "FINISHED"
-      )
+    const championships = publicParticipations
       .map((participation) => ({
         championshipId: participation.championshipId,
         championshipName: participation.championshipName,
@@ -256,7 +259,6 @@ export class PublicProfileService {
     return {
       club: {
         id: club.id,
-        ownerId: club.ownerId,
         name: club.name,
         shortName: club.shortName,
         logoUrl: club.logoUrl,

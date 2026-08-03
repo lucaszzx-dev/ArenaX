@@ -8,6 +8,7 @@ export function useCurrentUser() {
   return useQuery({
     queryKey: currentUserQueryKey,
     queryFn: getCurrentUser,
-    retry: false
+    retry: 1,
+    retryDelay: 1_000
   });
 }

@@ -30,7 +30,6 @@ export type PublicClubMember = {
 
 export type PublicClub = {
   id: string;
-  ownerId: string;
   name: string;
   shortName: string | null;
   logoUrl: string | null;

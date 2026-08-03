@@ -26,6 +26,7 @@ export class InMemoryClubRepository implements ClubRepository {
     name: string;
     members: Array<{
       id: string;
+      sourceClubMemberId: string | null;
       displayName: string;
       jerseyNumber: number | null;
       position: string | null;
@@ -230,6 +231,20 @@ export class InMemoryClubRepository implements ClubRepository {
     const members = memberIds
       ? club.members.filter((member) => memberIds.includes(member.id))
       : club.members;
+    this.teams.push({
+      id: teamId,
+      championshipId,
+      sourceClubId: club.id,
+      name: club.name,
+      members: members.map((member) => ({
+        id: crypto.randomUUID(),
+        sourceClubMemberId: member.id,
+        displayName: member.displayName,
+        jerseyNumber: member.jerseyNumber,
+        position: member.position,
+        isCaptain: member.isCaptain
+      }))
+    });
     this.imports.push({
       championshipId,
       teamId,
@@ -287,6 +302,7 @@ export class InMemoryClubRepository implements ClubRepository {
     for (const member of diff.toUpdate) {
       const current = team.members.find((item) => item.id === member.teamMemberId);
       if (current) {
+        current.sourceClubMemberId = member.sourceClubMemberId;
         current.displayName = member.displayName;
         current.jerseyNumber = member.jerseyNumber;
         current.position = member.position;
@@ -297,6 +313,7 @@ export class InMemoryClubRepository implements ClubRepository {
     for (const member of diff.toAdd) {
       team.members.push({
         id: crypto.randomUUID(),
+        sourceClubMemberId: member.clubMemberId,
         displayName: member.displayName,
         jerseyNumber: member.jerseyNumber,
         position: member.position,
@@ -315,12 +332,14 @@ export class InMemoryClubRepository implements ClubRepository {
     let created = 0;
     let updated = 0;
     let skipped = 0;
+    const importedMembers: ClubMember[] = [];
     for (const row of rows) {
       const existing = club.members.find((member) =>
         member.displayName.trim().toLocaleLowerCase("pt-BR") ===
         row.displayName.trim().toLocaleLowerCase("pt-BR")
       );
       if (existing) {
+        importedMembers.push(existing);
         const changed =
           existing.jerseyNumber !== row.jerseyNumber ||
           existing.position !== row.position ||
@@ -332,19 +351,21 @@ export class InMemoryClubRepository implements ClubRepository {
           skipped += 1;
         }
       } else {
-        club.members.push({
+        const member: ClubMember = {
           id: crypto.randomUUID(),
           clubId,
           ...row,
           createdAt: new Date()
-        });
+        };
+        club.members.push(member);
+        importedMembers.push(member);
         created += 1;
       }
     }
     if (squadId) {
       const squad = club.squads.find((item) => item.id === squadId);
       if (!squad) throw new Error("Elenco nao encontrado.");
-      for (const member of club.members) {
+      for (const member of importedMembers) {
         if (!squad.members.some((item) => item.clubMemberId === member.id)) {
           squad.members.push({ clubMemberId: member.id, role: "PLAYER" });
         }

@@ -71,7 +71,13 @@ Fluxo em duas etapas:
    atualizações sempre; remoções apenas dos não protegidos).
 
 A regra de proteção é obrigatória: `team_member` com eventos ou escalação
-nunca é removido automaticamente. A confirmação é feita pelo próprio POST de
+nunca é removido automaticamente. A confirma
+
+O rastreamento de origem usa `team_members.source_club_member_id` (nullable, FK
+para `club_members.id` com `ON DELETE SET NULL`). Isso permite que a
+ressincroniza??o identifique jogadores renomeados no clube sem duplic?-los na
+equipe. O v?nculo ? apenas de rastreamento ? a equipe permanece independente do
+clube.ção é feita pelo próprio POST de
 aplicação após o usuário revisar o preview.
 
 ## Exportação e importação de elenco

@@ -57,3 +57,45 @@
 .club li button:hover {
   color: var(--color-primary-dark);
 }
+.section { margin-top: 2rem; }
+.section h3 { margin: 0 0 .8rem; font-size: 1rem; letter-spacing: -.01em; }
+.hint { color: var(--color-text-muted); font-size: .78rem; margin: .4rem 0; }
+.inlineForm, .seasonForm, .squadForm, .staffForm, .importForm { display: grid; gap: .55rem; margin: .8rem 0; }
+.inlineForm { grid-template-columns: minmax(160px, 2fr) 5rem minmax(90px, 1fr) auto auto; align-items: center; }
+.seasonForm { grid-template-columns: 1fr 1fr 1fr auto auto; }
+.squadForm { grid-template-columns: 1fr .8fr .8fr 1fr auto auto auto; align-items: center; }
+.staffForm { grid-template-columns: 1fr 1fr auto; }
+.importForm { grid-template-columns: 1fr auto auto; align-items: center; }
+.inlineForm input, .seasonForm input, .squadForm input, .squadForm select, .staffForm input, .importForm input, .importForm select { min-width: 0; padding: .6rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+.inlineForm button, .seasonForm button, .squadForm button, .staffForm button, .importForm button { border: 0; background: var(--color-primary); color: white; font-weight: 800; cursor: pointer; padding: .7rem 1rem; }
+.checkLabel { display: flex; align-items: center; gap: .4rem; color: var(--color-text-muted); font-size: .8rem; }
+.squad { border: 1px solid var(--color-border); background: var(--color-surface-elevated); margin: .6rem 0; padding: .8rem; }
+.squadHead { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.squadHead strong { font-size: 1rem; }
+.squadHead em { color: var(--color-primary); font-size: .6rem; font-style: normal; font-weight: 800; text-transform: uppercase; }
+.squadMeta { color: var(--color-text-muted); font-size: .75rem; flex: 1; }
+.squadHead button { border: 1px solid var(--color-border); background: transparent; color: var(--color-text); cursor: pointer; padding: .45rem .7rem; font-size: .72rem; }
+.squadManage { margin-top: .8rem; border-top: 1px solid var(--color-border); padding-top: .6rem; }
+.squadManage ul { max-height: 16rem; overflow: auto; }
+.squadManage label { display: flex; align-items: center; gap: .55rem; }
+.actionRow { display: flex; flex-wrap: wrap; gap: .6rem; margin: .6rem 0; }
+.actionRow button { border: 1px solid var(--color-border); background: transparent; color: var(--color-text); cursor: pointer; padding: .6rem 1rem; }
+.importChampionship { display: grid; gap: .8rem; }
+.importChampionship label { display: grid; gap: .35rem; color: var(--color-text-muted); font-size: .75rem; }
+.importChampionship select, .importChampionship input { padding: .6rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+.importChampionship > button { border: 0; background: var(--color-primary); color: white; font-weight: 800; padding: .8rem 1rem; cursor: pointer; }
+.playerPicker { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .4rem; border: 1px solid var(--color-border); padding: .8rem; max-height: 14rem; overflow: auto; }
+.playerPicker legend { color: var(--color-text-muted); font-size: .72rem; }
+.playerPicker label { display: flex; align-items: center; gap: .5rem; font-size: .85rem; }
+.confirm { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; color: var(--color-text-muted); }
+.confirm button { border: 0; background: var(--color-primary); color: white; font-weight: 800; padding: .5rem .9rem; cursor: pointer; }
+.diff ul { list-style: none; margin: .5rem 0; padding: 0; }
+.diff li { padding: .3rem 0; font-size: .85rem; }
+.added { color: #16a34a; }
+.updated { color: #d97706; }
+.removed { color: #dc2626; }
+.protected { color: var(--color-primary-dark); }
+@media (max-width: 720px) {
+  .inlineForm, .seasonForm, .squadForm, .staffForm, .importForm, .importChampionship { grid-template-columns: 1fr; }
+  .squadHead { flex-direction: column; align-items: flex-start; }
+}

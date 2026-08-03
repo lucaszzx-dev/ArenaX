@@ -19,7 +19,7 @@ import {
 import { ApiError } from "../../lib/api";
 import {
   clubsQueryKey,
-  importClub,
+  importClubIntoChampionship,
   listClubs
 } from "../../features/clubs/club-api";
 import styles from "./ManageParticipantsPage.module.css";
@@ -182,7 +182,7 @@ export function ManageParticipantsPage() {
                     return;
                   }
                   actionMutation.mutate({
-                    action: () => importClub(clubId, id),
+                    action: () => importClubIntoChampionship(clubId, id),
                     successMessage: "Clube e elenco importados para a arena."
                   });
                 }}

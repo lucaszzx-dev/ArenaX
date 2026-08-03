@@ -73,7 +73,6 @@ export class DrizzlePublicProfileRepository
     const [club] = await this.db
       .select({
         id: clubs.id,
-        ownerId: clubs.ownerId,
         name: clubs.name,
         shortName: clubs.shortName,
         logoUrl: clubs.logoUrl

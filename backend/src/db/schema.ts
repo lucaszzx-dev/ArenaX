@@ -306,6 +306,10 @@ export const teamMembers = pgTable("team_members", {
   teamId: uuid("team_id")
     .notNull()
     .references(() => teams.id, { onDelete: "cascade" }),
+  sourceClubMemberId: uuid("source_club_member_id").references(
+    () => clubMembers.id,
+    { onDelete: "set null" }
+  ),
   displayName: text("display_name").notNull(),
   jerseyNumber: integer("jersey_number"),
   position: text("position"),

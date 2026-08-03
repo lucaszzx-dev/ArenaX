@@ -2,6 +2,7 @@
 import type { Match, MatchEntry } from "../matches/match-repository.js";
 import type { MatchEvent } from "./match-event-repository.js";
 import {
+  formatAproveitamento,
   formatPercentage,
   isCountedMatch,
   matchResult,
@@ -239,7 +240,11 @@ export function computeClubStandings(
       }
     }
     row.goalDifference = row.goalsFor - row.goalsAgainst;
-    row.percentage = formatPercentage(row.played, row.points);
+    row.percentage = formatAproveitamento(
+      row.played,
+      row.points,
+      championship.winPoints
+    );
   }
 
   for (const [entryId, row] of byEntry) {
@@ -375,7 +380,6 @@ export function paginate<T>(rows: T[], page: number, limit: number): Page<T> {
     limit: safeLimit
   };
 }
-
 
 
 

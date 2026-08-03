@@ -294,6 +294,7 @@ describe("ClubService features", () => {
         members: [
           {
             id: crypto.randomUUID(),
+            sourceClubMemberId: club.members[0]?.id ?? null,
             displayName: "Lucas",
             jerseyNumber: 10,
             position: "Ala",
@@ -301,6 +302,7 @@ describe("ClubService features", () => {
           },
           {
             id: crypto.randomUUID(),
+            sourceClubMemberId: null,
             displayName: "Bia",
             jerseyNumber: 11,
             position: "Zagueira",
@@ -339,6 +341,52 @@ describe("ClubService features", () => {
       expect(
         repository.auditLogs.some((log) => log.action === "TEAM_SYNCED")
       ).toBe(true);
+    });
+
+    it("renames a player in the club without duplicating the team member", async () => {
+      const club = await createClub();
+      const lucas = await service.addMember("owner-1", club.id, {
+        displayName: "Lucas",
+        jerseyNumber: 10,
+        position: "Ala"
+      });
+      const teamId = crypto.randomUUID();
+      repository.teams.push({
+        id: teamId,
+        championshipId: crypto.randomUUID(),
+        sourceClubId: club.id,
+        name: "Arena Azul",
+        members: [
+          {
+            id: crypto.randomUUID(),
+            sourceClubMemberId: lucas.id,
+            displayName: "Lucas",
+            jerseyNumber: 10,
+            position: "Ala",
+            isCaptain: false
+          }
+        ]
+      });
+
+      await service.updateMember("owner-1", club.id, lucas.id, {
+        displayName: "Lucas Silva",
+        jerseyNumber: 10,
+        position: "Ala"
+      });
+
+      const preview = await service.previewTeamSync("owner-1", club.id, teamId);
+      expect(preview.diff.toAdd).toHaveLength(0);
+      expect(preview.diff.toRemove).toHaveLength(0);
+      expect(preview.diff.toUpdate.map((item) => item.displayName)).toEqual([
+        "Lucas Silva"
+      ]);
+
+      await service.applyTeamSync("owner-1", club.id, teamId);
+      const after = await repository.findTeamWithMembers(teamId);
+      expect(after?.members.map((member) => member.displayName)).toEqual([
+        "Lucas Silva"
+      ]);
+      expect(after?.members).toHaveLength(1);
     });
 
     it("rejects syncing a team not linked to the club", async () => {
@@ -425,6 +473,137 @@ describe("ClubService features", () => {
           ])
         )
       ).rejects.toMatchObject({ code: "DUPLICATE_ROSTER_ROW" });
+    });
+
+    it("round-trips a CSV roster with commas, quotes and line breaks", async () => {
+      const source = await createClub();
+      await service.addMember("owner-1", source.id, {
+        displayName: "Silva, Joao",
+        jerseyNumber: 8,
+        position: "Zagueiro"
+      });
+      await service.addMember("owner-1", source.id, {
+        displayName: "Ana \"Rainha\"",
+        jerseyNumber: 7,
+        position: "Pivo"
+      });
+
+      const exported = await service.exportRoster("owner-1", source.id, "csv");
+      const target = await service.create("owner-1", {
+        name: "Arena Vermelha",
+        shortName: "AV",
+        logoUrl: null
+      });
+      const result = await service.importRoster(
+        "owner-1",
+        target.id,
+        "csv",
+        exported.content
+      );
+
+      expect(result.created).toBe(2);
+      const after = await repository.findById(target.id);
+      expect(after?.members.map((member) => member.displayName).sort()).toEqual(
+        ["Ana \"Rainha\"", "Silva, Joao"].sort()
+      );
+      expect(after?.members.find((member) => member.displayName === "Silva, Joao")?.jerseyNumber).toBe(8);
+    });
+
+    it("imports CSV with CRLF, empty fields and quoted values", async () => {
+      const club = await createClub();
+      const csv = "nome,camisa,posicao,capitao\r\n\"Rocha, Lima\",,Goleiro,sim\r\nBia,4,,nao";
+      const result = await service.importRoster("owner-1", club.id, "csv", csv);
+      expect(result.created).toBe(2);
+      const after = await repository.findById(club.id);
+      const rocha = after?.members.find((member) => member.displayName === "Rocha, Lima");
+      expect(rocha?.jerseyNumber).toBeNull();
+      expect(rocha?.position).toBe("Goleiro");
+      expect(rocha?.isCaptain).toBe(true);
+      const bia = after?.members.find((member) => member.displayName === "Bia");
+      expect(bia?.position).toBeNull();
+      expect(bia?.isCaptain).toBe(false);
+    });
+
+    it("associates only imported players to the squad", async () => {
+      const club = await createClub();
+      await service.addMember("owner-1", club.id, {
+        displayName: "Veterano",
+        jerseyNumber: 1,
+        position: null
+      });
+      const squad = await service.addSquad("owner-1", club.id, {
+        name: "Principal",
+        category: null,
+        sport: null,
+        seasonId: null,
+        isPrimary: true
+      });
+
+      const result = await service.importRoster(
+        "owner-1",
+        club.id,
+        "csv",
+        ["nome,camisa,posicao,capitao", "Novato,2,Ala,nao"].join("\n"),
+        squad.id
+      );
+
+      expect(result.created).toBe(1);
+      const after = await repository.findById(club.id);
+      const squadAfter = after?.squads.find((item) => item.id === squad.id);
+      expect(squadAfter?.members).toHaveLength(1);
+      expect(squadAfter?.members[0]?.clubMemberId).toBe(
+        after?.members.find((member) => member.displayName === "Novato")?.id
+      );
+    });
+
+    it("links an existing club member present in the file without creating or updating", async () => {
+      const club = await createClub();
+      await service.addMember("owner-1", club.id, {
+        displayName: "Lucas",
+        jerseyNumber: 10,
+        position: "Ala"
+      });
+      const squad = await service.addSquad("owner-1", club.id, {
+        name: "Principal",
+        category: null,
+        sport: null,
+        seasonId: null,
+        isPrimary: true
+      });
+
+      const result = await service.importRoster(
+        "owner-1",
+        club.id,
+        "csv",
+        ["nome,camisa,posicao,capitao", "Lucas,10,Ala,nao"].join("\n"),
+        squad.id
+      );
+
+      expect(result).toEqual({ created: 0, updated: 0, skipped: 1 });
+      const after = await repository.findById(club.id);
+      const lucas = after?.members.find((member) => member.displayName === "Lucas");
+      const squadAfter = after?.squads.find((item) => item.id === squad.id);
+      expect(squadAfter?.members).toHaveLength(1);
+      expect(squadAfter?.members[0]?.clubMemberId).toBe(lucas?.id);
+    });
+
+    it("does not duplicate squad members when the same roster is imported twice", async () => {
+      const club = await createClub();
+      const squad = await service.addSquad("owner-1", club.id, {
+        name: "Principal",
+        category: null,
+        sport: null,
+        seasonId: null,
+        isPrimary: true
+      });
+      const csv = ["nome,camisa,posicao,capitao", "Lucas,10,Ala,nao"].join("\n");
+
+      await service.importRoster("owner-1", club.id, "csv", csv, squad.id);
+      await service.importRoster("owner-1", club.id, "csv", csv, squad.id);
+
+      const after = await repository.findById(club.id);
+      const squadAfter = after?.squads.find((item) => item.id === squad.id);
+      expect(squadAfter?.members).toHaveLength(1);
     });
 
     it("rejects rows without a valid name", async () => {

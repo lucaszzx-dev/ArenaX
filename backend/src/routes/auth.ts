@@ -55,7 +55,13 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
       GOOGLE_REDIRECT_URI: redirectUri
     } = options.env;
 
-    if (!clientId || !clientSecret || !redirectUri) {
+    if (
+      !clientId ||
+      !clientSecret ||
+      !redirectUri ||
+      isGooglePlaceholder(clientId) ||
+      isGooglePlaceholder(clientSecret)
+    ) {
       throw new AppError(
         "O login com Google ainda não foi configurado.",
         503,
@@ -139,7 +145,14 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
   app.get("/auth/google", {
     config: { rateLimit: { max: 20, timeWindow: "1 minute" } }
   }, async (_request, reply) => {
-    const config = getGoogleConfig();
+    let config: GoogleOAuthConfig;
+    try {
+      config = getGoogleConfig();
+    } catch {
+      return reply.redirect(
+        options.env.FRONTEND_URL + "/entrar?erro=google_not_configured"
+      );
+    }
     const state = randomBytes(32).toString("base64url");
 
     return reply
@@ -184,6 +197,15 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
     }
   });
 };
+
+function isGooglePlaceholder(value: string): boolean {
+  return (
+    value === "your-google-client-id.apps.googleusercontent.com" ||
+    value === "your-google-client-secret" ||
+    value.startsWith("your-google-") ||
+    value.startsWith("seu-")
+  );
+}
 
 function safeStateEqual(received: string, expected: string): boolean {
   const receivedBuffer = Buffer.from(received);

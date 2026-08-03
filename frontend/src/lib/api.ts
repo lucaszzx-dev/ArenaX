@@ -1,4 +1,4 @@
-const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3333/api";
+const apiUrl = import.meta.env.VITE_API_URL ?? "/api";
 
 export function getApiUrl(path: string): string {
   return `${apiUrl}${path}`;

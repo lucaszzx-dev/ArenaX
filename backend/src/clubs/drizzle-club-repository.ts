@@ -267,6 +267,7 @@ export class DrizzleClubRepository implements ClubRepository {
         await transaction.insert(teamMembers).values(
           selected.map((member) => ({
             teamId: team.id,
+            sourceClubMemberId: member.id,
             displayName: member.displayName,
             jerseyNumber: member.jerseyNumber,
             position: member.position,
@@ -308,6 +309,7 @@ export class DrizzleClubRepository implements ClubRepository {
       name: team.name,
       members: members.map((member) => ({
         id: member.id,
+        sourceClubMemberId: member.sourceClubMemberId,
         displayName: member.displayName,
         jerseyNumber: member.jerseyNumber,
         position: member.position,
@@ -343,13 +345,21 @@ export class DrizzleClubRepository implements ClubRepository {
     await this.db.transaction(async (transaction) => {
       if (diff.toAdd.length) {
         await transaction.insert(teamMembers).values(
-          diff.toAdd.map((member) => ({ teamId, ...member }))
+          diff.toAdd.map((member) => ({
+            teamId,
+            sourceClubMemberId: member.clubMemberId,
+            displayName: member.displayName,
+            jerseyNumber: member.jerseyNumber,
+            position: member.position,
+            isCaptain: member.isCaptain
+          }))
         );
       }
       for (const member of diff.toUpdate) {
         await transaction
           .update(teamMembers)
           .set({
+            sourceClubMemberId: member.sourceClubMemberId,
             displayName: member.displayName,
             jerseyNumber: member.jerseyNumber,
             position: member.position,
@@ -387,6 +397,7 @@ export class DrizzleClubRepository implements ClubRepository {
       const byName = new Map(
         existing.map((member) => [this.normalize(member.displayName), member])
       );
+      const importedMembers: Array<{ id: string }> = [];
       let created = 0;
       let updated = 0;
       let skipped = 0;
@@ -395,6 +406,7 @@ export class DrizzleClubRepository implements ClubRepository {
         const key = this.normalize(row.displayName);
         const current = byName.get(key);
         if (current) {
+          importedMembers.push(current);
           const changed =
             current.jerseyNumber !== row.jerseyNumber ||
             current.position !== row.position ||
@@ -421,10 +433,11 @@ export class DrizzleClubRepository implements ClubRepository {
           .returning();
         if (!member) throw new Error("Nao foi possivel importar o jogador.");
         byName.set(key, member);
+        importedMembers.push(member);
         created += 1;
       }
 
-      if (squadId && (created > 0 || updated > 0)) {
+      if (squadId) {
         const [squad] = await transaction
           .select()
           .from(clubSquads)
@@ -435,7 +448,7 @@ export class DrizzleClubRepository implements ClubRepository {
           .from(clubSquadMembers)
           .where(eq(clubSquadMembers.squadId, squadId));
         const linkedIds = new Set(linked.map((item) => item.clubMemberId));
-        const toLink = [...byName.values()]
+        const toLink = importedMembers
           .filter((member) => !linkedIds.has(member.id))
           .map((member) => ({ squadId, clubMemberId: member.id, role: "PLAYER" }));
         if (toLink.length) {

@@ -20,6 +20,14 @@ partida é criada.
 A final concluída determina o campeão exibido no chaveamento administrativo e
 público.
 
+## Disputa de terceiro lugar
+
+A disputa opcional de terceiro lugar está implementada: quando ativada no
+campeonato, os perdedores da semifinal disputam uma partida de 3º lugar e o
+vencedor avança com a marcação de 3º lugar no chaveamento. A opção pode ser
+desligada na criação/edição da arena (`thirdPlace`). A posição de 3º lugar
+também recebe notificação de avanço.
+
 ## Proteções
 
 - partidas do chaveamento não podem ser criadas ou excluídas manualmente;
@@ -33,6 +41,5 @@ um participante que já avançou.
 
 ## Limites atuais
 
-A disputa opcional de terceiro lugar e a escolha manual das cabeças de chave
-serão extensões posteriores. A primeira versão usa a ordem estável dos inscritos
-para formar a chave.
+A escolha manual das cabeças de chave (seeding) ainda é uma extensão futura.
+A versão atual usa a ordem estável dos inscritos para formar a chave.

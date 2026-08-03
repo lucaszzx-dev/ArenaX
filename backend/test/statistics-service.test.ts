@@ -181,7 +181,7 @@ describe("StatisticsService", () => {
     expect(a.draws).toBe(1);
     expect(a.losses).toBe(0);
     expect(a.points).toBe(7);
-    expect(a.percentage).toBe(233.33);
+    expect(a.percentage).toBe(77.78);
     expect(a.currentStreakType).toBe("D");
     expect(a.currentStreak).toBe(1);
     expect(a.maxWinStreak).toBe(2);
@@ -189,11 +189,54 @@ describe("StatisticsService", () => {
     const c = standings.find((row) => row.entryId === "entry-c")!;
     expect(c.played).toBe(2);
     expect(c.points).toBe(3);
-    expect(c.percentage).toBe(150);
+    expect(c.percentage).toBe(50);
     expect(c.maxWinStreak).toBe(1);
     expect(c.currentStreakType).toBe("W");
 
     expect(standings[0]?.entryId).toBe("entry-a");
+  });
+
+  it("caps aproveitamento at 100% using the championship win points", async () => {
+    const custom = await championships.create("organizer-1", {
+      ...arenaInput,
+      name: "Liga de 4 pontos",
+      winPoints: 4
+    });
+    const now = new Date();
+    const entryA: MatchEntry = { id: "entry-a", championshipId: custom.id, displayName: "Azul", teamId: "team-a" };
+    const entryB: MatchEntry = { id: "entry-b", championshipId: custom.id, displayName: "Raio", teamId: "team-b" };
+    matches.entries.push(entryA, entryB);
+    events.entries.push(
+      { id: "entry-a", championshipId: custom.id, teamId: "team-a" },
+      { id: "entry-b", championshipId: custom.id, teamId: "team-b" }
+    );
+    const build = (id: string, homeScore: number, awayScore: number): Match => ({
+      id,
+      championshipId: custom.id,
+      homeEntryId: "entry-a",
+      awayEntryId: "entry-b",
+      scheduledAt: null,
+      status: "FINISHED",
+      homeScore,
+      awayScore,
+      roundNumber: null,
+      generated: false,
+      mvpId: null,
+      venue: null,
+      referee: null,
+      operationalNotes: null,
+      createdAt: now,
+      updatedAt: now,
+      homeEntry: entryA,
+      awayEntry: entryB
+    });
+    matches.matches.push(build("m1", 2, 1), build("m2", 1, 1));
+
+    const standings = await service.clubStandings(custom.id);
+    const a = standings.find((row) => row.entryId === "entry-a")!;
+    expect(a.played).toBe(2);
+    expect(a.points).toBe(5);
+    expect(a.percentage).toBe(62.5);
   });
 
   it("ignores CANCELED and FINISHED matches without score", async () => {
@@ -364,4 +407,3 @@ describe("StatisticsService", () => {
     ).rejects.toMatchObject({ code: "CHAMPIONSHIP_NOT_FOUND" });
   });
 });
-

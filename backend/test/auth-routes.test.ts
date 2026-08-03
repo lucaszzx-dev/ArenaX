@@ -52,6 +52,53 @@ describe("auth routes", () => {
     });
   });
 
+  it("returns 401 from /auth/me without a session cookie", async () => {
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/auth/me"
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({
+      error: {
+        code: "UNAUTHENTICATED",
+        message: "Você precisa entrar."
+      }
+    });
+  });
+
+  it("returns the current user from /auth/me with a valid cookie", async () => {
+    const registerResponse = await app.inject({
+      method: "POST",
+      url: "/api/auth/register",
+      payload: {
+        displayName: "Me De Novo",
+        email: "me2@arenax.test",
+        password: "senha-segura"
+      }
+    });
+    const sessionCookie = registerResponse.cookies.find(
+      (cookie) => cookie.name === "arenax_session"
+    );
+    expect(sessionCookie).toBeDefined();
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/api/auth/me",
+      headers: {
+        cookie: "arenax_session=" + sessionCookie!.value
+      }
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({
+      user: {
+        displayName: "Me De Novo",
+        email: "me2@arenax.test"
+      }
+    });
+  });
+
   it("returns a clear validation error", async () => {
     const response = await app.inject({
       method: "POST",
@@ -72,18 +119,13 @@ describe("auth routes", () => {
     });
   });
 
-  it("explains when Google login credentials are not configured", async () => {
+  it("redirects to the login page when Google credentials are not configured", async () => {
     const response = await app.inject({
       method: "GET",
       url: "/api/auth/google"
     });
 
-    expect(response.statusCode).toBe(503);
-    expect(response.json()).toEqual({
-      error: {
-        code: "GOOGLE_AUTH_NOT_CONFIGURED",
-        message: "O login com Google ainda não foi configurado."
-      }
-    });
+    expect(response.statusCode).toBe(302);
+    expect(response.headers.location).toContain("/entrar?erro=google_not_configured");
   });
 });
