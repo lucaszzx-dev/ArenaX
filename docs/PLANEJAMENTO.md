@@ -1,7 +1,7 @@
 # ArenaX — planejamento inicial
 
-Status: aprovado; Fase 0 em andamento
-Última atualização: 23 de julho de 2026
+Status: aprovado; fases 0 a 10 concluídas e MVP publicado
+Última atualização: 3 de agosto de 2026
 
 ## 1. Proposta curta do produto
 
@@ -494,9 +494,36 @@ Próximo marco: escolher as hospedagens e executar o primeiro deploy.
 | 25/07/2026 | Criação de arenas | Concluída | API, permissões, formulário, listagem e persistência PostgreSQL verificadas |
 | 28/07/2026 | Deploy do MVP | Concluído | Frontend na Vercel, backend no Render e PostgreSQL no Neon |
 | 29/07/2026 | Resiliência de produção | Concluída | Proxy de mesma origem, rotas SPA e feedback durante a inicialização do servidor |
-| 29/07/2026 | Súmulas esportivas | Em planejamento | Futebol e futsal serão a primeira implementação de eventos por jogador |
+| 29/07/2026 | Súmulas esportivas | Concluída | Futebol, futsal, basquete e vôlei com eventos por jogador e validações por esporte |
 | 29/07/2026 | Descoberta pública | Concluída | Busca, filtros, paginação e acesso pela navegação principal |
 | 29/07/2026 | Súmula pública | Concluída | Eventos esportivos exibidos no detalhe público da partida |
+| 29/07/2026 | Auditoria de partidas | Concluída | Histórico de placar, cancelamento e reabertura preserva estado anterior e novo |
+| 29/07/2026 | Rodadas e calendário | Concluída | Geração automática de confrontos de pontos corridos por rodada |
+| 29/07/2026 | Mata-mata e chaveamento | Concluída | Geração segura do chaveamento, avanço automático e telas pública/administrativa |
+| 30/07/2026 | Regras de basquete | Concluída | Faltas, lances livres, quartos e prorrogação dinâmica |
+| 31/07/2026 | Regras de vôlei | Concluída | Sets, MVP e eventos detalhados de erro |
+| 01/08/2026 | Módulo de estatísticas | Concluído | Calculadoras por esporte e endpoints públicos/administrativos |
+| 01/08/2026 | Perfis públicos | Concluído | Histórico de jogador, perfis de organizador e clubes com SEO |
+| 01/08/2026 | Calendário público | Concluído | Seções, favoritos, compartilhamento e operações de partida |
+| 01/08/2026 | Evolução de clubes | Concluído | Temporadas, elencos, comissão, importação seletiva e ressincronização manual |
+| 02/08/2026 | Central de notificações | Concluída | Eventos de partidas, elenco e avanços no mata-mata |
+| 02/08/2026 | Segurança e isolamento | Concluído | Permissões por organizador, testes de acesso cruzado e acessibilidade |
+| 03/08/2026 | Identidade visual | Concluída | Tokens visuais, cards de partida, chaveamento polido e microinterações |
+| 03/08/2026 | Infraestrutura e deploy | Concluída | CI com build/lint/testes/E2E, health com banco, logs e documentação de deploy/rollback |
+
+## Estado atual (3 de agosto de 2026)
+
+- Fases 0 a 10 do planejamento original concluídas; MVP publicado em produção
+  (Vercel + Render + Neon).
+- Pontos corridos e mata-mata com chaveamento visual implementados e cobertos
+  por testes E2E (inclui o teste de chaveamento `knockout-bracket`).
+- Súmulas de futebol, futsal, basquete e vôlei; estatísticas por jogador;
+  perfis públicos; clubes reutilizáveis com temporadas e elencos;
+  notificações internas; auditoria de partidas e clubes.
+- Segurança: isolamento entre organizadores, permissões por proprietário,
+  rate limit, CORS/cookies de sessão e acessibilidade verificados.
+- Infraestrutura: CI no GitHub Actions (build, lint, testes e E2E), health
+  check com banco, logs estruturados e documentação de deploy/rollback.
 
 ## Próximos ciclos após a descoberta pública
 
@@ -507,6 +534,14 @@ Próximo marco: escolher as hospedagens e executar o primeiro deploy.
 5. Formato eliminatório, geração de confrontos e chaveamento visual.
 6. Auditoria das alterações de placar e eventos.
 7. Atualizações em tempo real e notificações somente depois das regras estáveis.
+8. Roadmap técnico detalhado em `docs/ROADMAP.md` para convites, múltiplos
+   organizadores, permissões, temporadas/ligas, transferências, rankings,
+   regulamentos, documentos, árbitros, locais, cobrança de inscrição, PWA e
+   internacionalização.
+
+Observação: o formato eliminatório/mata-mata/chaveamento já está implementado
+desde o Ciclo 8 e pode precisar de mais testes (cobertura E2E existe, mas o
+limite de terceiro lugar e cabeças de chave ficaram como extensões futuras; ver `docs/MATA_MATA.md`).
 
 O fluxo de solicitação pública de inscrição foi retirado do escopo por decisão
 do produto em 29 de julho de 2026.
