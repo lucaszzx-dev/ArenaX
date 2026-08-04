@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+﻿import { expect, test } from "@playwright/test";
 
 async function login(page: import("@playwright/test").Page) {
   await page.goto("/entrar");
@@ -52,7 +52,8 @@ test("organizer creates a knockout competition, generates the bracket and advanc
   await page.getByRole("button", { name: "Gerar chaveamento" }).click();
   await expect(page.getByText(/Chaveamento criado com 3 fases e 0 folgas\./)).toBeVisible();
   await expect(page.getByRole("heading", { name: "Quartas de final" })).toBeVisible();
-  await expect(page.getByText("Leões E2E", { exact: true }).first()).toBeVisible();
+  // Check for team name in bracket article
+  await expect(page.locator("article span").filter({ hasText: "Leões E2E" })).toBeVisible();
 
   const firstScoreForm = page.locator("form").filter({
     has: page.getByRole("button", { name: "Finalizar", exact: true })
