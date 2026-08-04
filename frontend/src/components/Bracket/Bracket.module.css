@@ -117,6 +117,13 @@
   font-size: 0.6rem;
 }
 
+.scrollHint {
+  display: none;
+  margin: 0 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.66rem;
+}
+
 .empty {
   padding: 1.5rem;
   color: var(--color-text-muted);
@@ -179,6 +186,9 @@
 }
 
 @media (max-width: 560px) {
+  .scrollHint {
+    display: block;
+  }
   .game {
     padding: 0.5rem;
   }

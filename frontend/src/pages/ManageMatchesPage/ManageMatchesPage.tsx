@@ -1,12 +1,10 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getChampionship } from "../../features/championships/championship-api";
 import { championshipDetailQueryKey } from "../../features/championships/championship-query";
-import { MatchEventsPanel } from "../../components/MatchEventsPanel/MatchEventsPanel";
-import { MatchPeriodsPanel } from "../../components/MatchPeriodsPanel/MatchPeriodsPanel";
-import { MatchAuditPanel } from "../../components/MatchAuditPanel/MatchAuditPanel";
+
 import {
   createMatch,
   generateLeagueMatches,
@@ -19,24 +17,34 @@ import {
   updateMatchSchedule
 } from "../../features/matches/match-api";
 import { getStandingLabels } from "../../features/matches/standing-labels";
-import {
-  listRegistrations,
-  registrationQueryKey
-} from "../../features/participants/participant-api";
+import { buildCalendar } from "../../features/matches/schedule-utils";
+import type { ArenaMatch } from "../../features/matches/match-api";
+
 import { ApiError } from "../../lib/api";
 import { Bracket } from "../../components/Bracket/Bracket";
 import {
   bracketQueryKey,
   generateBracket,
-  getBracket
+  getBracket,
+  setupFirstRound
 } from "../../features/knockout/knockout-api";
 import styles from "./ManageMatchesPage.module.css";
+
+const CALENDAR_FILTERS = [
+  { value: "ALL", label: "Todas" },
+  { value: "TODAY", label: "Hoje" },
+  { value: "UPCOMING", label: "Próximas" },
+  { value: "FINISHED", label: "Finalizadas" }
+];
 
 export function ManageMatchesPage() {
   const { id = "" } = useParams();
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [calendarFilter, setCalendarFilter] = useState("ALL");
+  const [roundFilter, setRoundFilter] = useState("");
+  const [teamFilter, setTeamFilter] = useState("");
   const championshipQuery = useQuery({
     queryKey: championshipDetailQueryKey(id),
     queryFn: () => getChampionship(id),
@@ -52,11 +60,7 @@ export function ManageMatchesPage() {
     queryFn: () => listStandings(id),
     enabled: Boolean(id)
   });
-  const registrationsQuery = useQuery({
-    queryKey: registrationQueryKey(id),
-    queryFn: () => listRegistrations(id),
-    enabled: Boolean(id)
-  });
+
   const bracketQuery = useQuery({
     queryKey: bracketQueryKey(id),
     queryFn: () => getBracket(id),
@@ -105,6 +109,18 @@ export function ManageMatchesPage() {
     },
     onError: showError
   });
+  const manualBracketMutation = useMutation({
+    mutationFn: (pairings: Array<{ homeEntryId: string | null; awayEntryId: string | null }>) =>
+      setupFirstRound(id, pairings),
+    onSuccess: async (result) => {
+      await refresh();
+      await queryClient.invalidateQueries({ queryKey: bracketQueryKey(id) });
+      setSuccessMessage(
+        `Primeira rodada montada com ${result.totalRounds} fases e ${result.byes} folgas.`
+      );
+    },
+    onError: showError
+  });
   const deleteMutation = useMutation({
     mutationFn: (matchId: string) => deleteMatch(id, matchId),
     onSuccess: refresh,
@@ -138,19 +154,45 @@ export function ManageMatchesPage() {
     );
   }
 
+  const roundOptions = useMemo(
+    () =>
+      [...new Set((matchesQuery.data?.matches ?? []).map((match) => String(match.roundNumber ?? "sem-rodada")))]
+        .sort((a, b) => {
+          const na = a === "sem-rodada" ? Number.MAX_SAFE_INTEGER : Number(a);
+          const nb = b === "sem-rodada" ? Number.MAX_SAFE_INTEGER : Number(b);
+          return na - nb;
+        }),
+    [matchesQuery.data]
+  );
+  const filteredMatches = useMemo(() => {
+    const todayKey = new Date().toLocaleDateString("en-CA");
+    return (matchesQuery.data?.matches ?? []).filter((match) => {
+      if (roundFilter && String(match.roundNumber ?? "sem-rodada") !== roundFilter) return false;
+      if (teamFilter && match.homeEntryId !== teamFilter && match.awayEntryId !== teamFilter) return false;
+      if (calendarFilter === "FINISHED") return match.status === "FINISHED";
+      if (calendarFilter === "TODAY") {
+        return match.scheduledAt !== null &&
+          new Date(match.scheduledAt).toLocaleDateString("en-CA") === todayKey;
+      }
+      if (calendarFilter === "UPCOMING") {
+        return match.status === "SCHEDULED" &&
+          (match.scheduledAt === null || new Date(match.scheduledAt).getTime() >= Date.now());
+      }
+      return true;
+    });
+  }, [matchesQuery.data, calendarFilter, roundFilter, teamFilter]);
+
   if (
     championshipQuery.isPending ||
     matchesQuery.isPending ||
-    standingsQuery.isPending ||
-    registrationsQuery.isPending
+    standingsQuery.isPending
   ) {
     return <div className={styles.state}>Carregando partidas...</div>;
   }
   if (
     championshipQuery.isError ||
     matchesQuery.isError ||
-    standingsQuery.isError ||
-    registrationsQuery.isError
+    standingsQuery.isError
   ) {
     return <div className={styles.state}>Não foi possível abrir as partidas.</div>;
   }
@@ -158,12 +200,6 @@ export function ManageMatchesPage() {
   const championship = championshipQuery.data.championship;
   const { entries, matches } = matchesQuery.data;
   const { standings } = standingsQuery.data;
-  const { teams } = registrationsQuery.data;
-  const supportsEvents =
-    championship.sport === "Futebol" ||
-    championship.sport === "Futsal" ||
-    championship.sport === "Basquete" ||
-    championship.sport === "Vôlei";
   const standingLabels = getStandingLabels(championship.sport);
 
   function submitMatch(event: FormEvent<HTMLFormElement>) {
@@ -190,7 +226,7 @@ export function ManageMatchesPage() {
         <p>
           {championship.format === "LEAGUE"
             ? "Gere as rodadas de pontos corridos ou crie confrontos manualmente."
-            : "Organize os confrontos do mata-mata. A geração automática será o próximo ciclo."}
+            : "Monte a primeira rodada do mata-mata manualmente ou use a geração automática."}
         </p>
       </header>
 
@@ -259,6 +295,11 @@ export function ManageMatchesPage() {
                 >
                   Gerar chaveamento
                 </button>
+                <ManualFirstRoundForm
+                  disabled={manualBracketMutation.isPending}
+                  entries={entries}
+                  onSave={(pairings) => manualBracketMutation.mutate(pairings)}
+                />
               </>
             )}
           </section>
@@ -306,128 +347,82 @@ export function ManageMatchesPage() {
             <h2>Calendário</h2>
             <span>{matches.length} partidas</span>
           </div>
-          {matches.map((match) => (
-            <article className={styles.match} key={match.id}>
-              {match.roundNumber && (
-                <span className={styles.round}>Rodada {match.roundNumber}</span>
-              )}
-              <div className={styles.date}>
-                <span>{match.scheduledAt
-                  ? new Intl.DateTimeFormat("pt-BR", {
-                    dateStyle: "short",
-                    timeStyle: "short"
-                  }).format(new Date(match.scheduledAt))
-                  : "Data a definir"}</span>
-                <b>{matchStatusLabel(match.status)}</b>
-              </div>
-              <div className={styles.scoreline}>
-                <strong>{match.homeEntry.displayName}</strong>
-                <span>{match.homeScore ?? "–"} : {match.awayScore ?? "–"}</span>
-                <strong>{match.awayEntry.displayName}</strong>
-              </div>
-              {supportsEvents && (
-                <MatchEventsPanel
-                  championshipId={id}
-                  match={match}
-                  sport={championship.sport}
-                  teams={teams}
-                />
-              )}
-              <MatchPeriodsPanel
-                awayName={match.awayEntry.displayName}
-                bestOfSets={championship.bestOfSets ?? 5}
-                championshipId={id}
-                disabled={match.status !== "SCHEDULED"}
-                homeName={match.homeEntry.displayName}
-                matchId={match.id}
-                sport={championship.sport}
-              />
-              <MatchAuditPanel championshipId={id} matchId={match.id} />
-              {match.status !== "CANCELED" && (
-                <ScoreForm
-                  awayName={match.awayEntry.displayName}
-                  defaultAway={match.awayScore}
-                  defaultHome={match.homeScore}
-                  disabled={
-                    scoreMutation.isPending ||
-                    (championship.format === "KNOCKOUT" &&
-                      match.status === "FINISHED")
-                  }
-                  homeName={match.homeEntry.displayName}
-                  onSave={(homeScore, awayScore) => scoreMutation.mutate({
-                    matchId: match.id,
-                    homeScore,
-                    awayScore
-                  })}
-                />
-              )}
-              <div className={styles.matchActions}>
-          <Link to={`/painel/campeonatos/${id}/partidas/${match.id}`} style={{ color: "var(--color-primary)", fontWeight: 700, fontSize: ".68rem", textDecoration: "none" }}>
-            Administrar
-          </Link>
-                {match.status === "SCHEDULED" && (
-                  <ScheduleForm
-                    defaultValue={toLocalDateTime(match.scheduledAt)}
-                    disabled={actionMutation.isPending}
-                    onSave={(scheduledAt) => actionMutation.mutate({
-                      request: () => updateMatchSchedule(id, match.id, scheduledAt),
-                      successMessage: "Agendamento atualizado."
-                    })}
-                  />
-                )}
-                {match.status !== "CANCELED" && (
-                  <button
-                    disabled={actionMutation.isPending}
-                    onClick={() => {
-                      if (window.confirm("Cancelar esta partida?")) {
-                        actionMutation.mutate({
-                          request: () => changeMatchStatus(id, match.id, "CANCEL"),
-                          successMessage: "Partida cancelada."
-                        });
-                      }
-                    }}
-                    type="button"
-                  >
-                    Cancelar
-                  </button>
-                )}
-                {match.status !== "SCHEDULED" && (
-                  <button
-                    disabled={actionMutation.isPending}
-                    onClick={() => {
-                      if (window.confirm("Reabrir a partida e limpar o placar?")) {
-                        actionMutation.mutate({
-                          request: () => changeMatchStatus(id, match.id, "REOPEN"),
-                          successMessage: "Partida reaberta."
-                        });
-                      }
-                    }}
-                    type="button"
-                  >
-                    Reabrir
-                  </button>
-                )}
-                {match.status === "SCHEDULED" && championship.format === "LEAGUE" && (
-                  <button
-                    disabled={deleteMutation.isPending}
-                    onClick={() => {
-                      if (window.confirm("Excluir esta partida definitivamente?")) {
-                        deleteMutation.mutate(match.id);
-                      }
-                    }}
-                    type="button"
-                  >
-                    Excluir
-                  </button>
-                )}
-              </div>
-            </article>
-          ))}
-          {!matches.length && (
-            <p className={styles.empty}>O calendário ainda está vazio.</p>
+          <div className={styles.calendarFilters} role="group" aria-label="Filtros do calendário">
+            {CALENDAR_FILTERS.map((filter) => (
+              <button
+                aria-pressed={calendarFilter === filter.value}
+                className={calendarFilter === filter.value ? styles.activeFilter : undefined}
+                key={filter.value}
+                onClick={() => setCalendarFilter(filter.value)}
+                type="button"
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+          <select
+            aria-label="Filtrar por rodada"
+            className={styles.roundFilter}
+            value={roundFilter}
+            onChange={(event) => setRoundFilter(event.target.value)}
+          >
+            <option value="">Todas as rodadas</option>
+            {roundOptions.map((round) => (
+              <option key={round} value={round}>Rodada {round}</option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar por equipe"
+            className={styles.roundFilter}
+            value={teamFilter}
+            onChange={(event) => setTeamFilter(event.target.value)}
+          >
+            <option value="">Todas as equipes</option>
+            {entries.map((entry) => (
+              <option key={entry.id} value={entry.id}>{entry.displayName}</option>
+            ))}
+          </select>
+          {filteredMatches.length === 0 ? (
+            <p className={styles.empty}>
+              {matches.length === 0
+                ? "O calendário ainda está vazio. Gere as rodadas ou crie confrontos manualmente."
+                : "Nenhuma partida para os filtros selecionados."}
+            </p>
+          ) : (
+            <div className={styles.calendarList}>
+              {buildCalendar(filteredMatches).map((round) => (
+                <section className={styles.calendarRound} key={round.roundNumber ?? "sem-rodada"}>
+                  <details className={styles.roundGroup} open={round.roundNumber === null || round.roundNumber <= 2}>
+                    <summary>
+                      <strong>{round.roundNumber ? `Rodada ${round.roundNumber}` : "Sem rodada"}</strong>
+                      <span>{round.dates.reduce((total, date) => total + date.matches.length, 0)} partidas</span>
+                    </summary>
+                    <div className={styles.roundBody}>
+                      {round.dates.map((date) => (
+                        <div className={styles.dateGroup} key={date.dateKey ?? "sem-data"}>
+                          <span className={styles.dateLabel}>{date.label}</span>
+                          <div className={styles.dateMatches}>
+                            {date.matches.map((match) => (
+                              <MatchCard
+                                actionMutation={actionMutation}
+                                canDelete={championship.format === "LEAGUE"}
+                                championshipId={id}
+                                deleteMutation={deleteMutation}
+                                key={match.id}
+                                match={match}
+                                scoreMutation={scoreMutation}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </section>
+              ))}
+            </div>
           )}
-        </div>
-      </div>
+        </div>      </div>
 
       <section className={styles.standings}>
         <div className={styles.listHeading}>
@@ -466,6 +461,262 @@ export function ManageMatchesPage() {
         </div>
       </section>
     </section>
+  );
+}
+
+function MatchCard({
+  actionMutation,
+  canDelete,
+  championshipId,
+  deleteMutation,
+  match,
+  scoreMutation
+}: {
+  actionMutation: {
+    isPending: boolean;
+    mutate: (input: { request: () => Promise<unknown>; successMessage: string }) => void;
+  };
+  canDelete: boolean;
+  championshipId: string;
+  deleteMutation: {
+    isPending: boolean;
+    mutate: (matchId: string) => void;
+  };
+  match: ArenaMatch;
+  scoreMutation: {
+    isPending: boolean;
+    mutate: (input: { matchId: string; homeScore: number; awayScore: number }) => void;
+  };
+}) {
+  const schedule = (scheduledAt: string | null) =>
+    actionMutation.mutate({
+      request: () => updateMatchSchedule(championshipId, match.id, scheduledAt),
+      successMessage: "Agendamento atualizado."
+    });
+  const cancel = () =>
+    actionMutation.mutate({
+      request: () => changeMatchStatus(championshipId, match.id, "CANCEL"),
+      successMessage: "Partida cancelada."
+    });
+  const reopen = () =>
+    actionMutation.mutate({
+      request: () => changeMatchStatus(championshipId, match.id, "REOPEN"),
+      successMessage: "Partida reaberta."
+    });
+
+  return (
+    <article className={`${styles.match} ${styles[`status-${match.status}`]}`}>
+      <div className={styles.matchWhen}>
+        <span className={styles.matchTime}>
+          {match.scheduledAt
+            ? new Intl.DateTimeFormat("pt-BR", {
+                hour: "2-digit",
+                minute: "2-digit"
+              }).format(new Date(match.scheduledAt))
+            : "Horário"}
+        </span>
+        <b>{matchStatusLabel(match.status)}</b>
+        {match.venue && <small title={match.venue}>{match.venue}</small>}
+      </div>
+      <div className={styles.scoreline}>
+        <strong>{match.homeEntry.displayName}</strong>
+        <span>{match.homeScore ?? "–"} : {match.awayScore ?? "–"}</span>
+        <strong>{match.awayEntry.displayName}</strong>
+      </div>
+      <div className={styles.matchQuickActions}>
+        {match.status !== "CANCELED" && (
+          <ScoreForm
+            awayName={match.awayEntry.displayName}
+            defaultAway={match.awayScore}
+            defaultHome={match.homeScore}
+            disabled={scoreMutation.isPending}
+            homeName={match.homeEntry.displayName}
+            onSave={(homeScore, awayScore) =>
+              scoreMutation.mutate({ matchId: match.id, homeScore, awayScore })
+            }
+          />
+        )}
+        <Link
+          className={styles.manageLink}
+          to={`/painel/campeonatos/${championshipId}/partidas/${match.id}`}
+        >
+          Administrar
+        </Link>
+        {match.status === "SCHEDULED" && (
+          <ScheduleForm
+            defaultValue={toLocalDateTime(match.scheduledAt)}
+            disabled={actionMutation.isPending}
+            onSave={schedule}
+          />
+        )}
+        {match.status !== "CANCELED" && (
+          <button
+            disabled={actionMutation.isPending}
+            onClick={() => {
+              if (window.confirm("Cancelar esta partida?")) cancel();
+            }}
+            type="button"
+          >
+            Cancelar
+          </button>
+        )}
+        {match.status !== "SCHEDULED" && (
+          <button
+            disabled={actionMutation.isPending}
+            onClick={() => {
+              if (window.confirm("Reabrir a partida e limpar o placar?")) reopen();
+            }}
+            type="button"
+          >
+            Reabrir
+          </button>
+        )}
+        {match.status === "SCHEDULED" && canDelete && (
+          <button
+            disabled={deleteMutation.isPending}
+            onClick={() => {
+              if (window.confirm("Excluir esta partida definitivamente?")) {
+                deleteMutation.mutate(match.id);
+              }
+            }}
+            type="button"
+          >
+            Excluir
+          </button>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function ManualFirstRoundForm({
+  disabled,
+  entries,
+  onSave
+}: {
+  disabled: boolean;
+  entries: Array<{ id: string; displayName: string }>;
+  onSave: (pairings: Array<{ homeEntryId: string | null; awayEntryId: string | null }>) => void;
+}) {
+  const slots = Math.max(1, Math.ceil(entries.length / 2));
+  const [pairings, setPairings] = useState(
+    () => Array.from({ length: slots }, () => ({ homeEntryId: "", awayEntryId: "" }))
+  );
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const used = new Set(
+    pairings.flatMap((pairing) => [pairing.homeEntryId, pairing.awayEntryId]).filter(Boolean)
+  );
+  const complete =
+    pairings.every((pairing) => pairing.homeEntryId && pairing.awayEntryId) &&
+    used.size === entries.length;
+
+  function update(index: number, key: "homeEntryId" | "awayEntryId", value: string) {
+    setPairings((prev) =>
+      prev.map((pairing, itemIndex) =>
+        itemIndex === index ? { ...pairing, [key]: value } : pairing
+      )
+    );
+    setConfirmOpen(false);
+  }
+
+  return (
+    <details className={styles.manualBracket}>
+      <summary>Montar primeira rodada manualmente</summary>
+      <p className={styles.manualHint}>
+        Escolha os confrontos iniciais. Se o número de inscritos for ímpar, deixe um lado vazio para aplicar a folga.
+      </p>
+      <div className={styles.pairingList}>
+        {pairings.map((pairing, index) => (
+          <div className={styles.pairing} key={index}>
+            <select
+              aria-label={`Mandante do confronto ${index + 1}`}
+              value={pairing.homeEntryId}
+              onChange={(event) => update(index, "homeEntryId", event.target.value)}
+            >
+              <option value="">Folga / selecionar</option>
+              {entries.map((entry) => (
+                <option
+                  disabled={used.has(entry.id) && entry.id !== pairing.homeEntryId}
+                  key={entry.id}
+                  value={entry.id}
+                >
+                  {entry.displayName}
+                </option>
+              ))}
+            </select>
+            <span>×</span>
+            <select
+              aria-label={`Visitante do confronto ${index + 1}`}
+              value={pairing.awayEntryId}
+              onChange={(event) => update(index, "awayEntryId", event.target.value)}
+            >
+              <option value="">Folga / selecionar</option>
+              {entries.map((entry) => (
+                <option
+                  disabled={used.has(entry.id) && entry.id !== pairing.awayEntryId}
+                  key={entry.id}
+                  value={entry.id}
+                >
+                  {entry.displayName}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
+      </div>
+      <div className={styles.pairingPreview}>
+        {pairings.map((pairing, index) => {
+          const home = entries.find((entry) => entry.id === pairing.homeEntryId)?.displayName;
+          const away = entries.find((entry) => entry.id === pairing.awayEntryId)?.displayName;
+          return (
+            <p key={index}>
+              <strong>{home ?? "Folga"}</strong>
+              <span>×</span>
+              <strong>{away ?? "Folga"}</strong>
+            </p>
+          );
+        })}
+      </div>
+      {complete ? (
+        confirmOpen ? (
+          <div className={styles.pairingConfirm}>
+            <p>
+              Confirmar este emparelhamento? A progressão automática dos vencedores continua valendo depois.
+            </p>
+            <button
+              disabled={disabled}
+              onClick={() =>
+                onSave(
+                  pairings.map((pairing) => ({
+                    homeEntryId: pairing.homeEntryId || null,
+                    awayEntryId: pairing.awayEntryId || null
+                  }))
+                )
+              }
+              type="button"
+            >
+              Confirmar primeira rodada
+            </button>
+            <button onClick={() => setConfirmOpen(false)} type="button">
+              Revisar
+            </button>
+          </div>
+        ) : (
+          <button
+            className={styles.pairingConfirmButton}
+            disabled={disabled}
+            onClick={() => setConfirmOpen(true)}
+            type="button"
+          >
+            Revisar e confirmar
+          </button>
+        )
+      ) : (
+        <p className={styles.manualHint}>
+          {used.size}/{entries.length} participantes distribuídos. Todos os inscritos precisam ser usados.
+        </p>
+      )}
+    </details>
   );
 }
 

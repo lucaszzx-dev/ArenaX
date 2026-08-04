@@ -9,6 +9,14 @@ import type { KnockoutService } from "../knockout/knockout-service.js";
 
 const idParams = z.object({ id: z.uuid() });
 const slugParams = z.object({ slug: z.string().trim().min(1).max(100) });
+const pairingSchema = z.object({
+  homeEntryId: z.union([z.string().uuid(), z.null()]),
+  awayEntryId: z.union([z.string().uuid(), z.null()])
+});
+const manualPairingsSchema = z.object({
+  pairings: z.array(pairingSchema).min(1),
+  thirdPlace: z.boolean().optional()
+});
 
 type KnockoutRoutesOptions = {
   authService: AuthService;
@@ -40,6 +48,20 @@ export const knockoutRoutes: FastifyPluginAsync<KnockoutRoutesOptions> = async (
       currentUser.id,
       params.data.id,
       thirdPlace
+    );
+    return reply.status(201).send(result);
+  });
+
+  app.post("/championships/:id/bracket/manual", async (request, reply) => {
+    const currentUser = await user(request);
+    const params = idParams.safeParse(request.params);
+    const input = manualPairingsSchema.safeParse(request.body);
+    if (!params.success || !input.success) throw validationError();
+    const result = await options.knockoutService.setupFirstRound(
+      currentUser.id,
+      params.data.id,
+      input.data.pairings,
+      input.data.thirdPlace
     );
     return reply.status(201).send(result);
   });

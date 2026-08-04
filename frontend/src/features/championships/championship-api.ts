@@ -83,3 +83,9 @@ export function updateChampionshipStatus(
     body: JSON.stringify({ status })
   });
 }
+
+export function deleteChampionship(id: string) {
+  return apiRequest<void>(`/championships/${id}`, {
+    method: "DELETE"
+  });
+}

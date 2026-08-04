@@ -101,6 +101,9 @@ export function Bracket({ bracket }: { bracket: BracketData }) {
         })}
         </div>
       </div>
+      {rounds.length > 1 && (
+        <small className={styles.scrollHint}>Role para o lado para ver todas as fases do chaveamento.</small>
+      )}
     </>
   );
 }

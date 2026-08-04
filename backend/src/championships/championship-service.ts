@@ -93,6 +93,17 @@ export class ChampionshipService {
     return this.repository.updateStatus(championshipId, status);
   }
 
+  async delete(organizerId: string, championshipId: string) {
+    await this.getMine(organizerId, championshipId);
+    if (!(await this.repository.delete(championshipId))) {
+      throw new AppError(
+        "Campeonato não encontrado.",
+        404,
+        "CHAMPIONSHIP_NOT_FOUND"
+      );
+    }
+  }
+
   async update(
     organizerId: string,
     championshipId: string,

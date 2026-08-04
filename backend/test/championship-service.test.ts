@@ -72,4 +72,44 @@ describe("ChampionshipService", () => {
       code: "CHAMPIONSHIP_NOT_FOUND"
     });
   });
+
+  it("deletes the organizer's own championship", async () => {
+    const repository = new InMemoryChampionshipRepository();
+    const service = new ChampionshipService(repository);
+    const championship = await service.create("organizer-1", validInput);
+
+    await service.delete("organizer-1", championship.id);
+
+    expect(repository.championships).toHaveLength(0);
+    await expect(service.getMine("organizer-1", championship.id)).rejects.toMatchObject({
+      statusCode: 404,
+      code: "CHAMPIONSHIP_NOT_FOUND"
+    });
+  });
+
+  it("does not delete another organizer's championship", async () => {
+    const repository = new InMemoryChampionshipRepository();
+    const service = new ChampionshipService(repository);
+    const championship = await service.create("organizer-1", validInput);
+
+    await expect(
+      service.delete("organizer-2", championship.id)
+    ).rejects.toMatchObject({
+      statusCode: 404,
+      code: "CHAMPIONSHIP_NOT_FOUND"
+    });
+    expect(repository.championships).toHaveLength(1);
+  });
+
+  it("returns not found when deleting an unknown championship", async () => {
+    const repository = new InMemoryChampionshipRepository();
+    const service = new ChampionshipService(repository);
+
+    await expect(
+      service.delete("organizer-1", crypto.randomUUID())
+    ).rejects.toMatchObject({
+      statusCode: 404,
+      code: "CHAMPIONSHIP_NOT_FOUND"
+    });
+  });
 });

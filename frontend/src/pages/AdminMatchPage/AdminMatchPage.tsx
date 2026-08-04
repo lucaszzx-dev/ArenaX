@@ -79,11 +79,21 @@ const periodConfig: Record<string, { count: number; label: (p: number, total?: n
   "V\u00f4lei": { count: 5, label: (p, total) => p >= (total ?? 5) ? `${p}º set (Tie-break)` : `${p}º set` }
 };
 
+type AdminTab = "partida" | "elencos" | "eventos" | "regras" | "detalhes";
+
+const ADMIN_TABS: Array<{ id: AdminTab; label: string }> = [
+  { id: "partida", label: "Partida" },
+  { id: "elencos", label: "Elencos" },
+  { id: "eventos", label: "Eventos" },
+  { id: "regras", label: "Regras" },
+  { id: "detalhes", label: "Detalhes" }
+];
 export function AdminMatchPage() {
   const { id = "", matchId = "" } = useParams();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [overtimePeriods, setOvertimePeriods] = useState(0);
+  const [tab, setTab] = useState<AdminTab>("partida");
 
   const championshipQuery = useQuery({
     queryKey: championshipDetailQueryKey(id),
@@ -237,6 +247,11 @@ export function AdminMatchPage() {
 
   const championship = championshipQuery.data.championship;
   const canEdit = match.status === "SCHEDULED";
+  const visibleAdminTabs = ADMIN_TABS.filter((item) => {
+    if (item.id === "eventos") return Boolean(supportsEvents);
+    if (item.id === "regras") return Boolean(supportsPeriods);
+    return true;
+  });
 
   return (
     <div className={styles.page}>
@@ -262,9 +277,25 @@ export function AdminMatchPage() {
         </p>
       )}
 
+      <nav className={styles.tabs} aria-label="Seções da partida">
+        {visibleAdminTabs.map((item) => (
+          <button
+            aria-selected={tab === item.id}
+            className={tab === item.id ? styles.activeTab : undefined}
+            key={item.id}
+            onClick={() => setTab(item.id)}
+            type="button"
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
       <div className={styles.grid}>
 
-        {/* METADATA */}
+        {tab === "partida" && (
+          <>
+            {/* METADATA */}
         <section className={styles.panel}>
           <header><span>ORGANIZAÇÃO</span><h2>Local e arbitragem</h2></header>
           <form className={styles.metaForm} onSubmit={(e) => {
@@ -326,8 +357,12 @@ export function AdminMatchPage() {
             <p className={styles.empty}>Cadastre as equipes para escolher o MVP.</p>
           )}
         </section>
+          </>
+        )}
 
-        {/* LINEUPS */}
+        {tab === "elencos" && (
+          <>
+            {/* LINEUPS */}
         <section className={styles.panel}>
           <header><span>ESCALAÇÃO</span><h2>Titulares e reservas</h2></header>
           {[match.homeEntry, match.awayEntry].map((entry) => {
@@ -348,8 +383,12 @@ export function AdminMatchPage() {
           })}
           {!teams.length && <p className={styles.empty}>Escalações disponíveis apenas para competições por equipes.</p>}
         </section>
+          </>
+        )}
 
-        {/* PERIODS */}
+        {tab === "regras" && supportsPeriods && (
+          <>
+            {/* PERIODS */}
         {supportsPeriods && (
           <section className={styles.panel}>
             <header><span>PARCIAIS</span><h2>Placar detalhado</h2></header>
@@ -397,6 +436,9 @@ export function AdminMatchPage() {
               })}
             </div>
           {canEdit && championship.sport === "Basquete" && (
+            <details className={styles.advancedRules}>
+              <summary>Regras avançadas</summary>
+              <p className={styles.advancedHint}>Prorrogações do basquete: adicione períodos extras quando a partida terminar empatada.</p>
               <button
                 className={styles.overtimeBtn}
                 onClick={() => {
@@ -405,13 +447,18 @@ export function AdminMatchPage() {
                 }}
                 type="button"
               >
-                + Prorrogação
+                + Adicionar prorrogação
               </button>
-            )}
+            </details>
+          )}
           </section>
         )}
+          </>
+        )}
 
-        {/* EVENTS */}
+        {tab === "eventos" && supportsEvents && (
+          <>
+            {/* EVENTS */}
         {supportsEvents && (
           <section className={styles.panel}>
             <header><span>SÚMULA</span><h2>Eventos da partida</h2></header>
@@ -448,8 +495,12 @@ export function AdminMatchPage() {
             </div>
           </section>
         )}
+          </>
+        )}
 
-        {/* AUDIT */}
+        {tab === "detalhes" && (
+          <>
+            {/* AUDIT */}
         <section className={styles.panel}>
           <header><span>AUDITORIA</span><h2>Histórico de alterações</h2></header>
           {auditQuery.data?.logs.length ? (
@@ -491,6 +542,8 @@ export function AdminMatchPage() {
             )}
           </div>
         </section>
+          </>
+        )}
       </div>
     </div>
   );

@@ -99,6 +99,22 @@ export const championshipRoutes: FastifyPluginAsync<
     return { championship };
   });
 
+  app.delete("/championships/:id", async (request, reply) => {
+    const user = await getUser(request);
+    const params = idParamsSchema.safeParse(request.params);
+
+    if (!params.success) {
+      throw new AppError(
+        "Identificador de campeonato inválido.",
+        400,
+        "VALIDATION_ERROR"
+      );
+    }
+
+    await options.championshipService.delete(user.id, params.data.id);
+    return reply.status(204).send();
+  });
+
   app.put("/championships/:id", async (request) => {
     const user = await getUser(request);
     const params = idParamsSchema.safeParse(request.params);

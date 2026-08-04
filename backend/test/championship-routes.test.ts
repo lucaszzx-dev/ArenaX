@@ -132,6 +132,71 @@ describe("championship routes", () => {
     }
   });
 
+  it("requires authentication to delete a championship", async () => {
+    const response = await app.inject({
+      method: "DELETE",
+      url: `/api/championships/${crypto.randomUUID()}`
+    });
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  it("deletes the current organizer's championship", async () => {
+    const cookie = await createSessionCookie();
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/api/championships",
+      headers: { cookie },
+      payload
+    });
+    const id = createResponse.json<{ championship: { id: string } }>().championship.id;
+
+    const deleteResponse = await app.inject({
+      method: "DELETE",
+      url: `/api/championships/${id}`,
+      headers: { cookie }
+    });
+
+    expect(deleteResponse.statusCode).toBe(204);
+
+    const listResponse = await app.inject({
+      method: "GET",
+      url: "/api/championships",
+      headers: { cookie }
+    });
+    expect(listResponse.json<{ championships: unknown[] }>().championships).toHaveLength(0);
+  });
+
+  it("does not delete another user's championship", async () => {
+    const ownerCookie = await createSessionCookie();
+    const createResponse = await app.inject({
+      method: "POST",
+      url: "/api/championships",
+      headers: { cookie: ownerCookie },
+      payload
+    });
+    const id = createResponse.json<{ championship: { id: string } }>().championship.id;
+
+    const otherCookie = await createSessionCookie();
+    const deleteResponse = await app.inject({
+      method: "DELETE",
+      url: `/api/championships/${id}`,
+      headers: { cookie: otherCookie }
+    });
+
+    expect(deleteResponse.statusCode).toBe(404);
+    expect(deleteResponse.json()).toMatchObject({
+      error: { code: "CHAMPIONSHIP_NOT_FOUND" }
+    });
+
+    const listResponse = await app.inject({
+      method: "GET",
+      url: "/api/championships",
+      headers: { cookie: ownerCookie }
+    });
+    expect(listResponse.json<{ championships: unknown[] }>().championships).toHaveLength(1);
+  });
+
   it("updates sport rules when the sport changes", async () => {
     const cookie = await createSessionCookie();
     const createResponse = await app.inject({

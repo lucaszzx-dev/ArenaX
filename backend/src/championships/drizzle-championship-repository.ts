@@ -127,4 +127,12 @@ export class DrizzleChampionshipRepository
     if (!championship) throw new Error("Não foi possível alterar o status.");
     return championship;
   }
+
+  async delete(id: string): Promise<boolean> {
+    const rows = await this.db
+      .delete(championships)
+      .where(eq(championships.id, id))
+      .returning({ id: championships.id });
+    return rows.length > 0;
+  }
 }

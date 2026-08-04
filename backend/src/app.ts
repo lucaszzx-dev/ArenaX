@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
@@ -18,6 +20,7 @@ import type { PublicProfileService } from "./public-profiles/public-profile-serv
 import type { NotificationService } from "./notifications/notification-service.js";
 import type { Env } from "./config/env.js";
 import { AppError } from "./errors/app-error.js";
+import { sanitizeLogUrl } from "./observability/sanitize-log-url.js";
 import { authRoutes } from "./routes/auth.js";
 import { healthRoutes } from "./routes/health.js";
 import { profileRoutes } from "./routes/profile.js";
@@ -55,6 +58,7 @@ type BuildAppOptions = {
 
 export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   const app = Fastify({
+    genReqId: () => randomUUID(),
     logger: options.env
       ? options.env.NODE_ENV === "test"
         ? false
@@ -63,9 +67,22 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
             redact: {
               paths: [
                 "req.headers.cookie",
-                "req.headers.authorization"
+                "req.headers.authorization",
+                "req.query.code",
+                "req.query.state",
+                "req.query.token",
+                "req.query.access_token"
               ],
               censor: "[REDACTED]"
+            },
+            serializers: {
+              req: (request) => ({
+                method: request.method,
+                url: sanitizeLogUrl(request.url),
+                host: request.host,
+                remoteAddress: request.ip,
+                remotePort: request.socket?.remotePort ?? 0
+              })
             }
           }
       : process.env.NODE_ENV !== "test",
@@ -261,11 +278,11 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     const statusCode =
       typeof error === "object" && error !== null &&
       "statusCode" in error && typeof error.statusCode === "number"
-        ? error.statusCode
+        ? Math.max(400, error.statusCode)
         : 500;
 
     if (statusCode >= 500) {
-      request.log.error(error);
+      request.log.error({ err: error, requestId: request.id }, "unhandled error");
     }
 
     if (statusCode === 429) {
@@ -280,11 +297,23 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     return reply.status(statusCode).send({
       error: {
         code: "INTERNAL_SERVER_ERROR",
-        message: "Não foi possível concluir a operação."
+        message: "Não foi possível concluir a operação.",
+        requestId: request.id
       }
     });
   });
 
+  app.setNotFoundHandler((request, reply) => {
+    if (request.method === "OPTIONS") {
+      return reply.status(204).send();
+    }
+    return reply.status(404).send({
+      error: {
+        code: "NOT_FOUND",
+        message: "Endereço não encontrado."
+      }
+    });
+  });
   return app;
 }
 

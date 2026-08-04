@@ -34,5 +34,21 @@ export const generateBracket = (championshipId: string) =>
     byes: number;
   }>(`/championships/${championshipId}/bracket/generate`, { method: "POST" });
 
+export const setupFirstRound = (
+  championshipId: string,
+  pairings: Array<{ homeEntryId: string | null; awayEntryId: string | null }>,
+  thirdPlace?: boolean
+) =>
+  apiRequest<{
+    nodes: KnockoutNode[];
+    totalRounds: number;
+    bracketSize: number;
+    byes: number;
+  }>(`/championships/${championshipId}/bracket/manual`, {
+    method: "POST",
+    body: JSON.stringify({ pairings, thirdPlace })
+  });
+
+
 export const getPublicBracket = (slug: string) =>
   apiRequest<Bracket>(`/public/championships/${slug}/bracket`);

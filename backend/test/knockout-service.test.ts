@@ -214,4 +214,90 @@ describe("KnockoutService", () => {
     expect(result.totalRounds).toBe(3);
     expect(result.nodes).toHaveLength(4);
   });
+
+  it("sets up the first round manually with byes", async () => {
+    const arena = await createArena(3);
+    const result = await knockout.setupFirstRound(
+      "organizer-1",
+      arena.id,
+      [
+        { homeEntryId: "entry-1", awayEntryId: "entry-2" },
+        { homeEntryId: "entry-3", awayEntryId: null }
+      ],
+      false
+    );
+    expect(result.totalRounds).toBe(2);
+    expect(result.byes).toBe(1);
+    expect(matches.matches).toHaveLength(1);
+    const semifinal = result.nodes.find((node) => node.roundNumber === 1);
+    expect(semifinal).toMatchObject({
+      homeEntryId: "entry-1",
+      awayEntryId: "entry-2"
+    });
+    const final = result.nodes.find((node) => node.roundNumber === 2);
+    expect(final?.awayEntryId).toBe("entry-3");
+  });
+
+  it("rejects a participant used twice in the first round", async () => {
+    const arena = await createArena(4);
+    await expect(
+      knockout.setupFirstRound(
+        "organizer-1",
+        arena.id,
+        [
+          { homeEntryId: "entry-1", awayEntryId: "entry-2" },
+          { homeEntryId: "entry-1", awayEntryId: "entry-3" },
+          { homeEntryId: "entry-4", awayEntryId: null }
+        ]
+      )
+    ).rejects.toMatchObject({ code: "DUPLICATE_ENTRY_IN_PAIRINGS" });
+  });
+
+  it("rejects a participant from another competition", async () => {
+    const arena = await createArena(2);
+    await expect(
+      knockout.setupFirstRound(
+        "organizer-1",
+        arena.id,
+        [{ homeEntryId: "entry-1", awayEntryId: "outside-entry" }]
+      )
+    ).rejects.toMatchObject({ code: "ENTRY_NOT_IN_CHAMPIONSHIP" });
+  });
+
+  it("rejects pairings that do not cover every participant", async () => {
+    const arena = await createArena(4);
+    await expect(
+      knockout.setupFirstRound(
+        "organizer-1",
+        arena.id,
+        [
+          { homeEntryId: "entry-1", awayEntryId: "entry-2" },
+          { homeEntryId: "entry-3", awayEntryId: null }
+        ]
+      )
+    ).rejects.toMatchObject({ code: "MISSING_ENTRY_IN_PAIRINGS" });
+  });
+
+  it("blocks manual setup after the bracket already exists", async () => {
+    const arena = await createArena(2);
+    await knockout.generate("organizer-1", arena.id, false);
+    await expect(
+      knockout.setupFirstRound(
+        "organizer-1",
+        arena.id,
+        [{ homeEntryId: "entry-1", awayEntryId: "entry-2" }]
+      )
+    ).rejects.toMatchObject({ code: "BRACKET_ALREADY_GENERATED" });
+  });
+
+  it("rejects self-pairing in the first round", async () => {
+    const arena = await createArena(2);
+    await expect(
+      knockout.setupFirstRound(
+        "organizer-1",
+        arena.id,
+        [{ homeEntryId: "entry-1", awayEntryId: "entry-1" }]
+      )
+    ).rejects.toMatchObject({ code: "PAIRING_REQUIRES_DISTINCT_ENTRIES" });
+  });
 });

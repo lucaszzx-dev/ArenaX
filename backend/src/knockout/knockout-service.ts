@@ -62,10 +62,9 @@ export class KnockoutService {
     }
 
     const bracketSize = nextPowerOfTwo(entries.length);
-    const totalRounds = Math.log2(bracketSize);
     const firstRoundGames = bracketSize / 2;
     const byes = bracketSize - entries.length;
-    const nodesToSave: SaveKnockoutNode[] = [];
+    const firstRound: SaveKnockoutNode[] = [];
     let entryIndex = 0;
 
     for (let position = 1; position <= firstRoundGames; position += 1) {
@@ -75,8 +74,138 @@ export class KnockoutService {
         ? null
         : entries[entryIndex]?.id ?? null;
       if (position > byes) entryIndex += 1;
-      nodesToSave.push({ roundNumber: 1, position, homeEntryId, awayEntryId });
+      firstRound.push({ roundNumber: 1, position, homeEntryId, awayEntryId });
     }
+    const { nodesToSave, totalRounds } = this.buildBracketNodes(
+      entries,
+      firstRound,
+      thirdPlace ?? true
+    );
+
+    const created = await this.repository.createBracket(
+      championshipId,
+      nodesToSave
+    );
+    return {
+      nodes: created,
+      totalRounds,
+      bracketSize,
+      byes
+    };
+  }
+
+  async setupFirstRound(
+    organizerId: string,
+    championshipId: string,
+    pairings: Array<{ homeEntryId: string | null; awayEntryId: string | null }>,
+    thirdPlace?: boolean
+  ) {
+    const championship = await this.championships.getMine(organizerId, championshipId);
+    if (championship.format !== "KNOCKOUT") {
+      throw new AppError(
+        "Esta competição não utiliza o formato mata-mata.",
+        409,
+        "CHAMPIONSHIP_IS_NOT_KNOCKOUT"
+      );
+    }
+    if (championship.status !== "DRAFT") {
+      throw new AppError(
+        "O chaveamento só pode ser montado enquanto a competição é rascunho.",
+        409,
+        "BRACKET_REQUIRES_DRAFT"
+      );
+    }
+    const [entries, matches, nodes] = await Promise.all([
+      this.matches.listEntries(championshipId),
+      this.matches.listByChampionship(championshipId),
+      this.repository.list(championshipId)
+    ]);
+    if (entries.length < 2) {
+      throw new AppError(
+        "Cadastre pelo menos dois participantes antes de montar o chaveamento.",
+        409,
+        "BRACKET_NEEDS_ENTRIES"
+      );
+    }
+    if (matches.length || nodes.length) {
+      throw new AppError(
+        "O calendário e o chaveamento precisam estar vazios para montar a primeira rodada.",
+        409,
+        "BRACKET_ALREADY_GENERATED"
+      );
+    }
+    if (!pairings.length) {
+      throw new AppError(
+        "Informe pelo menos um confronto para a primeira rodada.",
+        400,
+        "BRACKET_NEEDS_PAIRINGS"
+      );
+    }
+
+    const entriesById = new Map(entries.map((entry) => [entry.id, entry]));
+    const used = new Set<string>();
+    for (const pairing of pairings) {
+      if (pairing.homeEntryId && pairing.homeEntryId === pairing.awayEntryId) {
+        throw new AppError(
+          "Um participante não pode enfrentar a si mesmo na primeira rodada.",
+          400,
+          "PAIRING_REQUIRES_DISTINCT_ENTRIES"
+        );
+      }
+      for (const id of [pairing.homeEntryId, pairing.awayEntryId]) {
+        if (!id) continue;
+        if (!entriesById.has(id)) {
+          throw new AppError(
+            "Um dos participantes informados não pertence a esta competição.",
+            400,
+            "ENTRY_NOT_IN_CHAMPIONSHIP"
+          );
+        }
+        if (used.has(id)) {
+          throw new AppError(
+            "Um participante não pode aparecer em dois confrontos da mesma rodada.",
+            400,
+            "DUPLICATE_ENTRY_IN_PAIRINGS"
+          );
+        }
+        used.add(id);
+      }
+    }
+    if (used.size !== entries.length) {
+      throw new AppError(
+        "Todos os participantes inscritos devem aparecer exatamente uma vez (folgas ficam sem adversário).",
+        400,
+        "MISSING_ENTRY_IN_PAIRINGS"
+      );
+    }
+
+    const firstRound: SaveKnockoutNode[] = pairings.map((pairing, index) => ({
+      roundNumber: 1,
+      position: index + 1,
+      homeEntryId: pairing.homeEntryId,
+      awayEntryId: pairing.awayEntryId
+    }));
+    const { nodesToSave, totalRounds, bracketSize } = this.buildBracketNodes(
+      entries,
+      firstRound,
+      thirdPlace ?? true
+    );
+    const byes = pairings.filter(
+      (pairing) => !pairing.homeEntryId || !pairing.awayEntryId
+    ).length;
+    const created = await this.repository.createBracket(championshipId, nodesToSave);
+    return { nodes: created, totalRounds, bracketSize, byes };
+  }
+
+  private buildBracketNodes(
+    entries: Array<{ id: string }>,
+    firstRound: SaveKnockoutNode[],
+    thirdPlace: boolean
+  ) {
+    const bracketSize = nextPowerOfTwo(entries.length);
+    const totalRounds = Math.log2(bracketSize);
+    const nodesToSave: SaveKnockoutNode[] = [...firstRound];
+
     for (let round = 2; round <= totalRounds; round += 1) {
       const games = bracketSize / 2 ** round;
       for (let position = 1; position <= games; position += 1) {
@@ -104,8 +233,8 @@ export class KnockoutService {
       else next.awayEntryId = automaticWinner;
     }
 
-    const hasThirdPlace = thirdPlace ?? true;
-    if (hasThirdPlace && totalRounds >= 2) {
+    const hasThirdPlace = thirdPlace && totalRounds >= 2;
+    if (hasThirdPlace) {
       nodesToSave.push({
         roundNumber: totalRounds + 1,
         position: 2,
@@ -114,15 +243,10 @@ export class KnockoutService {
       });
     }
 
-    const created = await this.repository.createBracket(
-      championshipId,
-      nodesToSave
-    );
     return {
-      nodes: created,
-      totalRounds: hasThirdPlace && totalRounds >= 2 ? totalRounds + 1 : totalRounds,
-      bracketSize,
-      byes
+      nodesToSave,
+      totalRounds: hasThirdPlace ? totalRounds + 1 : totalRounds,
+      bracketSize
     };
   }
 

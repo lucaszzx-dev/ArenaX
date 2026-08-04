@@ -131,8 +131,10 @@ export const publicChampionshipRoutes: FastifyPluginAsync<
         },
         match,
         events,
-        periods
-        ,operations
+        periods,
+        operations,
+        standings: overview.standings,
+        entries: overview.entries
       };
     }
   );

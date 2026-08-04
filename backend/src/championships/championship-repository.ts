@@ -62,4 +62,5 @@ export interface ChampionshipRepository {
     input: UpdateChampionshipInput
   ): Promise<Championship>;
   updateStatus(id: string, status: ChampionshipStatus): Promise<Championship>;
+  delete(id: string): Promise<boolean>;
 }

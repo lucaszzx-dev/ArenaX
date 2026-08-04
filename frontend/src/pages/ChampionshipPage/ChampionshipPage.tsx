@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
@@ -30,6 +30,7 @@ const STATUS_FILTERS = [
 export function ChampionshipPage() {
   const { slug = "" } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const statusFilter = searchParams.get("status") ?? "";
   const roundFilter = searchParams.get("round") ?? "";
 
@@ -230,33 +231,58 @@ export function ChampionshipPage() {
       <section className={`${styles.panel} ${styles.schedule}`}>
         <div className={styles.panelHeading}>
           <div><span>Calendário</span><h2>Partidas e resultados</h2></div>
-          <div className={styles.filters}>
-            <select
-              aria-label="Filtrar por estado"
-              value={statusFilter}
-              onChange={(event) => setFilter("status", event.target.value)}
-            >
-              {STATUS_FILTERS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-            <select
-              aria-label="Filtrar por rodada"
-              value={roundFilter}
-              onChange={(event) => setFilter("round", event.target.value)}
-            >
-              <option value="">Todas as rodadas</option>
-              {roundOptions.map((round) => (
-                <option key={round} value={round}>
-                  {round === "sem-rodada" ? "Sem rodada" : `Rodada ${round}`}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
-        <CalendarView calendar={calendar} slug={championship.slug} />
-        {!filteredMatches.length && (
-          <p className={styles.empty}>Nenhuma partida para os filtros selecionados.</p>
+        {calendarOpen ? (
+          <>
+            <div className={styles.filters}>
+              <select
+                aria-label="Filtrar por estado"
+                value={statusFilter}
+                onChange={(event) => setFilter("status", event.target.value)}
+              >
+                {STATUS_FILTERS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+              <select
+                aria-label="Filtrar por rodada"
+                value={roundFilter}
+                onChange={(event) => setFilter("round", event.target.value)}
+              >
+                <option value="">Todas as rodadas</option>
+                {roundOptions.map((round) => (
+                  <option key={round} value={round}>
+                    {round === "sem-rodada" ? "Sem rodada" : `Rodada ${round}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <CalendarView calendar={calendar} slug={championship.slug} />
+            {!filteredMatches.length && (
+              <p className={styles.empty}>Nenhuma partida para os filtros selecionados.</p>
+            )}
+            <button
+              className={styles.calendarToggle}
+              onClick={() => setCalendarOpen(false)}
+              type="button"
+            >
+              Recolher calendário
+            </button>
+          </>
+        ) : (
+          matches.length > 0 && (
+            <button
+              className={styles.calendarToggle}
+              onClick={() => setCalendarOpen(true)}
+              type="button"
+            >
+              Ver calendário completo
+              <span>{matches.length} partida{matches.length === 1 ? "" : "s"}</span>
+            </button>
+          )
+        )}
+        {!matches.length && (
+          <p className={styles.empty}>Nenhuma partida cadastrada ainda.</p>
         )}
       </section>
 
@@ -326,31 +352,47 @@ function CalendarView({ calendar, slug }: { calendar: CalendarRound[]; slug: str
   return (
     <div className={styles.calendar}>
       {calendar.map((round) => (
-        <div className={styles.round} key={round.roundNumber ?? "sem-rodada"}>
-          <h3 className={styles.roundTitle}>
-            {round.roundNumber ? `Rodada ${round.roundNumber}` : "Sem rodada"}
-          </h3>
+        <details
+          className={styles.publicRound}
+          key={round.roundNumber ?? "sem-rodada"}
+          open={round.roundNumber === null || round.roundNumber <= 2}
+        >
+          <summary>
+            <strong>{round.roundNumber ? `Rodada ${round.roundNumber}` : "Sem rodada"}</strong>
+            <span>
+              {round.dates.reduce((total, date) => total + date.matches.length, 0)} partida
+              {round.dates.reduce((total, date) => total + date.matches.length, 0) === 1 ? "" : "s"}
+            </span>
+          </summary>
           {round.dates.map((date) => (
             <div className={styles.dateGroup} key={date.dateKey ?? "sem-data"}>
               <span className={styles.dateLabel}>{date.label}</span>
               <div className={styles.dateMatches}>
                 {date.matches.map((match) => (
-                  <FixtureRow key={match.id} match={match} slug={slug} />
+                  <FixtureRow compact key={match.id} match={match} slug={slug} />
                 ))}
               </div>
             </div>
           ))}
-        </div>
+        </details>
       ))}
     </div>
   );
 }
 
-function FixtureRow({ match, slug }: { match: ArenaMatch; slug: string }) {
+function FixtureRow({
+  match,
+  slug,
+  compact = false
+}: {
+  match: ArenaMatch;
+  slug: string;
+  compact?: boolean;
+}) {
   const score = `${match.homeScore ?? "–"} × ${match.awayScore ?? "–"}`;
   return (
     <Link
-      className={`${styles.fixture} ${styles[`status-${match.status}`]}`}
+      className={`${styles.fixture} ${compact ? styles.compactFixture : ""} ${styles[`status-${match.status}`]}`}
       key={match.id}
       to={`/campeonatos/${slug}/partidas/${match.id}`}
     >

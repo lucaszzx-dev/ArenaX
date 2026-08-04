@@ -67,6 +67,8 @@ export const getPublicMatch = (slug: string, matchId: string) =>
     events: MatchEvent[];
     periods: MatchPeriod[];
     operations: MatchOperations;
+    standings: Standing[];
+    entries: MatchEntry[];
   }>(`/public/championships/${slug}/matches/${matchId}`);
 
 export const getPublicTeam = (slug: string, teamId: string) =>

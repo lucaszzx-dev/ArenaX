@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import {
+  deleteChampionship,
   getChampionship,
   updateChampionshipStatus,
   type ChampionshipStatus
@@ -16,8 +17,11 @@ import styles from "./OrganizerChampionshipPage.module.css";
 
 export function OrganizerChampionshipPage() {
   const { id = "" } = useParams();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const championshipQuery = useQuery({
     queryKey: championshipDetailQueryKey(id),
     queryFn: () => getChampionship(id),
@@ -34,6 +38,25 @@ export function OrganizerChampionshipPage() {
     onError: (error) => setMessage(
       error instanceof ApiError ? error.message : "Não foi possível alterar o status."
     )
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteChampionship(id),
+    onSuccess: async () => {
+      queryClient.removeQueries({ queryKey: championshipDetailQueryKey(id) });
+      await queryClient.invalidateQueries({ queryKey: championshipListQueryKey });
+      setDeleteOpen(false);
+      setDeleteConfirmation("");
+      await navigate("/painel", { replace: true });
+    },
+    onError: (error) => {
+      setDeleteOpen(false);
+      setMessage(
+        error instanceof ApiError
+          ? error.message
+          : "Não foi possível excluir a competição."
+      );
+    }
   });
 
   function confirmStatus(
@@ -164,6 +187,83 @@ export function OrganizerChampionshipPage() {
           </Link>
         </article>
       </div>
+
+      <section className={styles.dangerZone}>
+        <header>
+          <span>Zona de perigo</span>
+          <h2>Excluir competição</h2>
+        </header>
+        <p>
+          A exclusão remove permanentemente a competição, participantes,
+          partidas e resultados. Essa ação não pode ser desfeita.
+        </p>
+        <button
+          className={styles.dangerButton}
+          onClick={() => setDeleteOpen(true)}
+          type="button"
+        >
+          Excluir competição
+        </button>
+      </section>
+
+      {deleteOpen && (
+        <div
+          className={styles.modalOverlay}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setDeleteOpen(false);
+          }}
+          role="presentation"
+        >
+          <div
+            aria-labelledby="delete-competition-title"
+            aria-modal="true"
+            className={styles.modal}
+            role="dialog"
+          >
+            <header className={styles.modalHeader}>
+              <span>Exclusão definitiva</span>
+              <h2 id="delete-competition-title">Excluir {championship.name}?</h2>
+            </header>
+            <p className={styles.modalText}>
+              Todos os dados relacionados serão removidos: participantes,
+              equipes, partidas, resultados e histórico. Esta ação é
+              irreversível.
+            </p>
+            <label className={styles.modalLabel}>
+              Digite <strong>{championship.name}</strong> para confirmar
+              <input
+                autoFocus
+                onChange={(event) => setDeleteConfirmation(event.target.value)}
+                placeholder={championship.name}
+                value={deleteConfirmation}
+              />
+            </label>
+            <div className={styles.modalActions}>
+              <button
+                disabled={deleteMutation.isPending}
+                onClick={() => {
+                  setDeleteOpen(false);
+                  setDeleteConfirmation("");
+                }}
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                className={styles.confirmDelete}
+                disabled={
+                  deleteConfirmation.trim() !== championship.name ||
+                  deleteMutation.isPending
+                }
+                onClick={() => deleteMutation.mutate()}
+                type="button"
+              >
+                {deleteMutation.isPending ? "Excluindo..." : "Excluir competição"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -20,6 +20,7 @@ export type ArenaMatch = {
   roundNumber: number | null;
   generated: boolean;
   mvpId: string | null;
+  venue: string | null;
   homeEntry: MatchEntry;
   awayEntry: MatchEntry;
 };

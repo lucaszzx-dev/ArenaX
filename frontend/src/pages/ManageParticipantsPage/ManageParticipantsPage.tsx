@@ -192,7 +192,7 @@ export function ManageParticipantsPage() {
               </button>
               <Link to="/painel/clubes">Gerenciar biblioteca de clubes</Link>
             </div>
-            <span className={styles.divider}>ou crie uma equipe somente nesta competição</span>
+            <span className={styles.divider}>ou crie uma equipe nova somente para esta competição</span>
             <label>Nome da equipe<input minLength={2} name="name" required /></label>
             <label>Sigla<input maxLength={12} name="shortName" placeholder="Ex.: RAI" /></label>
             <label>URL do escudo<input name="logoUrl" placeholder="https://..." type="url" /></label>

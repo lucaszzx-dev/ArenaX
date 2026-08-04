@@ -1,12 +1,40 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
 import { getPublicMatch } from "../../features/championships/public-championship-api";
 import { useSeo } from "../../lib/use-seo";
+import type { Standing } from "../../features/matches/match-api";
 import styles from "./PublicMatchPage.module.css";
+
+const EVENT_LABELS: Record<string, string> = {
+  GOAL: "Gol",
+  OWN_GOAL: "Gol contra",
+  YELLOW_CARD: "Cartão amarelo",
+  RED_CARD: "Cartão vermelho",
+  FREE_THROW: "Lance livre",
+  TWO_POINT_SHOT: "Cesta de 2 pontos",
+  THREE_POINT_SHOT: "Cesta de 3 pontos",
+  VOLLEYBALL_POINT: "Ponto",
+  ACE: "Ace",
+  BLOCK: "Bloqueio",
+  ERROR: "Erro do adversário",
+  SPIKE: "Ataque convertido",
+  SERVE_ERROR: "Erro de saque",
+  ATTACK_ERROR: "Erro de ataque",
+  RECEPTION_ERROR: "Erro de recepção",
+  PERSONAL_FOUL: "Falta pessoal",
+  ASSIST: "Assistência",
+  SUBSTITUTION: "Substituição",
+  PENALTY_CONVERTED: "Pênalti convertido",
+  PENALTY_MISSED: "Pênalti perdido"
+};
+
+type TabId = "resumo" | "eventos" | "escalacoes" | "classificacao";
 
 export function PublicMatchPage() {
   const { slug = "", matchId = "" } = useParams();
+  const [tab, setTab] = useState<TabId>("resumo");
   const query = useQuery({
     queryKey: ["public-match", slug, matchId],
     queryFn: () => getPublicMatch(slug, matchId),
@@ -27,117 +55,218 @@ export function PublicMatchPage() {
     return <div className={styles.state}>Esta partida não foi encontrada.</div>;
   }
 
-  const { championship, match, events, periods, operations } = query.data;
+  const { championship, match, events, periods, operations, standings } = query.data;
+  const tabs: Array<{ id: TabId; label: string; available: boolean }> = [
+    { id: "resumo", label: "Resumo", available: true },
+    { id: "eventos", label: "Eventos", available: events.length > 0 },
+    { id: "escalacoes", label: "Escalações", available: operations.lineup.length > 0 },
+    { id: "classificacao", label: "Classificação", available: standings.length > 0 }
+  ];
+  const visibleTabs = tabs.filter((item) => item.available);
+  const activeTab = visibleTabs.some((item) => item.id === tab)
+    ? tab
+    : "resumo";
+  const hasPeriods = periods.length > 0;
 
   return (
     <main className={styles.page}>
       <Link className={styles.back} to={`/campeonatos/${championship.slug}`}>
         ← Voltar para {championship.name}
       </Link>
-      <header>
-        <span>{championship.sport} / {statusLabel(match.status)}</span>
-        <p>{match.scheduledAt
-          ? new Intl.DateTimeFormat("pt-BR", {
-            dateStyle: "long",
-            timeStyle: "short"
-          }).format(new Date(match.scheduledAt))
-          : "Data e horário a definir"}</p>
-      </header>
-      {operations.metadata && (
-        <section className={styles.operations}>
-          <div className={styles.timelineHeading}>
-            <div>
-              <span>INFORMAÇÕES</span>
-              <h2>Dados da partida</h2>
-            </div>
+
+      <section className={styles.hero}>
+        <div className={styles.heroMeta}>
+          <span className={styles.competition}>
+            {championship.name} · {championship.sport}
+          </span>
+          {match.roundNumber && <span className={styles.phase}>Rodada {match.roundNumber}</span>}
+        </div>
+        <div className={styles.teams}>
+          <div className={styles.team}>
+            <span className={styles.teamBadge} aria-hidden="true">{initials(match.homeEntry.displayName)}</span>
+            <strong>{match.homeEntry.displayName}</strong>
           </div>
-          {operations.metadata.venue && (
-            <p className={styles.opRow}><b>Local</b><span>{operations.metadata.venue}</span></p>
+          <div className={styles.scoreBox}>
+            <div className={styles.score} key={`${match.homeScore}-${match.awayScore}`}>
+              <span>{match.homeScore ?? "–"}</span>
+              <b>×</b>
+              <span>{match.awayScore ?? "–"}</span>
+            </div>
+            <span className={`${styles.status} ${styles[`status-${match.status}`]}`}>
+              {statusLabel(match.status)}
+            </span>
+          </div>
+          <div className={styles.team}>
+            <span className={styles.teamBadge} aria-hidden="true">{initials(match.awayEntry.displayName)}</span>
+            <strong>{match.awayEntry.displayName}</strong>
+          </div>
+        </div>
+        <div className={styles.heroFacts}>
+          <span>
+            <b>Data</b>
+            {match.scheduledAt
+              ? new Intl.DateTimeFormat("pt-BR", {
+                  dateStyle: "long",
+                  timeStyle: "short"
+                }).format(new Date(match.scheduledAt))
+              : "A definir"}
+          </span>
+          <span>
+            <b>Local</b>
+            {operations.metadata?.venue || "Não informado"}
+          </span>
+        </div>
+      </section>
+
+      <nav className={styles.tabs} role="tablist" aria-label="Seções da partida">
+        {visibleTabs.map((item) => (
+          <button
+            aria-selected={activeTab === item.id}
+            className={activeTab === item.id ? styles.activeTab : undefined}
+            key={item.id}
+            onClick={() => setTab(item.id)}
+            role="tab"
+            type="button"
+          >
+            {item.label}
+          </button>
+        ))}
+      </nav>
+
+      {activeTab === "resumo" && (
+        <section className={styles.section} role="tabpanel">
+          {hasPeriods && (
+            <div className={styles.panel}>
+              <div className={styles.panelHeading}>
+                <span>Parciais</span>
+                <h2>{championship.sport === "Vôlei" ? "Sets" : "Períodos"}</h2>
+              </div>
+              <div className={styles.partials}>
+                {periods.map((period) => (
+                  <div className={styles.partial} key={period.id}>
+                    <span>{periodLabel(championship.sport, period.periodNumber)}</span>
+                    <strong>{period.homeScore}</strong>
+                    <b>×</b>
+                    <strong>{period.awayScore}</strong>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
-          {operations.metadata.referee && (
-            <p className={styles.opRow}><b>Árbitro</b><span>{operations.metadata.referee}</span></p>
+          {(operations.metadata?.referee || operations.metadata?.operationalNotes) && (
+            <div className={styles.panel}>
+              <div className={styles.panelHeading}>
+                <span>Informações</span>
+                <h2>Dados da partida</h2>
+              </div>
+              <div className={styles.factsList}>
+                {operations.metadata.referee && (
+                  <p><b>Árbitro</b><span>{operations.metadata.referee}</span></p>
+                )}
+                {operations.metadata.operationalNotes && (
+                  <p><b>Observações</b><span>{operations.metadata.operationalNotes}</span></p>
+                )}
+              </div>
+            </div>
           )}
-          {operations.metadata.operationalNotes && (
-            <p className={styles.opRow}><b>Observações</b><span>{operations.metadata.operationalNotes}</span></p>
+          {!hasPeriods && !operations.metadata?.referee && !operations.metadata?.operationalNotes && (
+            <p className={styles.empty}>
+              {match.status === "SCHEDULED"
+                ? "Partida ainda não iniciada. Acompanhe os detalhes aqui após o resultado."
+                : "Nenhuma informação adicional para esta partida."}
+            </p>
           )}
         </section>
       )}
-      {operations.lineup.length > 0 && (
-        <section className={styles.operations}>
-          <div className={styles.timelineHeading}>
-            <div>
-              <span>ESCALAÇÕES</span>
-              <h2>Formações definidas</h2>
-            </div>
+
+      {activeTab === "eventos" && (
+        <section className={styles.section} role="tabpanel">
+          <div className={styles.panelHeading}>
+            <span>Súmula</span>
+            <h2>Eventos da partida</h2>
+            <b>{events.length} eventos</b>
+          </div>
+          <div className={styles.timeline}>
+            {events.map((event) => {
+              const entry = event.entryId === match.homeEntryId
+                ? match.homeEntry
+                : match.awayEntry;
+              return (
+                <article className={styles.event} key={event.id}>
+                  <span>{formatEventMoment(event.periodNumber, event.clockSeconds)}</span>
+                  <div>
+                    <strong>{EVENT_LABELS[event.type] ?? event.type}</strong>
+                    <p>{event.actorName || "Autor não informado"}</p>
+                  </div>
+                  <b>{entry.displayName}</b>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {activeTab === "escalacoes" && (
+        <section className={styles.section} role="tabpanel">
+          <div className={styles.panelHeading}>
+            <span>Escalações</span>
+            <h2>Formações definidas</h2>
             <b>{operations.lineup.length} jogadores</b>
           </div>
-          {groupLineup(operations.lineup, match).map((group) => (
-            <p className={styles.opRow} key={group.entryId}>
-              <b>{group.teamName}</b>
-              <span>{group.starters} titulares · {group.substitutes} reservas</span>
-            </p>
-          ))}
-        </section>
-      )}
-      <section className={styles.scoreboard}>
-        <strong>{match.homeEntry.displayName}</strong>
-        <div className={styles.scoreWrap}>
-          <span key={`home-${match.homeScore}`}>{match.homeScore ?? "–"}</span>
-          <b>×</b>
-          <span key={`away-${match.awayScore}`}>{match.awayScore ?? "–"}</span>
-        </div>
-        <strong>{match.awayEntry.displayName}</strong>
-      </section>
-      {periods.length > 0 && (
-        <section className={styles.partials}>
-          <div className={styles.timelineHeading}>
-            <div>
-              <span>PARCIAIS</span>
-              <h2>{championship.sport === "Vôlei" ? "Sets" : "Períodos"}</h2>
-            </div>
-          </div>
-          {periods.map((period) => (
-            <div className={styles.partial} key={period.id}>
-              <span>{periodLabel(championship.sport, period.periodNumber)}</span>
-              <strong>{period.homeScore}</strong>
-              <b>×</b>
-              <strong>{period.awayScore}</strong>
-            </div>
-          ))}
-        </section>
-      )}
-      <section className={styles.timeline}>
-        <div className={styles.timelineHeading}>
-          <div>
-            <span>SÚMULA</span>
-            <h2>Eventos da partida</h2>
-          </div>
-          <b>{events.length} eventos</b>
-        </div>
-        {events.map((event) => {
-          const entry = event.entryId === match.homeEntryId
-            ? match.homeEntry
-            : match.awayEntry;
-          return (
-            <article className={styles.event} key={event.id}>
-              <span>{formatEventMoment(event.periodNumber, event.clockSeconds)}</span>
-              <div>
-                <strong>{eventLabel(event.type)}</strong>
-                <p>{event.actorName || "Autor não informado"}</p>
+          <div className={styles.lineupGroups}>
+            {groupLineup(operations.lineup, match).map((group) => (
+              <div className={styles.lineupGroup} key={group.entryId}>
+                <h3>{group.teamName}</h3>
+                <p>
+                  {group.starters} titulares · {group.substitutes} reservas
+                </p>
               </div>
-              <b>{entry.displayName}</b>
-            </article>
-          );
-        })}
-        {!events.length && (
-          <p className={styles.empty}>Nenhum evento registrado nesta partida.</p>
-        )}
-      </section>
-      <footer>
-        <span>Competição</span>
-        <strong>{championship.name}</strong>
-      </footer>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {activeTab === "classificacao" && (
+        <section className={styles.section} role="tabpanel">
+          <div className={styles.panelHeading}>
+            <span>Classificação</span>
+            <h2>Posição na competição</h2>
+          </div>
+          <div className={styles.tableScroll}>
+            <StandingsTable standings={standings} />
+          </div>
+        </section>
+      )}
     </main>
+  );
+}
+
+function StandingsTable({ standings }: { standings: Standing[] }) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Pos.</th>
+          <th>Participante</th>
+          <th>J</th>
+          <th>V</th>
+          <th>SG</th>
+          <th>Pts.</th>
+        </tr>
+      </thead>
+      <tbody>
+        {standings.map((row) => (
+          <tr key={row.entryId}>
+            <td><strong>{row.position}</strong></td>
+            <td>{row.displayName}</td>
+            <td>{row.played}</td>
+            <td>{row.wins}</td>
+            <td>{row.scoreDifference}</td>
+            <td><strong>{row.points}</strong></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -173,24 +302,8 @@ function groupLineup(lineup: PublicLineupItem[], match: LineupMatch) {
 
 function periodLabel(sport: string, period: number) {
   if (sport === "Vôlei") return `${period}º set`;
+  if (sport === "Futebol" || sport === "Futsal") return `${period}º tempo`;
   return period <= 4 ? `${period}º quarto` : `${period - 4}ª prorrogação`;
-}
-
-const eventLabels: Record<string, string> = {
-  GOAL: "Gol",
-  OWN_GOAL: "Gol contra",
-  YELLOW_CARD: "Cartão amarelo",
-  RED_CARD: "Cartão vermelho",
-  FREE_THROW: "Lance livre",
-  TWO_POINT_SHOT: "Cesta de 2 pontos",
-  THREE_POINT_SHOT: "Cesta de 3 pontos",
-  VOLLEYBALL_POINT: "Ponto",
-  ACE: "Ace",
-  BLOCK: "Bloqueio"
-};
-
-function eventLabel(type: string) {
-  return eventLabels[type] ?? type;
 }
 
 function formatEventMoment(period: number | null, clockSeconds: number | null) {
@@ -200,8 +313,17 @@ function formatEventMoment(period: number | null, clockSeconds: number | null) {
   return parts.join(" · ") || "Tempo não informado";
 }
 
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
 function statusLabel(status: "SCHEDULED" | "FINISHED" | "CANCELED") {
-  if (status === "FINISHED") return "resultado final";
-  if (status === "CANCELED") return "partida cancelada";
-  return "partida agendada";
+  if (status === "FINISHED") return "Resultado final";
+  if (status === "CANCELED") return "Partida cancelada";
+  return "Partida agendada";
 }

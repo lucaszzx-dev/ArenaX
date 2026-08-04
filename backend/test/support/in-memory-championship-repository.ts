@@ -88,4 +88,11 @@ export class InMemoryChampionshipRepository
     championship.updatedAt = new Date();
     return championship;
   }
+
+  async delete(id: string): Promise<boolean> {
+    const index = this.championships.findIndex((item) => item.id === id);
+    if (index < 0) return false;
+    this.championships.splice(index, 1);
+    return true;
+  }
 }
