@@ -57,6 +57,19 @@ describe("AuthService", () => {
     } satisfies Partial<AppError>);
   });
 
+  it("temporarily locks five invalid password attempts and clears failures after a valid login", async () => {
+    const { repository, service } = createSubject();
+    await service.register(registration);
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await expect(service.login({ email: registration.email, password: "errada" })).rejects.toMatchObject({ code: "INVALID_CREDENTIALS" });
+    }
+    await expect(service.login({ email: registration.email, password: "errada" })).rejects.toMatchObject({ statusCode: 429, code: "LOGIN_TEMPORARILY_LOCKED" });
+    await expect(service.login({ email: registration.email, password: registration.password })).rejects.toMatchObject({ statusCode: 429 });
+    repository.loginSecurity[0]!.lockUntil = new Date(Date.now() - 1);
+    await expect(service.login({ email: registration.email, password: registration.password })).resolves.toMatchObject({ user: { email: "jogador@exemplo.com" } });
+    expect(repository.loginSecurity).toHaveLength(0);
+  });
+
   it("invalidates the current session on logout", async () => {
     const { service } = createSubject();
     const registrationResult = await service.register(registration);

@@ -2,6 +2,7 @@ import type {
   AuthRepository,
   CreateSessionInput,
   CreateUserInput,
+  LoginSecurityState,
   OAuthProfile,
   PasswordResetRequest,
   PublicUser,
@@ -20,6 +21,7 @@ export class InMemoryAuthRepository implements AuthRepository {
     providerAccountId: string;
   }> = [];
   readonly passwordResetRequests: PasswordResetRequest[] = [];
+  readonly loginSecurity: LoginSecurityState[] = [];
 
   async createUser(input: CreateUserInput): Promise<PublicUser> {
     const user: UserWithPassword = {
@@ -152,6 +154,29 @@ export class InMemoryAuthRepository implements AuthRepository {
     }
     await this.deleteSessionsForUser(userId);
     return true;
+  }
+
+  async findLoginSecurity(email: string): Promise<LoginSecurityState | null> {
+    return this.loginSecurity.find((state) => state.email === email) ?? null;
+  }
+
+  async recordLoginFailure(email: string, now: Date): Promise<LoginSecurityState> {
+    const existing = await this.findLoginSecurity(email);
+    const freshWindow = !existing || existing.windowStartedAt.getTime() <= now.getTime() - 15 * 60_000;
+    const state: LoginSecurityState = {
+      email, failureCount: freshWindow ? 1 : existing.failureCount + 1,
+      windowStartedAt: freshWindow ? now : existing.windowStartedAt,
+      lockUntil: null
+    };
+    if (state.failureCount >= 5) state.lockUntil = new Date(now.getTime() + 15 * 60_000);
+    const index = this.loginSecurity.findIndex((item) => item.email === email);
+    if (index >= 0) this.loginSecurity[index] = state; else this.loginSecurity.push(state);
+    return state;
+  }
+
+  async clearLoginFailures(email: string): Promise<void> {
+    const index = this.loginSecurity.findIndex((state) => state.email === email);
+    if (index >= 0) this.loginSecurity.splice(index, 1);
   }
 
   async updateProfile(

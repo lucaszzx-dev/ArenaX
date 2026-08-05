@@ -122,6 +122,14 @@ export const passwordResetRequests = pgTable(
   ]
 );
 
+export const loginSecurity = pgTable("login_security", {
+  email: text("email").primaryKey(),
+  failureCount: integer("failure_count").notNull().default(0),
+  windowStartedAt: timestamp("window_started_at", { withTimezone: true }).notNull().defaultNow(),
+  lockUntil: timestamp("lock_until", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
+});
+
 export const championships = pgTable(
   "championships",
   {

@@ -4,6 +4,7 @@ import type {
   AuthRepository,
   CreateSessionInput,
   CreateUserInput,
+  LoginSecurityState,
   OAuthProfile,
   PasswordResetRequest,
   PublicUser,
@@ -11,7 +12,7 @@ import type {
   UserWithPassword
 } from "./auth-repository.js";
 import type { Database } from "../db/client.js";
-import { oauthAccounts, passwordResetRequests, profiles, sessions, users } from "../db/schema.js";
+import { loginSecurity, oauthAccounts, passwordResetRequests, profiles, sessions, users } from "../db/schema.js";
 
 export class DrizzleAuthRepository implements AuthRepository {
   constructor(private readonly db: Database) {}
@@ -285,5 +286,25 @@ export class DrizzleAuthRepository implements AuthRepository {
       await transaction.delete(sessions).where(eq(sessions.userId, userId));
       return true;
     });
+  }
+
+  async findLoginSecurity(email: string): Promise<LoginSecurityState | null> {
+    const [state] = await this.db.select().from(loginSecurity).where(eq(loginSecurity.email, email)).limit(1);
+    return state ?? null;
+  }
+
+  async recordLoginFailure(email: string, now: Date): Promise<LoginSecurityState> {
+    const state = await this.findLoginSecurity(email);
+    const windowExpired = !state || state.windowStartedAt.getTime() <= now.getTime() - 15 * 60_000;
+    const failures = windowExpired ? 1 : state.failureCount + 1;
+    const lockUntil = failures >= 5 ? new Date(now.getTime() + 15 * 60_000) : null;
+    const [saved] = await this.db.insert(loginSecurity).values({ email, failureCount: failures, windowStartedAt: windowExpired ? now : state.windowStartedAt, lockUntil, updatedAt: now })
+      .onConflictDoUpdate({ target: loginSecurity.email, set: { failureCount: failures, windowStartedAt: windowExpired ? now : state.windowStartedAt, lockUntil, updatedAt: now } }).returning();
+    if (!saved) throw new Error("Não foi possível registrar a tentativa de login.");
+    return saved;
+  }
+
+  async clearLoginFailures(email: string): Promise<void> {
+    await this.db.delete(loginSecurity).where(eq(loginSecurity.email, email));
   }
 }

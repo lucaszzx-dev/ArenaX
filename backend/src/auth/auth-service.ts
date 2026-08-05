@@ -58,15 +58,26 @@ export class AuthService {
 
   async login(input: LoginInput): Promise<AuthResult> {
     const email = input.email.trim().toLowerCase();
+    const now = new Date();
+    const security = await this.repository.findLoginSecurity(email);
+    if (security?.lockUntil && security.lockUntil > now) {
+      throw new AppError("Muitas tentativas. Aguarde e tente novamente.", 429, "LOGIN_TEMPORARILY_LOCKED");
+    }
     const user = await this.repository.findUserByEmail(email);
 
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
+      const failure = await this.repository.recordLoginFailure(email, now);
+      if (failure.lockUntil && failure.lockUntil > now) {
+        throw new AppError("Muitas tentativas. Aguarde e tente novamente.", 429, "LOGIN_TEMPORARILY_LOCKED");
+      }
       throw new AppError(
         "E-mail ou senha incorretos.",
         401,
         "INVALID_CREDENTIALS"
       );
     }
+
+    await this.repository.clearLoginFailures(email);
 
     return this.createSession(user);
   }

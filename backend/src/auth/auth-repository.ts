@@ -32,6 +32,7 @@ export type PasswordResetRequest = {
   usedAt: Date | null;
   createdAt: Date;
 };
+export type LoginSecurityState = { email: string; failureCount: number; windowStartedAt: Date; lockUntil: Date | null; };
 
 export type UpdateProfileInput = {
   displayName: string;
@@ -69,4 +70,7 @@ export interface AuthRepository {
   incrementPasswordResetAttempts(userId: string): Promise<number>;
   markPasswordResetVerified(userId: string, verificationTokenHash: string): Promise<void>;
   resetPassword(userId: string, passwordHash: string, verificationTokenHash: string): Promise<boolean>;
+  findLoginSecurity(email: string): Promise<LoginSecurityState | null>;
+  recordLoginFailure(email: string, now: Date): Promise<LoginSecurityState>;
+  clearLoginFailures(email: string): Promise<void>;
 }

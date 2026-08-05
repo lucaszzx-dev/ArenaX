@@ -141,6 +141,13 @@
                         "when":  1785945600000,
                         "tag":  "0019_secure_password_recovery",
                         "breakpoints":  true
+                    },
+                    {
+                        "idx":  20,
+                        "version":  "7",
+                        "when":  1785949200000,
+                        "tag":  "0020_login_brute_force_protection",
+                        "breakpoints":  true
                     }
                 ]
 }
