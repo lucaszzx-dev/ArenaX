@@ -24,6 +24,17 @@ const loginSchema = z.object({
   password: z.string().min(1).max(128)
 });
 
+const resetRequestSchema = z.object({ email: z.email().max(254) });
+const resetVerifySchema = z.object({
+  email: z.email().max(254),
+  code: z.string().regex(/^\d{6}$/)
+});
+const resetPasswordSchema = z.object({
+  email: z.email().max(254),
+  verificationToken: z.string().min(32).max(256),
+  password: z.string().min(8).max(128)
+});
+
 const googleCallbackSchema = z.object({
   code: z.string().min(1),
   state: z.string().min(1)
@@ -122,6 +133,33 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
         expires: result.expiresAt
       })
       .send({ user: result.user });
+  });
+
+  app.post("/auth/password-reset/request", {
+    config: { rateLimit: limit(5) }
+  }, async (request, reply) => {
+    const input = resetRequestSchema.safeParse(request.body);
+    // A neutral response prevents account enumeration, including malformed bodies.
+    if (input.success) await options.authService.requestPasswordReset(input.data.email);
+    return reply.status(202).send({ message: "Se existir uma conta para este e-mail, enviaremos um codigo." });
+  });
+
+  app.post("/auth/password-reset/verify", {
+    config: { rateLimit: limit(10) }
+  }, async (request) => {
+    const input = resetVerifySchema.safeParse(request.body);
+    if (!input.success) throw new AppError("Codigo invalido ou expirado.", 400, "INVALID_RESET_CODE");
+    const verificationToken = await options.authService.verifyPasswordReset(input.data.email, input.data.code);
+    return { verificationToken };
+  });
+
+  app.post("/auth/password-reset/confirm", {
+    config: { rateLimit: limit(10) }
+  }, async (request, reply) => {
+    const input = resetPasswordSchema.safeParse(request.body);
+    if (!input.success) throw new AppError("Revise os dados informados.", 400, "VALIDATION_ERROR");
+    await options.authService.resetPassword(input.data.email, input.data.verificationToken, input.data.password);
+    return reply.status(204).send();
   });
 
   app.post("/auth/logout", async (request, reply) => {

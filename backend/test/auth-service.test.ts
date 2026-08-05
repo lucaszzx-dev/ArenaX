@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { AuthService } from "../src/auth/auth-service.js";
 import type { AppError } from "../src/errors/app-error.js";
 import { InMemoryAuthRepository } from "./support/in-memory-auth-repository.js";
+import type { EmailProvider, PasswordResetEmail } from "../src/email/email-provider.js";
 
 const registration = {
   displayName: "Jogador Arena",
@@ -12,9 +13,11 @@ const registration = {
 
 function createSubject() {
   const repository = new InMemoryAuthRepository();
-  const service = new AuthService(repository, 7);
+  const sent: PasswordResetEmail[] = [];
+  const emailProvider: EmailProvider = { sendPasswordReset: async (email) => { sent.push(email); } };
+  const service = new AuthService(repository, 7, emailProvider);
 
-  return { repository, service };
+  return { repository, service, sent };
 }
 
 describe("AuthService", () => {
@@ -100,5 +103,41 @@ describe("AuthService", () => {
     expect(result.user.id).toBe(passwordAccount.user.id);
     expect(repository.users).toHaveLength(1);
     expect(repository.oauthAccounts).toHaveLength(1);
+  });
+
+  it("completes password recovery once and invalidates old sessions", async () => {
+    const { repository, service, sent } = createSubject();
+    const registered = await service.register(registration);
+    await service.login({ email: registration.email, password: registration.password });
+    await service.requestPasswordReset(registration.email);
+    const token = await service.verifyPasswordReset(registration.email, sent[0]!.code);
+    await service.resetPassword(registration.email, token, "nova-senha-segura");
+    await expect(service.getCurrentUser(registered.sessionToken)).resolves.toBeNull();
+    await expect(service.login({ email: registration.email, password: registration.password })).rejects.toMatchObject({ code: "INVALID_CREDENTIALS" });
+    await expect(service.login({ email: registration.email, password: "nova-senha-segura" })).resolves.toMatchObject({ user: { email: "jogador@exemplo.com" } });
+    await expect(service.resetPassword(registration.email, token, "outra-senha"))
+      .rejects.toMatchObject({ code: "INVALID_RESET_TOKEN" });
+    expect(repository.sessions).toHaveLength(1);
+  });
+
+  it("rejects invalid, expired and exhausted reset codes", async () => {
+    const { repository, service, sent } = createSubject();
+    await service.register(registration);
+    await service.requestPasswordReset(registration.email);
+    await expect(service.verifyPasswordReset(registration.email, "000000")).rejects.toMatchObject({ code: "INVALID_RESET_CODE" });
+    repository.passwordResetRequests[0]!.expiresAt = new Date(Date.now() - 1);
+    await expect(service.verifyPasswordReset(registration.email, sent[0]!.code)).rejects.toMatchObject({ code: "INVALID_RESET_CODE" });
+    await service.requestPasswordReset(registration.email);
+    repository.passwordResetRequests[0]!.attempts = 5;
+    await expect(service.verifyPasswordReset(registration.email, sent[0]!.code)).rejects.toMatchObject({ code: "INVALID_RESET_CODE" });
+  });
+
+  it("uses a resend cooldown and does not reveal absent accounts", async () => {
+    const { service, sent } = createSubject();
+    await service.requestPasswordReset("missing@arenax.test");
+    await service.register(registration);
+    await service.requestPasswordReset(registration.email);
+    await service.requestPasswordReset(registration.email);
+    expect(sent).toHaveLength(1);
   });
 });

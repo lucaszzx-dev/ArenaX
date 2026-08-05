@@ -73,6 +73,10 @@
   box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
+.passwordField { position: relative; }
+.passwordField input { padding-right: 3rem; }
+.form .passwordToggle { position: absolute; top: 50%; right: 0.35rem; width: 2.35rem; margin: 0; padding: 0.35rem; transform: translateY(-50%); background: transparent; color: var(--color-text-muted); }
+
 .form button {
   margin-top: 0.5rem;
   padding: 0.9rem;

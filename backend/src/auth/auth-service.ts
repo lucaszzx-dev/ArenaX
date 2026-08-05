@@ -7,6 +7,8 @@ import type {
 import { hashPassword, verifyPassword } from "./password.js";
 import { createSessionToken, hashSessionToken } from "./session-token.js";
 import { AppError } from "../errors/app-error.js";
+import { SafeDevelopmentEmailProvider, type EmailProvider } from "../email/email-provider.js";
+import { createHash, randomInt } from "node:crypto";
 
 export type RegisterInput = {
   displayName: string;
@@ -28,7 +30,8 @@ export type AuthResult = {
 export class AuthService {
   constructor(
     private readonly repository: AuthRepository,
-    private readonly sessionTtlDays: number
+    private readonly sessionTtlDays: number,
+    private readonly emailProvider: EmailProvider = new SafeDevelopmentEmailProvider()
   ) {}
 
   async register(input: RegisterInput): Promise<AuthResult> {
@@ -112,6 +115,45 @@ export class AuthService {
     });
   }
 
+  async requestPasswordReset(emailInput: string): Promise<void> {
+    const user = await this.repository.findUserByEmail(emailInput.trim().toLowerCase());
+    if (!user) return;
+    const existing = await this.repository.findPasswordResetRequest(user.id);
+    if (existing && existing.createdAt.getTime() > Date.now() - 60_000) return;
+    const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
+    const expiresAt = new Date(Date.now() + 10 * 60_000);
+    await this.repository.savePasswordResetRequest({
+      userId: user.id, codeHash: hashSecret(code), verificationTokenHash: null,
+      expiresAt, attempts: 0, verifiedAt: null, usedAt: null
+    });
+    await this.emailProvider.sendPasswordReset({ to: user.email, code });
+  }
+
+  async verifyPasswordReset(emailInput: string, code: string): Promise<string> {
+    const user = await this.repository.findUserByEmail(emailInput.trim().toLowerCase());
+    const invalid = () => { throw new AppError("Codigo invalido ou expirado.", 400, "INVALID_RESET_CODE"); };
+    if (!user) return invalid();
+    const request = await this.repository.findPasswordResetRequest(user.id);
+    if (!request || request.usedAt || request.expiresAt <= new Date() || request.attempts >= 5) return invalid();
+    if (hashSecret(code) !== request.codeHash) {
+      await this.repository.incrementPasswordResetAttempts(user.id);
+      return invalid();
+    }
+    const verificationToken = createSessionToken();
+    await this.repository.markPasswordResetVerified(user.id, hashSecret(verificationToken));
+    return verificationToken;
+  }
+
+  async resetPassword(emailInput: string, verificationToken: string, password: string): Promise<void> {
+    const user = await this.repository.findUserByEmail(emailInput.trim().toLowerCase());
+    const invalid = () => { throw new AppError("Solicitacao de redefinicao invalida ou expirada.", 400, "INVALID_RESET_TOKEN"); };
+    if (!user) return invalid();
+    const request = await this.repository.findPasswordResetRequest(user.id);
+    if (!request || request.usedAt || request.expiresAt <= new Date() || !request.verifiedAt || request.verificationTokenHash !== hashSecret(verificationToken)) return invalid();
+    const reset = await this.repository.resetPassword(user.id, await hashPassword(password), hashSecret(verificationToken));
+    if (!reset) return invalid();
+  }
+
   private async createSession(user: PublicUser): Promise<AuthResult> {
     const sessionToken = createSessionToken();
     const expiresAt = new Date();
@@ -129,4 +171,8 @@ export class AuthService {
       expiresAt
     };
   }
+}
+
+function hashSecret(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
 }

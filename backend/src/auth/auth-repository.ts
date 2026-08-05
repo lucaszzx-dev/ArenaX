@@ -22,6 +22,17 @@ export type CreateSessionInput = {
   expiresAt: Date;
 };
 
+export type PasswordResetRequest = {
+  userId: string;
+  codeHash: string;
+  verificationTokenHash: string | null;
+  expiresAt: Date;
+  attempts: number;
+  verifiedAt: Date | null;
+  usedAt: Date | null;
+  createdAt: Date;
+};
+
 export type UpdateProfileInput = {
   displayName: string;
   avatarUrl: string | null;
@@ -52,4 +63,10 @@ export interface AuthRepository {
   findUserBySessionTokenHash(tokenHash: string): Promise<PublicUser | null>;
   createSession(input: CreateSessionInput): Promise<void>;
   deleteSession(tokenHash: string): Promise<void>;
+  deleteSessionsForUser(userId: string): Promise<void>;
+  savePasswordResetRequest(input: Omit<PasswordResetRequest, "createdAt">): Promise<void>;
+  findPasswordResetRequest(userId: string): Promise<PasswordResetRequest | null>;
+  incrementPasswordResetAttempts(userId: string): Promise<number>;
+  markPasswordResetVerified(userId: string, verificationTokenHash: string): Promise<void>;
+  resetPassword(userId: string, passwordHash: string, verificationTokenHash: string): Promise<boolean>;
 }

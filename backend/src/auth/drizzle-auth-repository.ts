@@ -1,16 +1,17 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, isNull, sql } from "drizzle-orm";
 
 import type {
   AuthRepository,
   CreateSessionInput,
   CreateUserInput,
   OAuthProfile,
+  PasswordResetRequest,
   PublicUser,
   UpdateProfileInput,
   UserWithPassword
 } from "./auth-repository.js";
 import type { Database } from "../db/client.js";
-import { oauthAccounts, profiles, sessions, users } from "../db/schema.js";
+import { oauthAccounts, passwordResetRequests, profiles, sessions, users } from "../db/schema.js";
 
 export class DrizzleAuthRepository implements AuthRepository {
   constructor(private readonly db: Database) {}
@@ -222,5 +223,67 @@ export class DrizzleAuthRepository implements AuthRepository {
 
   async deleteSession(tokenHash: string): Promise<void> {
     await this.db.delete(sessions).where(eq(sessions.tokenHash, tokenHash));
+  }
+
+  async deleteSessionsForUser(userId: string): Promise<void> {
+    await this.db.delete(sessions).where(eq(sessions.userId, userId));
+  }
+
+  async savePasswordResetRequest(
+    input: Omit<PasswordResetRequest, "createdAt">
+  ): Promise<void> {
+    await this.db.insert(passwordResetRequests).values(input).onConflictDoUpdate({
+      target: passwordResetRequests.userId,
+      set: {
+        codeHash: input.codeHash,
+        verificationTokenHash: null,
+        expiresAt: input.expiresAt,
+        attempts: 0,
+        verifiedAt: null,
+        usedAt: null,
+        createdAt: new Date()
+      }
+    });
+  }
+
+  async findPasswordResetRequest(userId: string): Promise<PasswordResetRequest | null> {
+    const [result] = await this.db.select({
+      userId: passwordResetRequests.userId,
+      codeHash: passwordResetRequests.codeHash,
+      verificationTokenHash: passwordResetRequests.verificationTokenHash,
+      expiresAt: passwordResetRequests.expiresAt,
+      attempts: passwordResetRequests.attempts,
+      verifiedAt: passwordResetRequests.verifiedAt,
+      usedAt: passwordResetRequests.usedAt,
+      createdAt: passwordResetRequests.createdAt
+    }).from(passwordResetRequests).where(eq(passwordResetRequests.userId, userId)).limit(1);
+    return result ?? null;
+  }
+
+  async incrementPasswordResetAttempts(userId: string): Promise<number> {
+    const [result] = await this.db.update(passwordResetRequests)
+      .set({ attempts: sql`${passwordResetRequests.attempts} + 1` })
+      .where(eq(passwordResetRequests.userId, userId))
+      .returning({ attempts: passwordResetRequests.attempts });
+    return result?.attempts ?? 0;
+  }
+
+  async markPasswordResetVerified(userId: string, verificationTokenHash: string): Promise<void> {
+    await this.db.update(passwordResetRequests)
+      .set({ verificationTokenHash, verifiedAt: new Date() })
+      .where(and(eq(passwordResetRequests.userId, userId), isNull(passwordResetRequests.usedAt)));
+  }
+
+  async resetPassword(userId: string, passwordHash: string, verificationTokenHash: string): Promise<boolean> {
+    return this.db.transaction(async (transaction) => {
+      const [consumed] = await transaction.update(passwordResetRequests)
+        .set({ usedAt: new Date(), verificationTokenHash: null })
+        .where(and(eq(passwordResetRequests.userId, userId), eq(passwordResetRequests.verificationTokenHash, verificationTokenHash), isNull(passwordResetRequests.usedAt)))
+        .returning({ userId: passwordResetRequests.userId });
+      if (!consumed) return false;
+      await transaction.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, userId));
+      await transaction.delete(sessions).where(eq(sessions.userId, userId));
+      return true;
+    });
   }
 }

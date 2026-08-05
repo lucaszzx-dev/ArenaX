@@ -25,6 +25,7 @@ import { PublicClubPage } from "./pages/PublicClubPage/PublicClubPage";
 import { RegisterPage } from "./pages/RegisterPage/RegisterPage";
 import { ClubsPage } from "./pages/ClubsPage/ClubsPage";
 import { NotificationsPage } from "./pages/NotificationsPage/NotificationsPage";
+import { PasswordResetPage } from "./pages/PasswordResetPage/PasswordResetPage";
 
 export function App() {
   return (
@@ -34,6 +35,7 @@ export function App() {
         <Route element={<GuestOnlyRoute />}>
           <Route path="entrar" element={<LoginPage />} />
           <Route path="cadastro" element={<RegisterPage />} />
+          <Route path="esqueci-minha-senha" element={<PasswordResetPage />} />
         </Route>
         <Route element={<ProtectedRoute />}>
           <Route path="painel" element={<DashboardPage />} />

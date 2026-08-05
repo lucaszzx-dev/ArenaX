@@ -103,6 +103,25 @@ export const sessions = pgTable("sessions", {
     .defaultNow()
 });
 
+export const passwordResetRequests = pgTable(
+  "password_reset_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    codeHash: text("code_hash").notNull(),
+    verificationTokenHash: text("verification_token_hash"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    verifiedAt: timestamp("verified_at", { withTimezone: true }),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    unique("password_reset_requests_user_unique").on(table.userId),
+    index("password_reset_requests_expires_idx").on(table.expiresAt)
+  ]
+);
+
 export const championships = pgTable(
   "championships",
   {

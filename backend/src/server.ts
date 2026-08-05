@@ -29,6 +29,7 @@ import { DrizzleNotificationRepository } from "./notifications/drizzle-notificat
 import { NotificationService } from "./notifications/notification-service.js";
 import { DrizzleGroupStageRepository } from "./group-stage/drizzle-group-stage-repository.js";
 import { GroupStageService } from "./group-stage/group-stage-service.js";
+import { createEmailProvider } from "./email/create-email-provider.js";
 
 try {
   loadEnvFile();
@@ -39,7 +40,7 @@ try {
 const env = parseEnv();
 const database = createDatabase(env.DATABASE_URL);
 const authRepository = new DrizzleAuthRepository(database.db);
-const authService = new AuthService(authRepository, env.SESSION_TTL_DAYS);
+const authService = new AuthService(authRepository, env.SESSION_TTL_DAYS, createEmailProvider(env));
 const championshipRepository = new DrizzleChampionshipRepository(database.db);
 const championshipService = new ChampionshipService(championshipRepository);
 const notificationRepository = new DrizzleNotificationRepository(database.db);

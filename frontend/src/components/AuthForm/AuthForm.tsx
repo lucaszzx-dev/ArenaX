@@ -16,6 +16,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const mutation = useMutation({
     mutationFn: (input: {
       displayName?: string;
@@ -109,14 +110,10 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       <label>
         Senha
-        <input
-          autoComplete={isRegister ? "new-password" : "current-password"}
-          minLength={8}
-          name="password"
-          placeholder="Mínimo de 8 caracteres"
-          required
-          type="password"
-        />
+        <span className={styles.passwordField}>
+          <input autoComplete={isRegister ? "new-password" : "current-password"} minLength={8} name="password" placeholder="Mínimo de 8 caracteres" required type={showPassword ? "text" : "password"} />
+          <button aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"} className={styles.passwordToggle} onClick={() => setShowPassword((value) => !value)} type="button"><span aria-hidden="true">{showPassword ? "◉" : "◌"}</span></button>
+        </span>
       </label>
 
       {(errorMessage || googleError) && (
@@ -139,6 +136,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           {isRegister ? "Entrar" : "Criar conta"}
         </Link>
       </p>
+      {!isRegister && <p><Link to="/esqueci-minha-senha">Esqueci minha senha</Link></p>}
     </form>
   );
 }
