@@ -39,7 +39,7 @@
   gap: 1.15rem;
 }
 
-.headerActions { display: contents; }
+.headerActions { display: flex; align-items: center; margin-right: 1.15rem; }
 .menuButton { display: none; }
 
 .navigation a {

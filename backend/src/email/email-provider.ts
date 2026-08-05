@@ -10,11 +10,29 @@ export interface EmailProvider {
   sendLoginVerification(input: LoginVerificationEmail): Promise<void>;
 }
 
+export type DevelopmentEmailProvider = EmailProvider & {
+  getLatestLoginVerificationCode(email: string): string | null;
+};
+
 export class SafeDevelopmentEmailProvider implements EmailProvider {
   async sendPasswordReset(): Promise<void> {
     // Deliberately do not log the code: development should not normalize secret leakage.
   }
   async sendLoginVerification(): Promise<void> {}
+}
+
+export class LocalDevelopmentEmailProvider implements DevelopmentEmailProvider {
+  private readonly loginVerificationCodes = new Map<string, string>();
+
+  async sendPasswordReset(): Promise<void> {}
+
+  async sendLoginVerification(input: LoginVerificationEmail): Promise<void> {
+    this.loginVerificationCodes.set(input.to.toLowerCase(), input.code);
+  }
+
+  getLatestLoginVerificationCode(email: string): string | null {
+    return this.loginVerificationCodes.get(email.trim().toLowerCase()) ?? null;
+  }
 }
 
 export class ResendEmailProvider implements EmailProvider {

@@ -182,5 +182,8 @@ describe("auth routes", () => {
       expect.objectContaining({ name: env.SESSION_COOKIE_NAME, httpOnly: true }),
       expect.objectContaining({ name: env.TRUSTED_DEVICE_COOKIE_NAME, httpOnly: true })
     ]));
+    const cookies = verify.cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ");
+    const logout = await app.inject({ method: "POST", url: "/api/auth/logout", headers: { cookie: cookies } });
+    expect(logout.statusCode).toBe(204);
   });
 });

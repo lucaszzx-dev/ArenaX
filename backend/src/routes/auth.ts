@@ -31,6 +31,7 @@ const loginVerificationSchema = z.object({
 const loginVerificationResendSchema = z.object({
   challengeToken: z.string().min(32).max(256)
 });
+const developmentLoginCodeSchema = z.object({ email: z.email().max(254) });
 
 const resetRequestSchema = z.object({ email: z.email().max(254) });
 const resetVerifySchema = z.object({
@@ -175,6 +176,17 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
     if (!input.success) throw new AppError("Desafio de confirmacao invalido ou expirado.", 400, "INVALID_LOGIN_VERIFICATION_CHALLENGE");
     await options.authService.resendLoginVerification(input.data.challengeToken);
     return reply.status(204).send();
+  });
+
+  app.post("/auth/development/login-code", async (request) => {
+    if (options.env.NODE_ENV === "production") {
+      throw new AppError("Endereco nao encontrado.", 404, "NOT_FOUND");
+    }
+    const input = developmentLoginCodeSchema.safeParse(request.body);
+    if (!input.success) throw new AppError("Revise os dados informados.", 400, "VALIDATION_ERROR");
+    const code = options.authService.getDevelopmentLoginVerificationCode(input.data.email);
+    if (!code) throw new AppError("Codigo de desenvolvimento indisponivel.", 404, "DEVELOPMENT_LOGIN_CODE_NOT_FOUND");
+    return { code };
   });
 
   app.post("/auth/password-reset/request", {

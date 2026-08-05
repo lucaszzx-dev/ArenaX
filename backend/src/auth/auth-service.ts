@@ -7,7 +7,7 @@ import type {
 import { hashPassword, verifyPassword } from "./password.js";
 import { createSessionToken, hashSessionToken } from "./session-token.js";
 import { AppError } from "../errors/app-error.js";
-import { SafeDevelopmentEmailProvider, type EmailProvider } from "../email/email-provider.js";
+import { SafeDevelopmentEmailProvider, type DevelopmentEmailProvider, type EmailProvider } from "../email/email-provider.js";
 import { createHash, randomInt } from "node:crypto";
 import { createTrustedDeviceToken, hashTrustedDeviceToken } from "./trusted-device-token.js";
 
@@ -128,6 +128,11 @@ export class AuthService {
     const code = createVerificationCode();
     await this.repository.replaceLoginVerificationCode(challengeHash, hashSecret(code), new Date());
     await this.emailProvider.sendLoginVerification({ to: user.email, code });
+  }
+
+  getDevelopmentLoginVerificationCode(email: string): string | null {
+    const provider = this.emailProvider as Partial<DevelopmentEmailProvider>;
+    return provider.getLatestLoginVerificationCode?.(email) ?? null;
   }
 
   private async createLoginVerificationChallenge(user: PublicUser): Promise<LoginVerificationRequired> {
