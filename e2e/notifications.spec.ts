@@ -22,7 +22,7 @@ test.beforeAll(() => {
 test("organizer opens the notification center and marks everything as read", async ({ page }) => {
   await page.goto("/entrar");
   await page.getByLabel("E-mail").fill("demo@arenax.local");
-  await page.getByLabel("Senha").fill("ArenaXDemo2026!");
+  await page.getByRole("textbox", { name: "Senha", exact: true }).fill("ArenaXDemo2026!");
   await page.getByRole("button", { name: "Entrar na ArenaX" }).click();
 
   await expect(page).toHaveURL(/\/painel$/);
