@@ -46,6 +46,7 @@ export function ChampionshipForm({
     const formData = new FormData(event.currentTarget);
 
     const isKnockout = format === "KNOCKOUT";
+    const isGroupKnockout = format === "GROUP_KNOCKOUT";
     const isVolleyball = sport === "Vôlei";
     const isFootball = footballLike.has(sport);
     const maxYellowCardsEnabled = formData.get("maxYellowCardsEnabled") === "on";
@@ -59,13 +60,16 @@ export function ChampionshipForm({
       description: String(formData.get("description") ?? "") || null,
       entryType:
         formData.get("entryType") === "INDIVIDUAL" ? "INDIVIDUAL" : "TEAM",
-      format: isKnockout ? "KNOCKOUT" : "LEAGUE",
+      format,
       winPoints: Number(formData.get("winPoints")),
       drawPoints: Number(formData.get("drawPoints")),
       lossPoints: Number(formData.get("lossPoints")),
       allowsDraw: isKnockout ? false : formData.get("allowsDraw") === "on",
       bestOfSets: isVolleyball ? Number(formData.get("bestOfSets") ?? 5) : 5,
-      thirdPlace: isKnockout ? formData.get("thirdPlace") === "on" : false,
+      thirdPlace: (isKnockout || isGroupKnockout) ? formData.get("thirdPlace") === "on" : false,
+      groupCount: isGroupKnockout ? Number(formData.get("groupCount")) : null,
+      groupLegs: isGroupKnockout ? Number(formData.get("groupLegs")) as 1 | 2 : null,
+      qualifiersPerGroup: isGroupKnockout ? Number(formData.get("qualifiersPerGroup")) : null,
       maxYellowCards,
       startsAt: toIsoDate(formData.get("startsAt")),
       endsAt: toIsoDate(formData.get("endsAt"))
@@ -73,6 +77,7 @@ export function ChampionshipForm({
   }
 
   const isKnockout = format === "KNOCKOUT";
+  const isGroupKnockout = format === "GROUP_KNOCKOUT";
   const isVolleyball = sport === "Vôlei";
   const isFootball = footballLike.has(sport);
 
@@ -131,6 +136,7 @@ export function ChampionshipForm({
             >
               <option value="LEAGUE">Pontos corridos</option>
               <option value="KNOCKOUT">Mata-mata</option>
+              <option value="GROUP_KNOCKOUT">Grupos + mata-mata</option>
             </select>
             {initial && (
               <input name="format" type="hidden" value={initial.format} />
@@ -231,13 +237,20 @@ export function ChampionshipForm({
             />
             Este campeonato permite partidas empatadas
           </label>
-          {isKnockout && (
+          {isGroupKnockout && (
+            <div className={styles.scoreFields}>
+              <label>Quantidade de grupos<input defaultValue={initial?.groupCount ?? 2} min={2} name="groupCount" type="number" required /></label>
+              <label>Turno<select defaultValue={initial?.groupLegs ?? 1} name="groupLegs"><option value={1}>Turno único</option><option value={2}>Ida e volta</option></select></label>
+              <label>Classificados por grupo<input defaultValue={initial?.qualifiersPerGroup ?? 2} min={1} name="qualifiersPerGroup" type="number" required /></label>
+            </div>
+          )}
+          {(isKnockout || isGroupKnockout) && (
             <p className={styles.hint}>
               No mata-mata as partidas precisam de um vencedor.
             </p>
           )}
 
-          {isKnockout && (
+          {(isKnockout || isGroupKnockout) && (
             <label className={styles.checkbox}>
               <input
                 defaultChecked={initial?.thirdPlace ?? true}
@@ -304,4 +317,4 @@ export function ChampionshipForm({
   );
 }
 
-type TournamentFormatValue = "LEAGUE" | "KNOCKOUT";
+type TournamentFormatValue = "LEAGUE" | "KNOCKOUT" | "GROUP_KNOCKOUT";

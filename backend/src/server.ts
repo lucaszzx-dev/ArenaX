@@ -27,6 +27,8 @@ import { DrizzleMatchOperationRepository } from "./match-operations/drizzle-matc
 import { MatchOperationService } from "./match-operations/match-operation-service.js";
 import { DrizzleNotificationRepository } from "./notifications/drizzle-notification-repository.js";
 import { NotificationService } from "./notifications/notification-service.js";
+import { DrizzleGroupStageRepository } from "./group-stage/drizzle-group-stage-repository.js";
+import { GroupStageService } from "./group-stage/group-stage-service.js";
 
 try {
   loadEnvFile();
@@ -61,6 +63,7 @@ const knockoutService = new KnockoutService(
   championshipService,
   notificationService
 );
+const groupStageService = new GroupStageService(new DrizzleGroupStageRepository(database.db), matchRepository, championshipService, knockoutService);
 const matchAuditService = new MatchAuditService(
   database.db,
   matchRepository,
@@ -122,6 +125,7 @@ const app = buildApp({
   matchOperationService,
   publicProfileService,
   notificationService,
+  groupStageService,
   env
 });
 
@@ -146,4 +150,3 @@ try {
   app.log.error(error);
   process.exit(1);
 }
-

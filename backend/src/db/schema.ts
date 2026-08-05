@@ -27,7 +27,8 @@ export const championshipStatus = pgEnum("championship_status", [
 
 export const tournamentFormat = pgEnum("tournament_format", [
   "LEAGUE",
-  "KNOCKOUT"
+  "KNOCKOUT",
+  "GROUP_KNOCKOUT"
 ]);
 
 export const matchStatus = pgEnum("match_status", [
@@ -123,6 +124,9 @@ export const championships = pgTable(
     bestOfSets: integer("best_of_sets").notNull().default(5),
     maxYellowCards: integer("max_yellow_cards").notNull().default(0),
     thirdPlace: boolean("third_place").notNull().default(true),
+    groupCount: integer("group_count"),
+    groupLegs: integer("group_legs"),
+    qualifiersPerGroup: integer("qualifiers_per_group"),
     startsAt: timestamp("starts_at", { withTimezone: true }),
     endsAt: timestamp("ends_at", { withTimezone: true }),
     ...timestamps
@@ -371,6 +375,8 @@ export const matches = pgTable(
     homeScore: integer("home_score"),
     awayScore: integer("away_score"),
     roundNumber: integer("round_number"),
+    phase: text("phase").notNull().default("MAIN"),
+    groupNumber: integer("group_number"),
     generated: boolean("generated").notNull().default(false),
     venue: text("venue"),
     referee: text("referee"),
@@ -388,6 +394,22 @@ export const matches = pgTable(
       "match_scores_non_negative",
       sql`(${table.homeScore} is null or ${table.homeScore} >= 0) and (${table.awayScore} is null or ${table.awayScore} >= 0)`
     )
+  ]
+);
+
+export const groupStageEntries = pgTable(
+  "group_stage_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    championshipId: uuid("championship_id").notNull().references(() => championships.id, { onDelete: "cascade" }),
+    entryId: uuid("entry_id").notNull().references(() => championshipEntries.id, { onDelete: "cascade" }),
+    groupNumber: integer("group_number").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    unique("group_stage_entries_championship_entry_unique").on(table.championshipId, table.entryId),
+    unique("group_stage_entries_championship_group_entry_unique").on(table.championshipId, table.groupNumber, table.entryId),
+    check("group_stage_entries_group_positive", sql`${table.groupNumber} > 0`)
   ]
 );
 
@@ -549,4 +571,3 @@ export const notifications = pgTable(
     )
   ]
 );
-

@@ -197,6 +197,24 @@ export class KnockoutService {
     return { nodes: created, totalRounds, bracketSize, byes };
   }
 
+  async generateFromPairings(
+    organizerId: string,
+    championshipId: string,
+    pairings: Array<{ homeEntryId: string | null; awayEntryId: string | null }>,
+    thirdPlace = false
+  ) {
+    const championship = await this.championships.getMine(organizerId, championshipId);
+    if (championship.format !== "GROUP_KNOCKOUT") throw new AppError("Esta competição não utiliza fase de grupos e mata-mata.", 409, "CHAMPIONSHIP_IS_NOT_GROUP_KNOCKOUT");
+    const nodes = await this.repository.list(championshipId);
+    if (nodes.length) throw new AppError("O chaveamento já foi gerado.", 409, "BRACKET_ALREADY_GENERATED");
+    const entries = pairings.flatMap((pairing) => [pairing.homeEntryId, pairing.awayEntryId]).filter((id): id is string => Boolean(id));
+    if (new Set(entries).size !== entries.length || entries.length < 2 || (entries.length & (entries.length - 1)) !== 0) throw new AppError("Os classificados não formam um chaveamento válido.", 409, "INVALID_QUALIFIER_BRACKET_SIZE");
+    const firstRound: SaveKnockoutNode[] = pairings.map((pairing, index) => ({ roundNumber: 1, position: index + 1, ...pairing }));
+    const { nodesToSave, totalRounds, bracketSize } = this.buildBracketNodes(entries.map((id) => ({ id })), firstRound, thirdPlace);
+    const created = await this.repository.createBracket(championshipId, nodesToSave);
+    return { nodes: created, totalRounds, bracketSize, byes: 0 };
+  }
+
   private buildBracketNodes(
     entries: Array<{ id: string }>,
     firstRound: SaveKnockoutNode[],

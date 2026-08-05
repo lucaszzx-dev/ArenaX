@@ -18,6 +18,8 @@ export type Match = {
   homeScore: number | null;
   awayScore: number | null;
   roundNumber: number | null;
+  phase?: "MAIN" | "GROUP";
+  groupNumber?: number | null;
   generated: boolean;
   mvpId: string | null;
   venue: string | null;
@@ -36,6 +38,8 @@ export type CreateMatchInput = {
   scheduledAt: Date | null;
   roundNumber?: number | null;
   generated?: boolean;
+  phase?: "MAIN" | "GROUP";
+  groupNumber?: number | null;
 };
 
 export type Standing = {

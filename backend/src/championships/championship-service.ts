@@ -22,6 +22,7 @@ export class ChampionshipService {
     input: ChampionshipInput
   ): Promise<Championship> {
     this.validateDates(input.startsAt, input.endsAt);
+    this.validateGroupFormat(input);
 
     const sportRules = this.normalizeSportRules(input.sport, {
       bestOfSets: input.bestOfSets,
@@ -32,7 +33,7 @@ export class ChampionshipService {
       ...input,
       ...sportRules,
       allowsDraw: input.format === "KNOCKOUT" ? false : input.allowsDraw,
-      thirdPlace: input.format === "KNOCKOUT" ? (input.thirdPlace ?? true) : false,
+      thirdPlace: input.format === "KNOCKOUT" || input.format === "GROUP_KNOCKOUT" ? (input.thirdPlace ?? true) : false,
       format: input.format ?? "LEAGUE",
       organizerId,
       slug: this.createSlug(input.name)
@@ -144,6 +145,20 @@ export class ChampionshipService {
         400,
         "INVALID_CHAMPIONSHIP_DATES"
       );
+    }
+  }
+
+  private validateGroupFormat(input: ChampionshipInput) {
+    if (input.format !== "GROUP_KNOCKOUT") return;
+    const groups = input.groupCount;
+    const legs = input.groupLegs;
+    const qualifiers = input.qualifiersPerGroup;
+    if (!Number.isInteger(groups) || groups == null || groups < 2 || !Number.isInteger(legs) || ![1, 2].includes(legs!) || !Number.isInteger(qualifiers) || qualifiers == null || qualifiers < 1) {
+      throw new AppError("Informe grupos, turno e classificados válidos.", 400, "INVALID_GROUP_STAGE_CONFIG");
+    }
+    const total = groups * qualifiers;
+    if (total < 2 || (total & (total - 1)) !== 0) {
+      throw new AppError("O total de classificados deve ser uma potência de dois.", 400, "INVALID_QUALIFIER_BRACKET_SIZE");
     }
   }
 

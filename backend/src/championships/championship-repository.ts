@@ -1,6 +1,6 @@
 export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
 export type ChampionshipStatus = "DRAFT" | "PUBLISHED" | "FINISHED";
-export type TournamentFormat = "LEAGUE" | "KNOCKOUT";
+export type TournamentFormat = "LEAGUE" | "KNOCKOUT" | "GROUP_KNOCKOUT";
 
 export type Championship = {
   id: string;
@@ -17,6 +17,9 @@ export type Championship = {
   lossPoints: number;
   allowsDraw: boolean;
   thirdPlace: boolean;
+  groupCount: number | null;
+  groupLegs: number | null;
+  qualifiersPerGroup: number | null;
   bestOfSets: number;
   maxYellowCards: number;
   startsAt: Date | null;
@@ -27,8 +30,8 @@ export type Championship = {
 
 export type SaveChampionshipInput = Omit<
   Championship,
-  "id" | "status" | "format" | "bestOfSets" | "createdAt" | "updatedAt"
-> & { format?: TournamentFormat; bestOfSets?: number };
+  "id" | "status" | "format" | "bestOfSets" | "groupCount" | "groupLegs" | "qualifiersPerGroup" | "createdAt" | "updatedAt"
+> & { format?: TournamentFormat; bestOfSets?: number; groupCount?: number | null; groupLegs?: number | null; qualifiersPerGroup?: number | null };
 
 export type UpdateChampionshipInput = Omit<
   SaveChampionshipInput,

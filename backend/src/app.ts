@@ -37,6 +37,8 @@ import { knockoutRoutes } from "./routes/knockout.js";
 import { matchOperationRoutes } from "./routes/match-operations.js";
 import { publicProfileRoutes } from "./routes/public-profiles.js";
 import { notificationRoutes } from "./routes/notifications.js";
+import { groupStageRoutes } from "./routes/group-stage.js";
+import type { GroupStageService } from "./group-stage/group-stage-service.js";
 
 type BuildAppOptions = {
   checkDatabase?: () => Promise<void>;
@@ -53,6 +55,7 @@ type BuildAppOptions = {
   matchOperationService?: MatchOperationService;
   publicProfileService?: PublicProfileService | undefined;
   notificationService?: NotificationService | undefined;
+  groupStageService?: GroupStageService;
   env?: Env;
 };
 
@@ -185,6 +188,9 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
       env: options.env
     });
   }
+  if (options.authService && options.groupStageService && options.env) {
+    app.register(groupStageRoutes, { prefix: "/api", authService: options.authService, groupStageService: options.groupStageService, env: options.env });
+  }
 
   if (options.authService && options.matchOperationService && options.env) {
     app.register(matchOperationRoutes, {
@@ -316,5 +322,4 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   });
   return app;
 }
-
 

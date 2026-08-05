@@ -2,7 +2,7 @@ import { apiRequest } from "../../lib/api";
 
 export type ChampionshipEntryType = "INDIVIDUAL" | "TEAM";
 export type ChampionshipStatus = "DRAFT" | "PUBLISHED" | "FINISHED";
-export type TournamentFormat = "LEAGUE" | "KNOCKOUT";
+export type TournamentFormat = "LEAGUE" | "KNOCKOUT" | "GROUP_KNOCKOUT";
 
 export type Championship = {
   id: string;
@@ -21,6 +21,9 @@ export type Championship = {
   bestOfSets: number;
   thirdPlace: boolean;
   maxYellowCards: number;
+  groupCount?: number | null;
+  groupLegs?: 1 | 2 | null;
+  qualifiersPerGroup?: number | null;
   startsAt: string | null;
   endsAt: string | null;
   createdAt: string;
@@ -40,6 +43,9 @@ export type ChampionshipInput = {
   bestOfSets: number;
   thirdPlace: boolean;
   maxYellowCards: number;
+  groupCount: number | null;
+  groupLegs: 1 | 2 | null;
+  qualifiersPerGroup: number | null;
   startsAt: string | null;
   endsAt: string | null;
 };

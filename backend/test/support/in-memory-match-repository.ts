@@ -43,6 +43,8 @@ export class InMemoryMatchRepository implements MatchRepository {
       homeScore: null,
       awayScore: null,
       roundNumber: input.roundNumber ?? null,
+      phase: input.phase ?? "MAIN",
+      groupNumber: input.groupNumber ?? null,
       generated: input.generated ?? false,
       venue: null,
       referee: null,

@@ -155,6 +155,6 @@ export class DrizzleMatchRepository implements MatchRepository {
     if (!homeEntry || !awayEntry) {
       throw new Error("A partida possui adversários inválidos.");
     }
-    return { ...match, mvpId: match.mvpId, homeEntry, awayEntry };
+    return { ...match, phase: match.phase as "MAIN" | "GROUP", mvpId: match.mvpId, homeEntry, awayEntry };
   }
 }

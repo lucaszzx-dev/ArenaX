@@ -18,13 +18,16 @@ const championshipInputSchema = z.object({
     .union([z.string().trim().max(500), z.null()])
     .transform((value) => value || null),
   entryType: z.enum(["INDIVIDUAL", "TEAM"]),
-  format: z.enum(["LEAGUE", "KNOCKOUT"]).default("LEAGUE"),
+  format: z.enum(["LEAGUE", "KNOCKOUT", "GROUP_KNOCKOUT"]).default("LEAGUE"),
   winPoints: z.number().int().min(0).max(20),
   drawPoints: z.number().int().min(0).max(20),
   lossPoints: z.number().int().min(0).max(20),
   allowsDraw: z.boolean(),
   bestOfSets: z.number().int().min(3).max(9).default(5),
   thirdPlace: z.boolean().default(true),
+  groupCount: z.number().int().min(2).max(32).nullable().optional(),
+  groupLegs: z.union([z.literal(1), z.literal(2)]).nullable().optional(),
+  qualifiersPerGroup: z.number().int().min(1).max(16).nullable().optional(),
   maxYellowCards: z.number().int().min(0).max(20).default(0),
   startsAt: nullableDate,
   endsAt: nullableDate
@@ -66,7 +69,7 @@ export const championshipRoutes: FastifyPluginAsync<
 
     const championship = await options.championshipService.create(
       user.id,
-      input.data
+      { ...input.data, groupCount: input.data.groupCount ?? null, groupLegs: input.data.groupLegs ?? null, qualifiersPerGroup: input.data.qualifiersPerGroup ?? null }
     );
 
     return reply.status(201).send({ championship });
@@ -131,7 +134,7 @@ export const championshipRoutes: FastifyPluginAsync<
     const championship = await options.championshipService.update(
       user.id,
       params.data.id,
-      input.data
+      { ...input.data, groupCount: input.data.groupCount ?? null, groupLegs: input.data.groupLegs ?? null, qualifiersPerGroup: input.data.qualifiersPerGroup ?? null }
     );
 
     return { championship };
