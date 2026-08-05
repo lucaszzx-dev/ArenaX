@@ -31,7 +31,7 @@ test("visitor follows the public arena and match result", async ({ page }) => {
 test("organizer signs in and opens the demo arena panel", async ({ page }) => {
   await page.goto("/entrar");
   await page.getByLabel("E-mail").fill("demo@arenax.local");
-  await page.getByRole("textbox", { name: "Senha", exact: true }).fill("ArenaXDemo2026!");
+  await page.locator('input[name="password"]').fill("ArenaXDemo2026!");
   await page.getByRole("button", { name: "Entrar na ArenaX" }).click();
 
   await expect(page).toHaveURL(/\/painel$/);
@@ -48,7 +48,7 @@ test("organizer signs in and opens the demo arena panel", async ({ page }) => {
 test("organizer records a football event for a player", async ({ page }) => {
   await page.goto("/entrar");
   await page.getByLabel("E-mail").fill("demo@arenax.local");
-  await page.getByRole("textbox", { name: "Senha", exact: true }).fill("ArenaXDemo2026!");
+  await page.locator('input[name="password"]').fill("ArenaXDemo2026!");
   await page.getByRole("button", { name: "Entrar na ArenaX" }).click();
 
   await page.getByRole("link", { name: /Copa ArenaX Demo/ }).click();
