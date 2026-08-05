@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { isSafeImageUrl } from "./is-safe-image-url";
 

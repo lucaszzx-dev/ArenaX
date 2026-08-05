@@ -1,4 +1,4 @@
-﻿import { useId, useState } from "react";
+import { useId, useState } from "react";
 
 import { isSafeImageUrl } from "../RemoteImage/is-safe-image-url";
 import { RemoteImage } from "../RemoteImage/RemoteImage";

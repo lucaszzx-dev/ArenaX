@@ -45,7 +45,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      DATABASE_URL: postgresql://arenax:arenax_dev@localhost:5432/arenax
+      # O E2E usa SEMPRE o banco isolado 'arenax_e2e', nunca o banco de
+      # desenvolvimento/produção. O globalSetup cria o banco, aplica as
+      # migrations e roda o seed antes dos testes.
+      E2E_DATABASE_URL: postgresql://arenax:arenax_dev@localhost:5432/arenax_e2e
       FRONTEND_URL: http://localhost:5173
     services:
       postgres:
@@ -81,10 +84,6 @@ jobs:
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
-
-      - name: Prepare backend environment
-        run: |
-          pnpm --dir backend db:migrate:prod
 
       - name: Run E2E tests
         run: pnpm test:e2e -- --project=chromium

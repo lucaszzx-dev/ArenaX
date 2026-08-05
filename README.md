@@ -91,6 +91,9 @@ pnpm test
 pnpm test:e2e
 ```
 
+Os testes E2E usam um banco PostgreSQL isolado (`arenax_e2e`) e nunca
+escrevem no banco de desenvolvimento (`arenax`). Veja [docs/E2E.md](docs/E2E.md).
+
 ## Dados demonstrativos
 
 Com Docker e PostgreSQL ligados:

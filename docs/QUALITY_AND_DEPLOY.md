@@ -25,7 +25,7 @@ pnpm test:e2e
 pnpm audit --audit-level high
 ```
 
-Os testes E2E exigem Docker/PostgreSQL e recriam somente os dados demo.
+Os testes E2E exigem Docker/PostgreSQL e rodam em banco isolado (`arenax_e2e`), nunca no banco de desenvolvimento. Veja [docs/E2E.md](docs/E2E.md).
 
 ## Dados demonstrativos
 

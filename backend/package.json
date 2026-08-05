@@ -11,7 +11,11 @@
     "db:migrate": "dotenv -e .env -- drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
     "db:studio": "dotenv -e .env -- drizzle-kit studio",
-    "lint": "eslint src test",
+    "db:e2e": "tsx scripts/e2e-db.ts",
+    "db:e2e:reset": "tsx scripts/e2e-db.ts reset",
+    "db:e2e:cleanup": "tsx scripts/e2e-db.ts cleanup",
+    "db:e2e:legacy-cleanup": "tsx scripts/e2e-db.ts legacy-cleanup",
+    "lint": "eslint src test scripts",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:migrate:prod": "drizzle-kit migrate"

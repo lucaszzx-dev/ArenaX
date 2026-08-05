@@ -1,4 +1,4 @@
-﻿import { expect, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test("visitor discovers a published arena by sport", async ({ page }) => {
   await page.goto("/campeonatos");
