@@ -33,6 +33,18 @@ export type TrustedDevice = CreateTrustedDeviceInput & {
   revokedAt: Date | null;
 };
 
+export type LoginVerificationChallenge = {
+  userId: string;
+  challengeTokenHash: string;
+  codeHash: string;
+  expiresAt: Date;
+  attempts: number;
+  resendCount: number;
+  lastSentAt: Date;
+  usedAt: Date | null;
+  createdAt: Date;
+};
+
 export type PasswordResetRequest = {
   userId: string;
   codeHash: string;
@@ -62,6 +74,7 @@ export type OAuthProfile = {
 export interface AuthRepository {
   createUser(input: CreateUserInput): Promise<PublicUser>;
   findUserByEmail(email: string): Promise<UserWithPassword | null>;
+  findUserById(userId: string): Promise<PublicUser | null>;
   findUserByOAuthAccount(
     provider: OAuthProfile["provider"],
     providerAccountId: string
@@ -80,6 +93,11 @@ export interface AuthRepository {
   findTrustedDeviceByTokenHash(tokenHash: string): Promise<TrustedDevice | null>;
   revokeTrustedDevice(tokenHash: string): Promise<void>;
   revokeTrustedDevicesForUser(userId: string): Promise<void>;
+  createLoginVerificationChallenge(input: Omit<LoginVerificationChallenge, "createdAt" | "usedAt">): Promise<void>;
+  findLoginVerificationChallenge(challengeTokenHash: string): Promise<LoginVerificationChallenge | null>;
+  incrementLoginVerificationAttempts(challengeTokenHash: string): Promise<void>;
+  replaceLoginVerificationCode(challengeTokenHash: string, codeHash: string, now: Date): Promise<void>;
+  consumeLoginVerificationChallenge(challengeTokenHash: string, codeHash: string, now: Date): Promise<string | null>;
   savePasswordResetRequest(input: Omit<PasswordResetRequest, "createdAt">): Promise<void>;
   findPasswordResetRequest(userId: string): Promise<PasswordResetRequest | null>;
   incrementPasswordResetAttempts(userId: string): Promise<number>;

@@ -4,6 +4,7 @@ import type {
   CreateSessionInput,
   CreateUserInput,
   LoginSecurityState,
+  LoginVerificationChallenge,
   OAuthProfile,
   PasswordResetRequest,
   PublicUser,
@@ -25,6 +26,7 @@ export class InMemoryAuthRepository implements AuthRepository {
   }> = [];
   readonly passwordResetRequests: PasswordResetRequest[] = [];
   readonly loginSecurity: LoginSecurityState[] = [];
+  readonly loginVerificationChallenges: LoginVerificationChallenge[] = [];
 
   async createUser(input: CreateUserInput): Promise<PublicUser> {
     const user: UserWithPassword = {
@@ -43,6 +45,10 @@ export class InMemoryAuthRepository implements AuthRepository {
 
   async findUserByEmail(email: string): Promise<UserWithPassword | null> {
     return this.users.find((user) => user.email === email) ?? null;
+  }
+  async findUserById(userId: string): Promise<PublicUser | null> {
+    const user = this.users.find((item) => item.id === userId);
+    return user ? this.toPublicUser(user) : null;
   }
 
   async findUserByOAuthAccount(
@@ -137,6 +143,27 @@ export class InMemoryAuthRepository implements AuthRepository {
     for (const device of this.trustedDevices) {
       if (device.userId === userId && !device.revokedAt) device.revokedAt = new Date();
     }
+  }
+
+  async createLoginVerificationChallenge(input: Omit<LoginVerificationChallenge, "createdAt" | "usedAt">): Promise<void> {
+    this.loginVerificationChallenges.push({ ...input, createdAt: new Date(), usedAt: null });
+  }
+  async findLoginVerificationChallenge(challengeTokenHash: string): Promise<LoginVerificationChallenge | null> {
+    return this.loginVerificationChallenges.find((item) => item.challengeTokenHash === challengeTokenHash) ?? null;
+  }
+  async incrementLoginVerificationAttempts(challengeTokenHash: string): Promise<void> {
+    const challenge = await this.findLoginVerificationChallenge(challengeTokenHash);
+    if (challenge && !challenge.usedAt) challenge.attempts += 1;
+  }
+  async replaceLoginVerificationCode(challengeTokenHash: string, codeHash: string, now: Date): Promise<void> {
+    const challenge = await this.findLoginVerificationChallenge(challengeTokenHash);
+    if (challenge && !challenge.usedAt) { challenge.codeHash = codeHash; challenge.lastSentAt = now; challenge.resendCount += 1; }
+  }
+  async consumeLoginVerificationChallenge(challengeTokenHash: string, codeHash: string, now: Date): Promise<string | null> {
+    const challenge = await this.findLoginVerificationChallenge(challengeTokenHash);
+    if (!challenge || challenge.usedAt || challenge.codeHash !== codeHash || challenge.expiresAt <= now || challenge.attempts >= 5) return null;
+    challenge.usedAt = now;
+    return challenge.userId;
   }
 
   async savePasswordResetRequest(input: Omit<PasswordResetRequest, "createdAt">): Promise<void> {

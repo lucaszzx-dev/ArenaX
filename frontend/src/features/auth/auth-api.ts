@@ -11,6 +11,11 @@ export type User = {
 type AuthResponse = {
   user: User;
 };
+export type LoginResponse = AuthResponse | {
+  requiresVerification: true;
+  challengeToken: string;
+  expiresAt: string;
+};
 
 export type RegisterInput = {
   displayName: string;
@@ -37,11 +42,13 @@ export function register(input: RegisterInput) {
 }
 
 export function login(input: LoginInput) {
-  return apiRequest<AuthResponse>("/auth/login", {
+  return apiRequest<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify(input)
   });
 }
+export function verifyLoginVerification(challengeToken: string, code: string) { return apiRequest<AuthResponse>("/auth/login/verify", { method: "POST", body: JSON.stringify({ challengeToken, code }) }); }
+export function resendLoginVerification(challengeToken: string) { return apiRequest<void>("/auth/login/resend", { method: "POST", body: JSON.stringify({ challengeToken }) }); }
 
 export function requestPasswordReset(email: string) { return apiRequest<{ message: string }>("/auth/password-reset/request", { method: "POST", body: JSON.stringify({ email }) }); }
 export function verifyPasswordReset(email: string, code: string) { return apiRequest<{ verificationToken: string }>("/auth/password-reset/verify", { method: "POST", body: JSON.stringify({ email, code }) }); }

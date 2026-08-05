@@ -5,9 +5,14 @@ import { AuthService } from "../src/auth/auth-service.js";
 import type { Env } from "../src/config/env.js";
 import { InMemoryAuthRepository } from "./support/in-memory-auth-repository.js";
 import { trustedDeviceCookieOptions } from "../src/auth/trusted-device-cookie.js";
+import type { LoginVerificationEmail } from "../src/email/email-provider.js";
 
 const repository = new InMemoryAuthRepository();
-const authService = new AuthService(repository, 7);
+const loginVerificationEmails: LoginVerificationEmail[] = [];
+const authService = new AuthService(repository, 7, {
+  sendPasswordReset: async () => {},
+  sendLoginVerification: async (email) => { loginVerificationEmails.push(email); }
+});
 const env: Env = {
   NODE_ENV: "test",
   HOST: "127.0.0.1",
@@ -162,5 +167,20 @@ describe("auth routes", () => {
       secure: true,
       sameSite: "none"
     });
+  });
+
+  it("does not create a session before login verification and sets session and trust cookies after it", async () => {
+    const email = "verify-route@arenax.test";
+    await app.inject({ method: "POST", url: "/api/auth/register", payload: { displayName: "Verifica Rota", email, password: "senha-segura" } });
+    const login = await app.inject({ method: "POST", url: "/api/auth/login", payload: { email, password: "senha-segura" } });
+    expect(login.statusCode).toBe(202);
+    expect(login.cookies.find((cookie) => cookie.name === env.SESSION_COOKIE_NAME)).toBeUndefined();
+    const challengeToken = login.json<{ challengeToken: string }>().challengeToken;
+    const verify = await app.inject({ method: "POST", url: "/api/auth/login/verify", payload: { challengeToken, code: loginVerificationEmails.at(-1)!.code } });
+    expect(verify.statusCode).toBe(200);
+    expect(verify.cookies).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: env.SESSION_COOKIE_NAME, httpOnly: true }),
+      expect.objectContaining({ name: env.TRUSTED_DEVICE_COOKIE_NAME, httpOnly: true })
+    ]));
   });
 });

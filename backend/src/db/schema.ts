@@ -123,6 +123,26 @@ export const trustedDevices = pgTable(
   ]
 );
 
+export const loginVerificationChallenges = pgTable(
+  "login_verification_challenges",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    challengeTokenHash: text("challenge_token_hash").notNull().unique(),
+    codeHash: text("code_hash").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    resendCount: integer("resend_count").notNull().default(0),
+    lastSentAt: timestamp("last_sent_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+  },
+  (table) => [
+    index("login_verification_challenges_user_idx").on(table.userId),
+    index("login_verification_challenges_expires_idx").on(table.expiresAt)
+  ]
+);
+
 export const passwordResetRequests = pgTable(
   "password_reset_requests",
   {

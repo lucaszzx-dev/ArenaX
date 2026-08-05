@@ -24,6 +24,13 @@ const loginSchema = z.object({
   email: z.email().max(254),
   password: z.string().min(1).max(128)
 });
+const loginVerificationSchema = z.object({
+  challengeToken: z.string().min(32).max(256),
+  code: z.string().regex(/^\d{6}$/)
+});
+const loginVerificationResendSchema = z.object({
+  challengeToken: z.string().min(32).max(256)
+});
 
 const resetRequestSchema = z.object({ email: z.email().max(254) });
 const resetVerifySchema = z.object({
@@ -128,7 +135,18 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
       );
     }
 
-    const result = await options.authService.login(input.data);
+    const result = await options.authService.login(
+      input.data,
+      request.cookies[trustedDeviceCookieNameForEnv]
+    );
+
+    if ("requiresVerification" in result) {
+      return reply.status(202).send({
+        requiresVerification: true,
+        challengeToken: result.challengeToken,
+        expiresAt: result.expiresAt
+      });
+    }
 
     return reply
       .setCookie(options.env.SESSION_COOKIE_NAME, result.sessionToken, {
@@ -136,6 +154,27 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
         expires: result.expiresAt
       })
       .send({ user: result.user });
+  });
+
+  app.post("/auth/login/verify", {
+    config: { rateLimit: limit(10) }
+  }, async (request, reply) => {
+    const input = loginVerificationSchema.safeParse(request.body);
+    if (!input.success) throw new AppError("Codigo invalido ou expirado.", 400, "INVALID_LOGIN_VERIFICATION_CODE");
+    const result = await options.authService.verifyLoginVerification(input.data.challengeToken, input.data.code);
+    return reply
+      .setCookie(options.env.SESSION_COOKIE_NAME, result.sessionToken, { ...cookieOptions, expires: result.expiresAt })
+      .setCookie(trustedDeviceCookieNameForEnv, result.trustedDevice.token, { ...trustedDeviceCookieOptionsForEnv, expires: result.trustedDevice.expiresAt })
+      .send({ user: result.user });
+  });
+
+  app.post("/auth/login/resend", {
+    config: { rateLimit: limit(5) }
+  }, async (request, reply) => {
+    const input = loginVerificationResendSchema.safeParse(request.body);
+    if (!input.success) throw new AppError("Desafio de confirmacao invalido ou expirado.", 400, "INVALID_LOGIN_VERIFICATION_CHALLENGE");
+    await options.authService.resendLoginVerification(input.data.challengeToken);
+    return reply.status(204).send();
   });
 
   app.post("/auth/password-reset/request", {

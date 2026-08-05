@@ -33,6 +33,14 @@ export type AuthResult = {
   expiresAt: Date;
 };
 
+export type LoginVerificationRequired = {
+  requiresVerification: true;
+  challengeToken: string;
+  expiresAt: Date;
+};
+
+export type LoginResult = AuthResult | LoginVerificationRequired;
+
 export class AuthService {
   constructor(
     private readonly repository: AuthRepository,
@@ -63,7 +71,7 @@ export class AuthService {
     return this.createSession(user);
   }
 
-  async login(input: LoginInput): Promise<AuthResult> {
+  async login(input: LoginInput, trustedDeviceToken?: string): Promise<LoginResult> {
     const email = input.email.trim().toLowerCase();
     const now = new Date();
     const security = await this.repository.findLoginSecurity(email);
@@ -85,8 +93,59 @@ export class AuthService {
     }
 
     await this.repository.clearLoginFailures(email);
+    if (trustedDeviceToken && await this.validateTrustedDevice(trustedDeviceToken)) {
+      return this.createSession(user);
+    }
+    return this.createLoginVerificationChallenge(user);
+  }
 
-    return this.createSession(user);
+  async verifyLoginVerification(challengeToken: string, code: string): Promise<AuthResult & { trustedDevice: TrustedDeviceResult }> {
+    const challengeHash = hashSecret(challengeToken);
+    const challenge = await this.repository.findLoginVerificationChallenge(challengeHash);
+    const invalid = () => { throw new AppError("Codigo invalido ou expirado.", 400, "INVALID_LOGIN_VERIFICATION_CODE"); };
+    if (!challenge || challenge.usedAt || challenge.expiresAt <= new Date() || challenge.attempts >= 5) return invalid();
+    if (hashSecret(code) !== challenge.codeHash) {
+      await this.repository.incrementLoginVerificationAttempts(challengeHash);
+      return invalid();
+    }
+    const userId = await this.repository.consumeLoginVerificationChallenge(challengeHash, hashSecret(code), new Date());
+    if (!userId) return invalid();
+    const user = await this.repository.findUserById(userId);
+    if (!user) return invalid();
+    const [session, trustedDevice] = await Promise.all([this.createSession(user), this.createTrustedDevice(user.id)]);
+    return { ...session, trustedDevice };
+  }
+
+  async resendLoginVerification(challengeToken: string): Promise<void> {
+    const challengeHash = hashSecret(challengeToken);
+    const challenge = await this.repository.findLoginVerificationChallenge(challengeHash);
+    const invalid = () => { throw new AppError("Desafio de confirmacao invalido ou expirado.", 400, "INVALID_LOGIN_VERIFICATION_CHALLENGE"); };
+    if (!challenge || challenge.usedAt || challenge.expiresAt <= new Date()) return invalid();
+    if (challenge.resendCount >= 5) throw new AppError("Limite de reenvios atingido.", 429, "LOGIN_VERIFICATION_RESEND_LIMIT");
+    if (challenge.lastSentAt.getTime() > Date.now() - 60_000) throw new AppError("Aguarde antes de reenviar o codigo.", 429, "LOGIN_VERIFICATION_RESEND_COOLDOWN");
+    const user = await this.repository.findUserById(challenge.userId);
+    if (!user) return invalid();
+    const code = createVerificationCode();
+    await this.repository.replaceLoginVerificationCode(challengeHash, hashSecret(code), new Date());
+    await this.emailProvider.sendLoginVerification({ to: user.email, code });
+  }
+
+  private async createLoginVerificationChallenge(user: PublicUser): Promise<LoginVerificationRequired> {
+    const challengeToken = createSessionToken();
+    const code = createVerificationCode();
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 10 * 60_000);
+    await this.repository.createLoginVerificationChallenge({
+      userId: user.id,
+      challengeTokenHash: hashSecret(challengeToken),
+      codeHash: hashSecret(code),
+      expiresAt,
+      attempts: 0,
+      resendCount: 0,
+      lastSentAt: now
+    });
+    await this.emailProvider.sendLoginVerification({ to: user.email, code });
+    return { requiresVerification: true, challengeToken, expiresAt };
   }
 
   async loginWithOAuth(profile: OAuthProfile): Promise<AuthResult> {
@@ -222,4 +281,8 @@ export class AuthService {
 
 function hashSecret(value: string): string {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function createVerificationCode(): string {
+  return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }

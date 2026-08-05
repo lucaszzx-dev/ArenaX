@@ -6,6 +6,7 @@ import type {
   CreateSessionInput,
   CreateUserInput,
   LoginSecurityState,
+  LoginVerificationChallenge,
   OAuthProfile,
   PasswordResetRequest,
   PublicUser,
@@ -14,7 +15,7 @@ import type {
   TrustedDevice
 } from "./auth-repository.js";
 import type { Database } from "../db/client.js";
-import { loginSecurity, oauthAccounts, passwordResetRequests, profiles, sessions, trustedDevices, users } from "../db/schema.js";
+import { loginSecurity, loginVerificationChallenges, oauthAccounts, passwordResetRequests, profiles, sessions, trustedDevices, users } from "../db/schema.js";
 
 export class DrizzleAuthRepository implements AuthRepository {
   constructor(private readonly db: Database) {}
@@ -74,6 +75,12 @@ export class DrizzleAuthRepository implements AuthRepository {
       .where(eq(users.email, email))
       .limit(1);
 
+    return result ?? null;
+  }
+
+  async findUserById(userId: string): Promise<PublicUser | null> {
+    const [result] = await this.db.select({ id: users.id, email: users.email, displayName: profiles.displayName, avatarUrl: profiles.avatarUrl, bio: profiles.bio })
+      .from(users).innerJoin(profiles, eq(profiles.userId, users.id)).where(eq(users.id, userId)).limit(1);
     return result ?? null;
   }
 
@@ -257,6 +264,30 @@ export class DrizzleAuthRepository implements AuthRepository {
     await this.db.update(trustedDevices)
       .set({ revokedAt: new Date() })
       .where(and(eq(trustedDevices.userId, userId), isNull(trustedDevices.revokedAt)));
+  }
+
+  async createLoginVerificationChallenge(input: Omit<LoginVerificationChallenge, "createdAt" | "usedAt">): Promise<void> {
+    await this.db.insert(loginVerificationChallenges).values(input);
+  }
+
+  async findLoginVerificationChallenge(challengeTokenHash: string): Promise<LoginVerificationChallenge | null> {
+    const [result] = await this.db.select({ userId: loginVerificationChallenges.userId, challengeTokenHash: loginVerificationChallenges.challengeTokenHash, codeHash: loginVerificationChallenges.codeHash, expiresAt: loginVerificationChallenges.expiresAt, attempts: loginVerificationChallenges.attempts, resendCount: loginVerificationChallenges.resendCount, lastSentAt: loginVerificationChallenges.lastSentAt, usedAt: loginVerificationChallenges.usedAt, createdAt: loginVerificationChallenges.createdAt }).from(loginVerificationChallenges).where(eq(loginVerificationChallenges.challengeTokenHash, challengeTokenHash)).limit(1);
+    return result ?? null;
+  }
+
+  async incrementLoginVerificationAttempts(challengeTokenHash: string): Promise<void> {
+    await this.db.update(loginVerificationChallenges).set({ attempts: sql`${loginVerificationChallenges.attempts} + 1` }).where(and(eq(loginVerificationChallenges.challengeTokenHash, challengeTokenHash), isNull(loginVerificationChallenges.usedAt)));
+  }
+
+  async replaceLoginVerificationCode(challengeTokenHash: string, codeHash: string, now: Date): Promise<void> {
+    await this.db.update(loginVerificationChallenges).set({ codeHash, lastSentAt: now, resendCount: sql`${loginVerificationChallenges.resendCount} + 1` }).where(and(eq(loginVerificationChallenges.challengeTokenHash, challengeTokenHash), isNull(loginVerificationChallenges.usedAt)));
+  }
+
+  async consumeLoginVerificationChallenge(challengeTokenHash: string, codeHash: string, now: Date): Promise<string | null> {
+    const [result] = await this.db.update(loginVerificationChallenges).set({ usedAt: now })
+      .where(and(eq(loginVerificationChallenges.challengeTokenHash, challengeTokenHash), eq(loginVerificationChallenges.codeHash, codeHash), isNull(loginVerificationChallenges.usedAt), gt(loginVerificationChallenges.expiresAt, now), sql`${loginVerificationChallenges.attempts} < 5`))
+      .returning({ userId: loginVerificationChallenges.userId });
+    return result?.userId ?? null;
   }
 
   async savePasswordResetRequest(
