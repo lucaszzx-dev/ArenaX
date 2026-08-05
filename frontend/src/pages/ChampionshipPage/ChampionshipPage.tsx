@@ -6,6 +6,7 @@ import { getPublicChampionship } from "../../features/championships/public-champ
 import { getStandingLabels } from "../../features/matches/standing-labels";
 import { Bracket } from "../../components/Bracket/Bracket";
 import { getPublicBracket } from "../../features/knockout/knockout-api";
+import { getPublicGroups } from "../../features/group-stage/group-stage-api";
 import { useSeo } from "../../lib/use-seo";
 import { useFavorites } from "../../lib/use-favorites";
 import { useShare } from "../../lib/use-share";
@@ -42,8 +43,9 @@ export function ChampionshipPage() {
   const bracketQuery = useQuery({
     queryKey: ["public-bracket", slug],
     queryFn: () => getPublicBracket(slug),
-    enabled: Boolean(slug) && query.data?.championship.format === "KNOCKOUT"
+    enabled: Boolean(slug) && ["KNOCKOUT", "GROUP_KNOCKOUT"].includes(query.data?.championship.format ?? "")
   });
+  const groupsQuery = useQuery({ queryKey: ["public-groups", slug], queryFn: () => getPublicGroups(slug), enabled: Boolean(slug) && query.data?.championship.format === "GROUP_KNOCKOUT" });
   const favorites = useFavorites();
   const share = useShare();
 
@@ -141,7 +143,15 @@ export function ChampionshipPage() {
         </div>
       </section>
 
-      {championship.format === "KNOCKOUT" && bracketQuery.data && (
+      {championship.format === "GROUP_KNOCKOUT" && groupsQuery.data && (
+        <section className={styles.panel}>
+          <div className={styles.panelHeading}><div><span>Fase de grupos</span><h2>Classificação e classificados</h2></div></div>
+          <div className={styles.content}>{groupsQuery.data.groups.map((group) => (
+            <div className={styles.tableWrap} key={group.number}><h3>{group.name}</h3><table><thead><tr><th>Pos.</th><th>Participante</th><th>J</th><th>V</th><th>Pts.</th></tr></thead><tbody>{group.standings.map((row) => <tr key={row.entryId} className={row.position <= (championship.qualifiersPerGroup ?? 0) ? styles.qualified : undefined}><td>{row.position}</td><td>{row.displayName}</td><td>{row.played}</td><td>{row.wins}</td><td>{row.points}</td></tr>)}</tbody></table></div>
+          ))}</div>
+        </section>
+      )}
+      {(championship.format === "KNOCKOUT" || championship.format === "GROUP_KNOCKOUT") && bracketQuery.data && (
         <section className={`${styles.panel} ${styles.bracketPanel}`}>
           <div className={styles.panelHeading}>
             <div><span>Mata-mata</span><h2>Chaveamento</h2></div>
@@ -446,4 +456,3 @@ function statColumns(sport: string): Array<{
   }
   return [{ key: "points", label: "Pontos" }];
 }
-

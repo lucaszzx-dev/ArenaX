@@ -189,7 +189,7 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
     });
   }
   if (options.authService && options.groupStageService && options.env) {
-    app.register(groupStageRoutes, { prefix: "/api", authService: options.authService, groupStageService: options.groupStageService, env: options.env });
+    app.register(groupStageRoutes, { prefix: "/api", authService: options.authService, championshipService: options.championshipService!, groupStageService: options.groupStageService, env: options.env });
   }
 
   if (options.authService && options.matchOperationService && options.env) {
@@ -322,4 +322,3 @@ export function buildApp(options: BuildAppOptions = {}): FastifyInstance {
   });
   return app;
 }
-

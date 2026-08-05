@@ -22,6 +22,7 @@ import type { ArenaMatch } from "../../features/matches/match-api";
 
 import { ApiError } from "../../lib/api";
 import { Bracket } from "../../components/Bracket/Bracket";
+import { generateGroupBracket, generateGroups, getGroups } from "../../features/group-stage/group-stage-api";
 import {
   bracketQueryKey,
   generateBracket,
@@ -64,8 +65,9 @@ export function ManageMatchesPage() {
   const bracketQuery = useQuery({
     queryKey: bracketQueryKey(id),
     queryFn: () => getBracket(id),
-    enabled: Boolean(id) && championshipQuery.data?.championship.format === "KNOCKOUT"
+    enabled: Boolean(id) && ["KNOCKOUT", "GROUP_KNOCKOUT"].includes(championshipQuery.data?.championship.format ?? "")
   });
+  const groupsQuery = useQuery({ queryKey: ["groups", id], queryFn: () => getGroups(id), enabled: Boolean(id) && championshipQuery.data?.championship.format === "GROUP_KNOCKOUT" });
   const refresh = async () => {
     setErrorMessage(null);
     await queryClient.invalidateQueries({ queryKey: matchQueryKey(id) });
@@ -74,6 +76,7 @@ export function ManageMatchesPage() {
     });
     await queryClient.invalidateQueries({ queryKey: ["match-audit", id] });
     await queryClient.invalidateQueries({ queryKey: bracketQueryKey(id) });
+    await queryClient.invalidateQueries({ queryKey: ["groups", id] });
   };
   const createMutation = useMutation({
     mutationFn: (input: {
@@ -109,6 +112,8 @@ export function ManageMatchesPage() {
     },
     onError: showError
   });
+  const groupGenerationMutation = useMutation({ mutationFn: () => generateGroups(id), onSuccess: refresh, onError: showError });
+  const groupBracketMutation = useMutation({ mutationFn: () => generateGroupBracket(id), onSuccess: refresh, onError: showError });
   const manualBracketMutation = useMutation({
     mutationFn: (pairings: Array<{ homeEntryId: string | null; awayEntryId: string | null }>) =>
       setupFirstRound(id, pairings),
@@ -280,6 +285,13 @@ export function ManageMatchesPage() {
                   <p>O calendário precisa estar vazio para gerar automaticamente.</p>
                 )}
               </>
+            ) : championship.format === "GROUP_KNOCKOUT" ? (
+              <>
+                <p>Fase de grupos → classificação → mata-mata.</p>
+                <button disabled={groupGenerationMutation.isPending || entries.length < 4 || matches.length > 0 || championship.status !== "DRAFT"} onClick={() => groupGenerationMutation.mutate()} type="button">Gerar grupos e partidas</button>
+                {groupsQuery.data && <p>{groupsQuery.data.matches.every((match) => match.status === "FINISHED") ? "Fase concluída: chaveamento disponível." : "Conclua todas as partidas dos grupos para liberar o chaveamento."}</p>}
+                <button disabled={groupBracketMutation.isPending || !groupsQuery.data?.matches.length || !groupsQuery.data.matches.every((match) => match.status === "FINISHED")} onClick={() => groupBracketMutation.mutate()} type="button">Gerar mata-mata</button>
+              </>
             ) : (
               <>
                 <p>Distribui os inscritos, aplica folgas e cria a primeira fase.</p>
@@ -340,9 +352,12 @@ export function ManageMatchesPage() {
         </form>
 
         <div className={styles.matches}>
-          {championship.format === "KNOCKOUT" && bracketQuery.data && (
+          {(championship.format === "KNOCKOUT" || championship.format === "GROUP_KNOCKOUT") && bracketQuery.data && (
             <Bracket bracket={bracketQuery.data} />
           )}
+          {championship.format === "GROUP_KNOCKOUT" && groupsQuery.data?.groups.map((group) => (
+            <section className={styles.standings} key={group.number}><h2>{group.name}</h2><p>{group.entries.map((entry) => entry.displayName).join(" · ")}</p><table><thead><tr><th>Pos.</th><th>Participante</th><th>J</th><th>V</th><th>Pts.</th></tr></thead><tbody>{group.standings.map((row) => <tr className={row.position <= (championship.qualifiersPerGroup ?? 0) ? styles.qualified : undefined} key={row.entryId}><td>{row.position}</td><td>{row.displayName}</td><td>{row.played}</td><td>{row.wins}</td><td>{row.points}</td></tr>)}</tbody></table></section>
+          ))}
           <div className={styles.listHeading}>
             <h2>Calendário</h2>
             <span>{matches.length} partidas</span>

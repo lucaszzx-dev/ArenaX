@@ -494,3 +494,4 @@ tbody tr:last-child td {
   text-align: center;
   animation: arena-score-in var(--duration-base) var(--ease-out);
 }
+.qualified td { background: color-mix(in srgb, var(--color-primary) 12%, transparent); }

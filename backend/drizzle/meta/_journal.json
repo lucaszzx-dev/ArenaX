@@ -127,6 +127,13 @@
                         "when":  1785780105771,
                         "tag":  "0017_team_members_source_club_member",
                         "breakpoints":  true
+                    },
+                    {
+                        "idx":  18,
+                        "version":  "7",
+                        "when":  1785942000000,
+                        "tag":  "0018_group_stage_knockout",
+                        "breakpoints":  true
                     }
                 ]
 }

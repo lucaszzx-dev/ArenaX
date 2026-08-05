@@ -164,3 +164,4 @@
   .scheduleForm { display: grid; grid-template-columns: 1fr auto; }
   .calendarFilters button { flex: 1 1 calc(50% - .45rem); }
 }
+.qualified td { background: color-mix(in srgb, var(--color-primary) 12%, transparent); }
