@@ -1,6 +1,6 @@
 # Roadmap de evolução do ArenaX
 
-Última atualização: 3 de agosto de 2026.
+Última atualização: 4 de agosto de 2026.
 
 O projeto evolui em versões pequenas. Cada entrega deve terminar com
 migração, testes, lint, build, documentação, commit único e verificação do
@@ -12,6 +12,10 @@ o Ciclo 8 (geração segura do chaveamento, avanço automático, folgas e telas
 pública/administrativa). Ele pode precisar de mais testes; extensões como
 disputa de terceiro lugar e cabeças de chave ficaram para ciclos futuros
 (ver `docs/MATA_MATA.md`).
+
+## Expansão pós-MVP (Store, IA, Mídia, Social)
+
+As novas verticais pós-MVP (ArenaX Store, ArenaX AI, hub de mídia/transmissões e integração social) estão planejadas em `docs/POST_MVP.md` e detalhadas em `docs/STORE.md`, `docs/AI_ASSISTANT.md` e `docs/MEDIA.md`. Essas verticais são aditivas e não interferem nos itens abaixo, que seguem o núcleo de competições.
 
 ## Visão geral da ordem recomendada
 
@@ -513,7 +517,7 @@ com traduções e formatos de data/número locais.
 
 - Solicitação pública de inscrição: reaberta apenas dentro do item
   "Convites de jogadores", se o produto decidir.
-- Monetização além da cobrança de inscrição (assinaturas, publicidade).
+- Monetização além da cobrança de inscrição (assinaturas, publicidade, Store, IA premium): planejamento em `docs/POST_MVP.md`; implementação apenas nas fases PÓS-MVP 2/3.
 - Aplicativo nativo (React Native/Expo) sem validação de demanda.
 - Atualizações em tempo real (WebSocket) enquanto as regras de placar e
   eventos não estiverem estáveis.
