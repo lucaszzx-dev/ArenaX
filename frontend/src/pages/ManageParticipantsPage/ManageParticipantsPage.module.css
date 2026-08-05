@@ -31,9 +31,10 @@
 .team li span b { color: var(--color-primary-dark); font-family: var(--font-mono); font-size: .68rem; }
 .team li span small { color: var(--color-text-muted); font-size: .68rem; }
 .team li span em { color: var(--color-primary); font-size: .62rem; font-style: normal; font-weight: 800; text-transform: uppercase; }
-.identityForm { display: grid; margin: 1rem 0; gap: .55rem; grid-template-columns: 1fr .5fr 1.2fr auto; }
+.identityForm { display: grid; margin: 1rem 0; gap: .55rem; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 .identityForm input { min-width: 0; padding: .65rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
 .identityForm button { border: 0; background: var(--color-primary); color: white; font-weight: 800; }
+.teamLogoField { grid-column: 1 / -1; }
 .error { padding: .9rem; border-left: 3px solid #ef4444; color: #ef4444; }
 .success { padding: .9rem; border-left: 3px solid var(--color-primary); color: var(--color-primary-dark); }
 .state { display: grid; min-height: calc(100vh - 4rem); place-items: center; color: var(--color-text-muted); }
@@ -42,6 +43,7 @@
   .createForm { position: static; }
   .memberForm { grid-template-columns: 1fr; }
   .identityForm { grid-template-columns: 1fr; }
+  .teamLogoField { grid-column: auto; }
 }
 
 .createForm button,

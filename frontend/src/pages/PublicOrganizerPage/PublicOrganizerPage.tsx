@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
+import { RemoteImage } from "../../components/RemoteImage/RemoteImage";
 import { getPublicOrganizer } from "../../features/public-profiles/public-profile-api";
 import { useSeo } from "../../lib/use-seo";
 import styles from "./PublicOrganizerPage.module.css";
@@ -30,11 +31,12 @@ export function PublicOrganizerPage() {
   return (
     <main className={styles.page}>
       <header className={styles.heading}>
-        {organizer.avatarUrl ? (
-          <img className={styles.avatar} alt={`Foto de ${organizer.displayName}`} src={organizer.avatarUrl} />
-        ) : (
-          <div className={styles.avatarPlaceholder}>{organizer.displayName.slice(0, 1).toUpperCase()}</div>
-        )}
+        <RemoteImage
+          alt={`Foto de ${organizer.displayName}`}
+          className={styles.avatar}
+          src={organizer.avatarUrl}
+          fallback={<div className={styles.avatarPlaceholder}>{organizer.displayName.slice(0, 1).toUpperCase()}</div>}
+        />
         <span>Organizador</span>
         <h1>{organizer.displayName}</h1>
         {organizer.bio && <p>{organizer.bio}</p>}

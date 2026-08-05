@@ -7,6 +7,7 @@ import {
   useCurrentUser
 } from "../../features/auth/auth-query";
 import { useUnreadCount } from "../../features/notifications/notification-query";
+import { RemoteImage } from "../RemoteImage/RemoteImage";
 import { Brand } from "../Brand/Brand";
 import { ServerStatusNotice } from "../ServerStatusNotice/ServerStatusNotice";
 import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
@@ -42,11 +43,11 @@ export function PublicLayout() {
                 <NotificationsBell />
                 <NavLink className={styles.accountLink} to="/perfil">
                   <span className={styles.accountAvatar} aria-hidden="true">
-                    {user.avatarUrl ? (
-                      <img src={user.avatarUrl} alt="" />
-                    ) : (
-                      user.displayName.slice(0, 2).toUpperCase()
-                    )}
+                    <RemoteImage
+                      alt=""
+                      src={user.avatarUrl}
+                      fallback={user.displayName.slice(0, 2).toUpperCase()}
+                    />
                   </span>
                   <span>{user.displayName}</span>
                 </NavLink>
@@ -104,7 +105,28 @@ function NotificationsBell() {
       className={styles.notificationsLink}
       to="/painel/notificacoes"
     >
-      <span aria-hidden="true">Sino</span>
+      <span aria-hidden="true" className={styles.bellIcon}>
+        <svg
+          fill="none"
+          height="18"
+          viewBox="0 0 24 24"
+          width="18"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M6 9a6 6 0 1 1 12 0c0 4.5 1.5 6 2 6.5H4c.5-.5 2-2 2-6.5Z"
+            stroke="currentColor"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
+          <path
+            d="M10 18.5a2 2 0 0 0 4 0"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeWidth="1.8"
+          />
+        </svg>
+      </span>
       {unread > 0 && (
         <b className={styles.notificationsBadge} aria-hidden="true">
           {unread > 99 ? "99+" : unread}

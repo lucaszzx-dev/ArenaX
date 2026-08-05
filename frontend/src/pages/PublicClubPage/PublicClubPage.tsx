@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
+import { RemoteImage } from "../../components/RemoteImage/RemoteImage";
 import { getPublicClub } from "../../features/public-profiles/public-profile-api";
 import { useSeo } from "../../lib/use-seo";
 import styles from "./PublicClubPage.module.css";
@@ -30,11 +31,12 @@ export function PublicClubPage() {
   return (
     <main className={styles.page}>
       <header className={styles.heading}>
-        {club.logoUrl ? (
-          <img className={styles.logo} alt={`Escudo de ${club.name}`} src={club.logoUrl} />
-        ) : (
-          <div className={styles.logoPlaceholder}>{club.shortName || "AX"}</div>
-        )}
+        <RemoteImage
+          alt={`Escudo de ${club.name}`}
+          className={styles.logo}
+          src={club.logoUrl}
+          fallback={<div className={styles.logoPlaceholder}>{club.shortName || "AX"}</div>}
+        />
         <span>Clube</span>
         <h1>{club.name}</h1>
         {sports.length > 0 && (

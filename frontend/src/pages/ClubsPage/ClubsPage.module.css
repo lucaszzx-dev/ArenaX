@@ -13,12 +13,14 @@
 .createForm button, .memberForm button { padding: .82rem 1rem; border: 0; background: var(--color-primary); color: white; font-weight: 800; cursor: pointer; }
 .clubs { display: grid; gap: 1rem; }
 .club header { display: flex; justify-content: space-between; gap: 1rem; }
-.club header img { width: 2.7rem; height: 2.7rem; margin-right: .7rem; border-radius: .35rem; object-fit: cover; float: left; }
+.clubLogo { width: 2.7rem; height: 2.7rem; margin-right: .7rem; border-radius: .35rem; background: var(--color-surface-hover); object-fit: cover; float: left; }
 .club h2 { margin: .25rem 0 0; }
 .club header button, .club li button { border: 0; background: transparent; color: var(--color-text-muted); cursor: pointer; }
-.identityForm { display: grid; margin: 1rem 0; gap: .55rem; grid-template-columns: 1fr .5fr 1.2fr auto; }
+.identityForm { display: grid; margin: 1rem 0; gap: .55rem; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
 .identityForm input { min-width: 0; padding: .65rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
 .identityForm button { border: 0; background: var(--color-primary); color: white; font-weight: 800; }
+.identityLogo { grid-column: 1 / -1; }
+.identitySubmit { grid-column: 1 / -1; justify-self: start; padding: .7rem 1.2rem; cursor: pointer; }
 .club ul { margin: 1.2rem 0; padding: 0; list-style: none; }
 .club li { display: flex; min-height: 2.8rem; padding: .65rem 0; border-top: 1px solid var(--color-border); align-items: center; justify-content: space-between; gap: 1rem; }
 .club li span { display: flex; align-items: baseline; gap: .4rem; }
@@ -36,6 +38,7 @@
   .createForm { position: static; }
   .memberForm { grid-template-columns: 1fr; }
   .identityForm { grid-template-columns: 1fr; }
+  .identityLogo, .identitySubmit { grid-column: auto; }
 }
 
 .createForm button,
@@ -59,15 +62,20 @@
 }
 .section { margin-top: 2rem; }
 .section h3 { margin: 0 0 .8rem; font-size: 1rem; letter-spacing: -.01em; }
+.sectionHint { margin: -.4rem 0 .8rem; color: var(--color-text-muted); font-size: .78rem; line-height: 1.6; }
 .hint { color: var(--color-text-muted); font-size: .78rem; margin: .4rem 0; }
 .inlineForm, .seasonForm, .squadForm, .staffForm, .importForm { display: grid; gap: .55rem; margin: .8rem 0; }
 .inlineForm { grid-template-columns: minmax(160px, 2fr) 5rem minmax(90px, 1fr) auto auto; align-items: center; }
 .seasonForm { grid-template-columns: 1fr 1fr 1fr auto auto; }
-.squadForm { grid-template-columns: 1fr .8fr .8fr 1fr auto auto auto; align-items: center; }
+.squadForm { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
 .staffForm { grid-template-columns: 1fr 1fr auto; }
-.importForm { grid-template-columns: 1fr auto auto; align-items: center; }
+.importForm { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto; align-items: end; }
+.squadField { display: grid; gap: .35rem; }
+.squadField label { color: var(--color-text-muted); font-size: .7rem; }
+.squadActions { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
 .inlineForm input, .seasonForm input, .squadForm input, .squadForm select, .staffForm input, .importForm input, .importForm select { min-width: 0; padding: .6rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
 .inlineForm button, .seasonForm button, .squadForm button, .staffForm button, .importForm button { border: 0; background: var(--color-primary); color: white; font-weight: 800; cursor: pointer; padding: .7rem 1rem; }
+.secondaryButton { background: transparent !important; color: var(--color-text) !important; border: 1px solid var(--color-border) !important; }
 .checkLabel { display: flex; align-items: center; gap: .4rem; color: var(--color-text-muted); font-size: .8rem; }
 .squad { border: 1px solid var(--color-border); background: var(--color-surface-elevated); margin: .6rem 0; padding: .8rem; }
 .squadHead { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
@@ -80,6 +88,25 @@
 .squadManage label { display: flex; align-items: center; gap: .55rem; }
 .actionRow { display: flex; flex-wrap: wrap; gap: .6rem; margin: .6rem 0; }
 .actionRow button { border: 1px solid var(--color-border); background: transparent; color: var(--color-text); cursor: pointer; padding: .6rem 1rem; }
+.rosterToolBlock { padding: 1rem; border: 1px solid var(--color-border); background: var(--color-surface-elevated); margin: .8rem 0; }
+.rosterToolBlock h4 { margin: 0 0 .5rem; font-size: .85rem; }
+.filePicker { display: flex; align-items: center; gap: .7rem; min-width: 0; }
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.fileButton { border: 1px solid var(--color-border-strong); background: var(--color-surface); color: var(--color-text); cursor: pointer; padding: .7rem 1rem; font-weight: 800; font-size: .82rem; white-space: nowrap; }
+.fileInput:focus-visible + .fileButton { outline: 3px solid var(--color-primary); outline-offset: 2px; }
+.fileName { min-width: 0; overflow: hidden; color: var(--color-text); font-size: .8rem; text-overflow: ellipsis; white-space: nowrap; }
+.fileNameEmpty { min-width: 0; overflow: hidden; color: var(--color-text-muted); font-size: .8rem; font-style: italic; text-overflow: ellipsis; white-space: nowrap; }
+.destination { display: grid; gap: .35rem; color: var(--color-text-muted); font-size: .7rem; }
+.destination select { min-width: 0; padding: .7rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
+.importSubmit { min-height: 2.8rem; white-space: nowrap; }
 .importChampionship { display: grid; gap: .8rem; }
 .importChampionship label { display: grid; gap: .35rem; color: var(--color-text-muted); font-size: .75rem; }
 .importChampionship select, .importChampionship input { padding: .6rem; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text); }
@@ -95,7 +122,11 @@
 .updated { color: #d97706; }
 .removed { color: #dc2626; }
 .protected { color: var(--color-primary-dark); }
+@media (max-width: 900px) {
+  .seasonForm, .squadForm, .inlineForm, .staffForm { grid-template-columns: 1fr; }
+}
 @media (max-width: 720px) {
   .inlineForm, .seasonForm, .squadForm, .staffForm, .importForm, .importChampionship { grid-template-columns: 1fr; }
   .squadHead { flex-direction: column; align-items: flex-start; }
+  .filePicker { flex-wrap: wrap; }
 }

@@ -1,0 +1,53 @@
+﻿.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field label {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+}
+
+.field input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.hint,
+.status,
+.error {
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.hint {
+  color: var(--color-text-muted);
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.preview {
+  display: flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.preview img {
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  border-radius: 0.35rem;
+  background: var(--color-surface-hover);
+  object-fit: cover;
+}
+
+.status {
+  color: var(--color-text-muted);
+}

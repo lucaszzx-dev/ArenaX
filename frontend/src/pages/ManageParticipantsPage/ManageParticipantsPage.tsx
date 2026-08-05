@@ -2,6 +2,8 @@ import { type FormEvent, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
+import { ImageUrlField } from "../../components/ImageUrlField/ImageUrlField";
+import { RemoteImage } from "../../components/RemoteImage/RemoteImage";
 import { getChampionship } from "../../features/championships/championship-api";
 import { championshipDetailQueryKey } from "../../features/championships/championship-query";
 import {
@@ -12,9 +14,9 @@ import {
   deleteTeam,
   deleteTeamMember,
   listRegistrations,
-  registrationQueryKey
-  ,setTeamCaptain
-  ,updateTeam
+  registrationQueryKey,
+  setTeamCaptain,
+  updateTeam
 } from "../../features/participants/participant-api";
 import { ApiError } from "../../lib/api";
 import {
@@ -29,6 +31,7 @@ export function ManageParticipantsPage() {
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [createLogoUrl, setCreateLogoUrl] = useState("");
   const championshipQuery = useQuery({
     queryKey: championshipDetailQueryKey(id),
     queryFn: () => getChampionship(id),
@@ -104,9 +107,14 @@ export function ManageParticipantsPage() {
     const data = new FormData(form);
     teamMutation.mutate({
       name: String(data.get("name") ?? ""),
-      shortName: String(data.get("shortName") ?? "") || null
-      ,logoUrl: String(data.get("logoUrl") ?? "") || null
-    }, { onSuccess: () => form.reset() });
+      shortName: String(data.get("shortName") ?? "") || null,
+      logoUrl: String(data.get("logoUrl") ?? "") || null
+    }, {
+      onSuccess: () => {
+        form.reset();
+        setCreateLogoUrl("");
+      }
+    });
   }
 
   function confirmAction(
@@ -192,79 +200,27 @@ export function ManageParticipantsPage() {
               </button>
               <Link to="/painel/clubes">Gerenciar biblioteca de clubes</Link>
             </div>
-            <span className={styles.divider}>ou crie uma equipe nova somente para esta competição</span>
+            <span className={styles.divider}>Ou cadastre uma equipe exclusiva para esta competição</span>
             <label>Nome da equipe<input minLength={2} name="name" required /></label>
             <label>Sigla<input maxLength={12} name="shortName" placeholder="Ex.: RAI" /></label>
-            <label>URL do escudo<input name="logoUrl" placeholder="https://..." type="url" /></label>
+            <ImageUrlField
+              label="URL do escudo"
+              name="logoUrl"
+              onChange={setCreateLogoUrl}
+              value={createLogoUrl}
+            />
             <button disabled={teamMutation.isPending}>Criar equipe</button>
           </form>
           <div className={styles.teams}>
             {registrations.teams.map((team) => (
-              <article className={styles.team} key={team.id}>
-                <header>
-                  <div>
-                    {team.logoUrl && <img alt="" className={styles.logo} src={team.logoUrl} />}
-                    <span>{team.shortName || "TIME"}</span><h2>{team.name}</h2>
-                  </div>
-                  <button
-                    disabled={actionMutation.isPending}
-                    onClick={() => confirmAction(
-                      `Remover a equipe ${team.name} e seus jogadores?`,
-                      "Equipe removida.",
-                      () => deleteTeam(id, team.id)
-                    )}
-                    type="button"
-                  >
-                    Remover equipe
-                  </button>
-                </header>
-                <ul>{team.members.map((member) => (
-                  <li key={member.id}>
-                    <span>
-                      {member.jerseyNumber !== null && (
-                        <b>#{member.jerseyNumber}</b>
-                      )}{" "}
-                      {member.displayName}
-                      {member.isCaptain && <em>Capitão</em>}
-                      {member.position && <small>{member.position}</small>}
-                    </span>
-                    <button onClick={() => actionMutation.mutate({
-                      action: () => setTeamCaptain(id, team.id, member.id),
-                      successMessage: `${member.displayName} agora é capitão.`
-                    })} type="button">Capitão</button>
-                    <button aria-label={`Remover ${member.displayName}`} onClick={() =>
-                      confirmAction(
-                        `Remover ${member.displayName} da equipe?`,
-                        "Jogador removido.",
-                        () => deleteTeamMember(id, team.id, member.id)
-                      )
-                    } type="button">×</button>
-                  </li>
-                ))}</ul>
-                <form className={styles.identityForm} onSubmit={(event) => {
-                  event.preventDefault();
-                  const data = new FormData(event.currentTarget);
-                  actionMutation.mutate({
-                    action: () => updateTeam(id, team.id, {
-                      name: String(data.get("name")),
-                      shortName: String(data.get("shortName")) || null,
-                      logoUrl: String(data.get("logoUrl")) || null
-                    }),
-                    successMessage: "Identidade da equipe atualizada."
-                  });
-                }}>
-                  <input aria-label="Nome do time" defaultValue={team.name} name="name" required />
-                  <input aria-label="Sigla do time" defaultValue={team.shortName ?? ""} name="shortName" placeholder="Sigla" />
-                  <input aria-label="Escudo do time (URL)" defaultValue={team.logoUrl ?? ""} name="logoUrl" placeholder="URL do escudo" type="url" />
-                  <button>Salvar identidade</button>
-                </form>
-                <MemberForm disabled={actionMutation.isPending} onAdd={(input) =>
-                  actionMutation.mutate({
-                    action: () => addTeamMember(id, team.id, input),
-                    successMessage: "Jogador adicionado."
-                  })
-                } />
-              </article>
+              <TeamCard
+                championshipId={id}
+                disabled={actionMutation.isPending}
+                key={team.id}
+                onAction={actionMutation.mutate}
+                onConfirm={confirmAction}
+                team={team}
+              />
             ))}
             {!registrations.teams.length && <p className={styles.empty}>Nenhuma equipe cadastrada.</p>}
           </div>
@@ -300,5 +256,116 @@ function MemberForm({ disabled, onAdd }: {
       <input aria-label="Posição do jogador" maxLength={40} name="position" placeholder="Posição" />
       <button disabled={disabled}>Adicionar jogador</button>
     </form>
+  );
+}
+
+type TeamCardProps = {
+  championshipId: string;
+  team: {
+    id: string;
+    name: string;
+    shortName: string | null;
+    logoUrl: string | null;
+    members: Array<{
+      id: string;
+      displayName: string;
+      jerseyNumber: number | null;
+      position: string | null;
+      isCaptain: boolean;
+    }>;
+  };
+  disabled: boolean;
+  onAction: (input: {
+    action: () => Promise<unknown>;
+    successMessage: string;
+  }) => void;
+  onConfirm: (
+    confirmation: string,
+    successMessage: string,
+    action: () => Promise<unknown>
+  ) => void;
+};
+
+function TeamCard({
+  championshipId,
+  team,
+  disabled,
+  onAction,
+  onConfirm
+}: TeamCardProps) {
+  const [identityLogoUrl, setIdentityLogoUrl] = useState(team.logoUrl ?? "");
+
+  return (
+    <article className={styles.team}>
+      <header>
+        <div>
+          <RemoteImage alt="" className={styles.logo} src={team.logoUrl} />
+          <span>{team.shortName || "TIME"}</span><h2>{team.name}</h2>
+        </div>
+        <button
+          disabled={disabled}
+          onClick={() => onConfirm(
+            `Remover a equipe ${team.name} e seus jogadores?`,
+            "Equipe removida.",
+            () => deleteTeam(championshipId, team.id)
+          )}
+          type="button"
+        >
+          Remover equipe
+        </button>
+      </header>
+      <ul>{team.members.map((member) => (
+        <li key={member.id}>
+          <span>
+            {member.jerseyNumber !== null && (
+              <b>#{member.jerseyNumber}</b>
+            )}{" "}
+            {member.displayName}
+            {member.isCaptain && <em>Capitão</em>}
+            {member.position && <small>{member.position}</small>}
+          </span>
+          <button onClick={() => onAction({
+            action: () => setTeamCaptain(championshipId, team.id, member.id),
+            successMessage: `${member.displayName} agora é capitão.`
+          })} type="button">Capitão</button>
+          <button aria-label={`Remover ${member.displayName}`} onClick={() =>
+            onConfirm(
+              `Remover ${member.displayName} da equipe?`,
+              "Jogador removido.",
+              () => deleteTeamMember(championshipId, team.id, member.id)
+            )
+          } type="button">×</button>
+        </li>
+      ))}</ul>
+      <form className={styles.identityForm} onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        onAction({
+          action: () => updateTeam(championshipId, team.id, {
+            name: String(data.get("name")),
+            shortName: String(data.get("shortName")) || null,
+            logoUrl: String(data.get("logoUrl")) || null
+          }),
+          successMessage: "Identidade da equipe atualizada."
+        });
+      }}>
+        <input aria-label="Nome do time" defaultValue={team.name} name="name" required />
+        <input aria-label="Sigla do time" defaultValue={team.shortName ?? ""} name="shortName" placeholder="Sigla" />
+        <ImageUrlField
+          className={styles.teamLogoField}
+          label="Escudo do time (URL)"
+          name="logoUrl"
+          onChange={setIdentityLogoUrl}
+          value={identityLogoUrl}
+        />
+        <button>Salvar identidade</button>
+      </form>
+      <MemberForm disabled={disabled} onAdd={(input) =>
+        onAction({
+          action: () => addTeamMember(championshipId, team.id, input),
+          successMessage: "Jogador adicionado."
+        })
+      } />
+    </article>
   );
 }

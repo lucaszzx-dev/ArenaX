@@ -78,9 +78,10 @@
   border-radius: 50%;
   background: var(--color-primary-soft);
   color: var(--color-primary);
-  font-family: var(--font-mono);
-  font-size: 0.58rem;
-  font-weight: 900;
+}
+
+.bellIcon {
+  line-height: 0;
 }
 
 .notificationsBadge {

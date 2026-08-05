@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 
+import { ImageUrlField } from "../../components/ImageUrlField/ImageUrlField";
+import { RemoteImage } from "../../components/RemoteImage/RemoteImage";
 import {
   addClubMember,
   addClubSeason,
@@ -46,6 +48,7 @@ type Feedback = {
 export function ClubsPage() {
   const queryClient = useQueryClient();
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [createLogoUrl, setCreateLogoUrl] = useState("");
   const clubsQuery = useQuery({ queryKey: clubsQueryKey, queryFn: listClubs });
   const refresh = () => queryClient.invalidateQueries({ queryKey: clubsQueryKey });
 
@@ -81,7 +84,12 @@ export function ClubsPage() {
           }),
         message: "Clube criado."
       },
-      { onSuccess: () => form.reset() }
+      {
+        onSuccess: () => {
+          form.reset();
+          setCreateLogoUrl("");
+        }
+      }
     );
   }
 
@@ -117,7 +125,12 @@ export function ClubsPage() {
           <h2>Novo clube</h2>
           <label>Nome<input minLength={2} name="name" required /></label>
           <label>Sigla<input maxLength={12} name="shortName" placeholder="Ex.: AX" /></label>
-          <label>URL do escudo<input name="logoUrl" placeholder="https://..." type="url" /></label>
+          <ImageUrlField
+            label="URL do escudo"
+            name="logoUrl"
+            onChange={setCreateLogoUrl}
+            value={createLogoUrl}
+          />
           <button disabled={mutation.isPending}>Criar clube</button>
         </form>
         <div className={styles.clubs}>
@@ -151,6 +164,7 @@ function ClubCard({ club, disabled, onFeedback, runAction }: ClubCardProps) {
   const [editingSeason, setEditingSeason] = useState<ClubSeason | null>(null);
   const [editingSquad, setEditingSquad] = useState<ClubSquad | null>(null);
   const [expandedSquad, setExpandedSquad] = useState<string | null>(null);
+  const [identityLogoUrl, setIdentityLogoUrl] = useState(club.logoUrl ?? "");
 
   const action = (fn: () => Promise<unknown>, message: string) =>
     runAction({ action: fn, message });
@@ -279,7 +293,7 @@ function ClubCard({ club, disabled, onFeedback, runAction }: ClubCardProps) {
     <article className={styles.club}>
       <header>
         <div>
-          {club.logoUrl && <img alt="" src={club.logoUrl} />}
+          <RemoteImage alt="" className={styles.clubLogo} src={club.logoUrl} />
           <span>{club.shortName || "CLUBE"}</span>
           <h2>{club.name}</h2>
         </div>
@@ -298,8 +312,14 @@ function ClubCard({ club, disabled, onFeedback, runAction }: ClubCardProps) {
       <form className={styles.identityForm} onSubmit={handleIdentity}>
         <input aria-label="Nome do clube" defaultValue={club.name} name="name" required />
         <input aria-label="Sigla do clube" defaultValue={club.shortName ?? ""} name="shortName" placeholder="Sigla" />
-        <input aria-label="Escudo do clube (URL)" defaultValue={club.logoUrl ?? ""} name="logoUrl" placeholder="URL do escudo" type="url" />
-        <button disabled={disabled}>Salvar identidade</button>
+        <ImageUrlField
+          className={styles.identityLogo}
+          label="Escudo do clube (URL)"
+          name="logoUrl"
+          onChange={setIdentityLogoUrl}
+          value={identityLogoUrl}
+        />
+        <button className={styles.identitySubmit} disabled={disabled}>Salvar identidade</button>
         <input aria-label="Cor principal" defaultValue={club.primaryColor ?? ""} name="primaryColor" placeholder="#123456" pattern="^#([0-9a-fA-F]{6})?$" title="Hex de 6 dígitos, ex.: #123456" />
         <input aria-label="Cor secundária" defaultValue={club.secondaryColor ?? ""} name="secondaryColor" placeholder="#abcdef" pattern="^#([0-9a-fA-F]{6})?$" title="Hex de 6 dígitos" />
         <input aria-label="Uniforme 1" defaultValue={club.homeKit ?? ""} name="homeKit" placeholder="Uniforme 1" maxLength={120} />
@@ -379,7 +399,11 @@ function ClubCard({ club, disabled, onFeedback, runAction }: ClubCardProps) {
       </section>
 
       <section className={styles.section}>
-        <h3>Elencos (squads)</h3>
+        <h3>Elencos por categoria</h3>
+        <p className={styles.sectionHint}>
+          Organize diferentes grupos de jogadores do mesmo clube por temporada, categoria ou modalidade.
+          Se o clube possui apenas um elenco, você pode ignorar esta seção.
+        </p>
         {club.squads.map((squad) => (
           <div className={styles.squad} key={squad.id}>
             <div className={styles.squadHead}>
@@ -424,21 +448,31 @@ function ClubCard({ club, disabled, onFeedback, runAction }: ClubCardProps) {
         {!club.squads.length && <p className={styles.empty}>Nenhum elenco criado.</p>}
         {editingSquad && <p className={styles.hint}>Editando elenco {editingSquad.name}</p>}
         <form className={styles.squadForm} onSubmit={handleSquad}>
-          <input aria-label="Nome do elenco" defaultValue={editingSquad?.name ?? ""} key={"q" + (editingSquad?.id ?? "new")} name="name" minLength={2} placeholder="Principal" required />
-          <input aria-label="Categoria" defaultValue={editingSquad?.category ?? ""} key={"c" + (editingSquad?.id ?? "new")} name="category" placeholder="Categoria (ex.: Masculino)" maxLength={40} />
-          <input aria-label="Esporte" defaultValue={editingSquad?.sport ?? ""} key={"p" + (editingSquad?.id ?? "new")} name="sport" placeholder="Esporte" maxLength={40} />
-          <select aria-label="Temporada" defaultValue={editingSquad?.seasonId ?? ""} key={"t" + (editingSquad?.id ?? "new")} name="seasonId">
-            <option value="">Sem temporada</option>
-            {club.seasons.map((season) => (
-              <option key={season.id} value={season.id}>{season.name}</option>
-            ))}
-          </select>
-          <label className={styles.checkLabel}>
-            <input defaultChecked={editingSquad?.isPrimary ?? false} key={"i" + (editingSquad?.id ?? "new")} name="isPrimary" type="checkbox" />
-            Principal
-          </label>
-          <button disabled={disabled}>{editingSquad ? "Salvar elenco" : "Criar elenco"}</button>
-          {editingSquad && <button type="button" onClick={() => setEditingSquad(null)}>Cancelar</button>}
+          <div className={styles.squadField}>
+            <input aria-label="Nome do elenco" defaultValue={editingSquad?.name ?? ""} key={"q" + (editingSquad?.id ?? "new")} name="name" minLength={2} placeholder="Nome (ex.: Principal)" required />
+          </div>
+          <div className={styles.squadField}>
+            <input aria-label="Categoria" defaultValue={editingSquad?.category ?? ""} key={"c" + (editingSquad?.id ?? "new")} name="category" placeholder="Categoria (ex.: Masculino)" maxLength={40} />
+          </div>
+          <div className={styles.squadField}>
+            <input aria-label="Esporte" defaultValue={editingSquad?.sport ?? ""} key={"p" + (editingSquad?.id ?? "new")} name="sport" placeholder="Esporte (ex.: Futsal)" maxLength={40} />
+          </div>
+          <div className={styles.squadField}>
+            <select aria-label="Temporada" defaultValue={editingSquad?.seasonId ?? ""} key={"t" + (editingSquad?.id ?? "new")} name="seasonId">
+              <option value="">Sem temporada</option>
+              {club.seasons.map((season) => (
+                <option key={season.id} value={season.id}>{season.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className={styles.squadActions}>
+            <label className={styles.checkLabel}>
+              <input defaultChecked={editingSquad?.isPrimary ?? false} key={"i" + (editingSquad?.id ?? "new")} name="isPrimary" type="checkbox" />
+              Principal
+            </label>
+            <button disabled={disabled}>{editingSquad ? "Salvar elenco" : "Criar elenco"}</button>
+            {editingSquad && <button className={styles.secondaryButton} type="button" onClick={() => setEditingSquad(null)}>Cancelar</button>}
+          </div>
         </form>
       </section>
 
@@ -467,9 +501,12 @@ function ClubCard({ club, disabled, onFeedback, runAction }: ClubCardProps) {
 
       <section className={styles.section}>
         <h3>Importar e exportar elenco</h3>
-        <div className={styles.actionRow}>
-          <button type="button" onClick={() => action(() => downloadRoster(club, "csv"), "Elenco exportado em CSV.")}>Exportar CSV</button>
-          <button type="button" onClick={() => action(() => downloadRoster(club, "json"), "Elenco exportado em JSON.")}>Exportar JSON</button>
+        <div className={styles.rosterToolBlock}>
+          <h4>Exportar elenco</h4>
+          <div className={styles.actionRow}>
+            <button type="button" onClick={() => action(() => downloadRoster(club, "csv"), "Elenco exportado em CSV.")}>CSV</button>
+            <button type="button" onClick={() => action(() => downloadRoster(club, "json"), "Elenco exportado em JSON.")}>JSON</button>
+          </div>
         </div>
         <RosterImportForm club={club} disabled={disabled} runAction={runAction} />
       </section>
@@ -509,6 +546,7 @@ function RosterImportForm({
 }) {
   const [result, setResult] = useState<{ created: number; updated: number; skipped: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [fileName, setFileName] = useState("");
 
   function handleImport(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -531,26 +569,50 @@ function RosterImportForm({
       },
       message: "Elenco importado."
     });
+    setFileName("");
     form.reset();
   }
 
   return (
-    <form className={styles.importForm} onSubmit={handleImport}>
-      <input accept=".csv,.json,text/csv,application/json" name="file" type="file" required />
-      <select aria-label="Elenco destino" name="squadId">
-        <option value="">Somente clube</option>
-        {club.squads.map((squad) => (
-          <option key={squad.id} value={squad.id}>{squad.name}</option>
-        ))}
-      </select>
-      <button disabled={disabled}>Importar</button>
-      {error && <p className={styles.error} role="alert">{error}</p>}
-      {result && (
-        <p className={styles.success} role="status">
-          Criados: {result.created} · Atualizados: {result.updated} · Ignorados: {result.skipped}
-        </p>
-      )}
-    </form>
+    <div className={styles.rosterToolBlock}>
+      <h4>Importar elenco</h4>
+      <form className={styles.importForm} onSubmit={handleImport}>
+        <div className={styles.filePicker}>
+          <input
+            accept=".csv,.json,text/csv,application/json"
+            aria-label="Arquivo do elenco"
+            className={styles.fileInput}
+            id={"roster-file-" + club.id}
+            name="file"
+            onChange={(event) => setFileName(event.target.files?.[0]?.name ?? "")}
+            required
+            type="file"
+          />
+          <label className={styles.fileButton} htmlFor={"roster-file-" + club.id}>
+            Selecionar arquivo
+          </label>
+          <span className={fileName ? styles.fileName : styles.fileNameEmpty}>
+            {fileName || "nenhum arquivo escolhido"}
+          </span>
+        </div>
+        <label className={styles.destination}>
+          <span>Destino</span>
+          <select aria-label="Elenco destino" name="squadId">
+            <option value="">Somente clube</option>
+            {club.squads.map((squad) => (
+              <option key={squad.id} value={squad.id}>{squad.name}</option>
+            ))}
+          </select>
+        </label>
+        <button className={styles.importSubmit} disabled={disabled}>Importar</button>
+        {error && <p className={styles.error} role="alert">{error}</p>}
+        {result && (
+          <p className={styles.success} role="status">
+            Criados: {result.created} · Atualizados: {result.updated} · Ignorados: {result.skipped}
+          </p>
+        )}
+      </form>
+    </div>
   );
 }
 
@@ -614,7 +676,7 @@ function ImportToChampionshipForm({
         O que importar
         <select value={selection} onChange={(event) => setSelection(event.target.value as "all" | "squad" | "players")}>
           <option value="all">Todos os jogadores</option>
-          <option value="squad">Um elenco (squad)</option>
+          <option value="squad">Um elenco por categoria</option>
           <option value="players">Selecionar jogadores</option>
         </select>
       </label>

@@ -1,6 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { ImageUrlField } from "../../components/ImageUrlField/ImageUrlField";
+import { RemoteImage } from "../../components/RemoteImage/RemoteImage";
 import { updateProfile } from "../../features/auth/auth-api";
 import {
   currentUserQueryKey,
@@ -15,6 +17,11 @@ export function ProfilePage() {
   const user = userQuery.data?.user;
   const [message, setMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl ?? "");
+
+  useEffect(() => {
+    setAvatarUrl(user?.avatarUrl ?? "");
+  }, [user]);
   const mutation = useMutation({
     mutationFn: updateProfile,
     onSuccess: (data) => {
@@ -62,13 +69,15 @@ export function ProfilePage() {
       <div className={styles.content}>
         <aside className={styles.preview}>
           <div className={styles.avatar}>
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt="" />
-            ) : (
-              <span aria-hidden="true">
-                {user.displayName.slice(0, 2).toUpperCase()}
-              </span>
-            )}
+            <RemoteImage
+              alt=""
+              src={user.avatarUrl}
+              fallback={
+                <span aria-hidden="true">
+                  {user.displayName.slice(0, 2).toUpperCase()}
+                </span>
+              }
+            />
           </div>
           <strong>{user.displayName}</strong>
           <span>{user.email}</span>
@@ -88,16 +97,14 @@ export function ProfilePage() {
             <small>Entre 2 e 80 caracteres.</small>
           </label>
 
-          <label>
-            URL do avatar
-            <input
-              defaultValue={user.avatarUrl ?? ""}
-              name="avatarUrl"
-              placeholder="https://exemplo.com/avatar.png"
-              type="url"
-            />
-            <small>Por enquanto usamos uma URL; upload virá depois.</small>
-          </label>
+          <ImageUrlField
+            hint="Por enquanto usamos uma URL; upload virá depois."
+            label="URL do avatar"
+            name="avatarUrl"
+            onChange={setAvatarUrl}
+            placeholder="https://exemplo.com/avatar.png"
+            value={avatarUrl}
+          />
 
           <label>
             Biografia

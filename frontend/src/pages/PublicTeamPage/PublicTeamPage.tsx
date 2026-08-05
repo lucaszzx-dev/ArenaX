@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 
+import { RemoteImage } from "../../components/RemoteImage/RemoteImage";
 import { getPublicTeam } from "../../features/championships/public-championship-api";
 import { useSeo } from "../../lib/use-seo";
 import styles from "./PublicTeamPage.module.css";
@@ -27,7 +28,11 @@ export function PublicTeamPage() {
         ← Voltar para {championship.name}
       </Link>
       <header>
-        {team.logoUrl ? <img alt={`Escudo de ${team.name}`} src={team.logoUrl} /> : <div>{team.shortName || "AX"}</div>}
+        <RemoteImage
+          alt={`Escudo de ${team.name}`}
+          src={team.logoUrl}
+          fallback={<div>{team.shortName || "AX"}</div>}
+        />
         <span>{championship.sport} / equipe</span>
         <h1>{team.name}</h1>
         <p>{team.members.length} jogadores no elenco</p>
@@ -56,5 +61,3 @@ export function PublicTeamPage() {
     </section>
   );
 }
-
-
