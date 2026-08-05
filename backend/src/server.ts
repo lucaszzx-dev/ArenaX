@@ -40,7 +40,7 @@ try {
 const env = parseEnv();
 const database = createDatabase(env.DATABASE_URL);
 const authRepository = new DrizzleAuthRepository(database.db);
-const authService = new AuthService(authRepository, env.SESSION_TTL_DAYS, createEmailProvider(env));
+const authService = new AuthService(authRepository, env.SESSION_TTL_DAYS, createEmailProvider(env), env.TRUSTED_DEVICE_TTL_DAYS);
 const championshipRepository = new DrizzleChampionshipRepository(database.db);
 const championshipService = new ChampionshipService(championshipRepository);
 const notificationRepository = new DrizzleNotificationRepository(database.db);

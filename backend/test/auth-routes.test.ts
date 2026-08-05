@@ -4,6 +4,7 @@ import { buildApp } from "../src/app.js";
 import { AuthService } from "../src/auth/auth-service.js";
 import type { Env } from "../src/config/env.js";
 import { InMemoryAuthRepository } from "./support/in-memory-auth-repository.js";
+import { trustedDeviceCookieOptions } from "../src/auth/trusted-device-cookie.js";
 
 const repository = new InMemoryAuthRepository();
 const authService = new AuthService(repository, 7);
@@ -14,7 +15,9 @@ const env: Env = {
   DATABASE_URL: "postgresql://arenax:secret@localhost:5432/arenax",
   FRONTEND_URL: "http://localhost:5173",
   SESSION_COOKIE_NAME: "arenax_session",
-  SESSION_TTL_DAYS: 7
+  SESSION_TTL_DAYS: 7,
+  TRUSTED_DEVICE_COOKIE_NAME: "arenax_trusted_device",
+  TRUSTED_DEVICE_TTL_DAYS: 30
 };
 const app = buildApp({ authService, env });
 
@@ -127,5 +130,37 @@ describe("auth routes", () => {
 
     expect(response.statusCode).toBe(302);
     expect(response.headers.location).toContain("/entrar?erro=google_not_configured");
+  });
+
+  it("keeps the normal session cookie and clears the separate trusted-device cookie on logout", async () => {
+    const registered = await app.inject({
+      method: "POST", url: "/api/auth/register",
+      payload: { displayName: "Logout Seguro", email: "logout@arenax.test", password: "senha-segura" }
+    });
+    const session = registered.cookies.find((item) => item.name === env.SESSION_COOKIE_NAME)!;
+    const response = await app.inject({
+      method: "POST", url: "/api/auth/logout",
+      headers: { cookie: `${env.SESSION_COOKIE_NAME}=${session.value}` }
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(response.cookies).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: env.SESSION_COOKIE_NAME, httpOnly: true, sameSite: "Lax" }),
+      expect.objectContaining({ name: env.TRUSTED_DEVICE_COOKIE_NAME, httpOnly: true, sameSite: "Lax" })
+    ]));
+  });
+
+  it("defines a separate trusted-device cookie with the expected security properties", () => {
+    expect(trustedDeviceCookieOptions(env)).toMatchObject({
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60
+    });
+    expect(trustedDeviceCookieOptions({ ...env, NODE_ENV: "production" })).toMatchObject({
+      httpOnly: true,
+      secure: true,
+      sameSite: "none"
+    });
   });
 });

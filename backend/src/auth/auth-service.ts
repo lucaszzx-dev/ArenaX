@@ -9,6 +9,12 @@ import { createSessionToken, hashSessionToken } from "./session-token.js";
 import { AppError } from "../errors/app-error.js";
 import { SafeDevelopmentEmailProvider, type EmailProvider } from "../email/email-provider.js";
 import { createHash, randomInt } from "node:crypto";
+import { createTrustedDeviceToken, hashTrustedDeviceToken } from "./trusted-device-token.js";
+
+export type TrustedDeviceResult = {
+  token: string;
+  expiresAt: Date;
+};
 
 export type RegisterInput = {
   displayName: string;
@@ -31,7 +37,8 @@ export class AuthService {
   constructor(
     private readonly repository: AuthRepository,
     private readonly sessionTtlDays: number,
-    private readonly emailProvider: EmailProvider = new SafeDevelopmentEmailProvider()
+    private readonly emailProvider: EmailProvider = new SafeDevelopmentEmailProvider(),
+    private readonly trustedDeviceTtlDays = 30
   ) {}
 
   async register(input: RegisterInput): Promise<AuthResult> {
@@ -107,6 +114,35 @@ export class AuthService {
 
   async logout(sessionToken: string): Promise<void> {
     await this.repository.deleteSession(hashSessionToken(sessionToken));
+  }
+
+  async createTrustedDevice(userId: string): Promise<TrustedDeviceResult> {
+    const token = createTrustedDeviceToken();
+    const expiresAt = new Date(Date.now() + this.trustedDeviceTtlDays * 24 * 60 * 60_000);
+    await this.repository.createTrustedDevice({
+      userId,
+      tokenHash: hashTrustedDeviceToken(token),
+      expiresAt
+    });
+    return { token, expiresAt };
+  }
+
+  async validateTrustedDevice(token: string): Promise<boolean> {
+    const device = await this.repository.findTrustedDeviceByTokenHash(hashTrustedDeviceToken(token));
+    return Boolean(device && !device.revokedAt && device.expiresAt > new Date());
+  }
+
+  async isTrustedDeviceExpired(token: string): Promise<boolean> {
+    const device = await this.repository.findTrustedDeviceByTokenHash(hashTrustedDeviceToken(token));
+    return Boolean(device && device.expiresAt <= new Date());
+  }
+
+  async revokeCurrentTrustedDevice(token: string): Promise<void> {
+    await this.repository.revokeTrustedDevice(hashTrustedDeviceToken(token));
+  }
+
+  async revokeAllTrustedDevices(userId: string): Promise<void> {
+    await this.repository.revokeTrustedDevicesForUser(userId);
   }
 
   async getCurrentUser(sessionToken: string): Promise<PublicUser | null> {

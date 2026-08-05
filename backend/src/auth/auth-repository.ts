@@ -22,6 +22,17 @@ export type CreateSessionInput = {
   expiresAt: Date;
 };
 
+export type CreateTrustedDeviceInput = {
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+};
+
+export type TrustedDevice = CreateTrustedDeviceInput & {
+  createdAt: Date;
+  revokedAt: Date | null;
+};
+
 export type PasswordResetRequest = {
   userId: string;
   codeHash: string;
@@ -65,6 +76,10 @@ export interface AuthRepository {
   createSession(input: CreateSessionInput): Promise<void>;
   deleteSession(tokenHash: string): Promise<void>;
   deleteSessionsForUser(userId: string): Promise<void>;
+  createTrustedDevice(input: CreateTrustedDeviceInput): Promise<void>;
+  findTrustedDeviceByTokenHash(tokenHash: string): Promise<TrustedDevice | null>;
+  revokeTrustedDevice(tokenHash: string): Promise<void>;
+  revokeTrustedDevicesForUser(userId: string): Promise<void>;
   savePasswordResetRequest(input: Omit<PasswordResetRequest, "createdAt">): Promise<void>;
   findPasswordResetRequest(userId: string): Promise<PasswordResetRequest | null>;
   incrementPasswordResetAttempts(userId: string): Promise<number>;

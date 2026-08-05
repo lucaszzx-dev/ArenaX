@@ -12,6 +12,7 @@ import {
 } from "../auth/google-oauth.js";
 import type { Env } from "../config/env.js";
 import { AppError } from "../errors/app-error.js";
+import { trustedDeviceCookieName, trustedDeviceCookieOptions } from "../auth/trusted-device-cookie.js";
 
 const registerSchema = z.object({
   displayName: z.string().trim().min(2).max(80),
@@ -58,6 +59,8 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
     path: "/"
   };
   const oauthStateCookie = `${options.env.SESSION_COOKIE_NAME}_oauth_state`;
+  const trustedDeviceCookieNameForEnv = trustedDeviceCookieName(options.env);
+  const trustedDeviceCookieOptionsForEnv = trustedDeviceCookieOptions(options.env);
 
   function getGoogleConfig(): GoogleOAuthConfig {
     const {
@@ -164,13 +167,18 @@ export const authRoutes: FastifyPluginAsync<AuthRoutesOptions> = async (
 
   app.post("/auth/logout", async (request, reply) => {
     const sessionToken = request.cookies[options.env.SESSION_COOKIE_NAME];
+    const trustedDeviceToken = request.cookies[trustedDeviceCookieNameForEnv];
 
     if (sessionToken) {
       await options.authService.logout(sessionToken);
     }
+    if (trustedDeviceToken) {
+      await options.authService.revokeCurrentTrustedDevice(trustedDeviceToken);
+    }
 
     return reply
       .clearCookie(options.env.SESSION_COOKIE_NAME, cookieOptions)
+      .clearCookie(trustedDeviceCookieNameForEnv, trustedDeviceCookieOptionsForEnv)
       .status(204)
       .send();
   });

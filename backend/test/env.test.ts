@@ -12,7 +12,9 @@ describe("parseEnv", () => {
     expect(parseEnv(validEnv)).toMatchObject({
       NODE_ENV: "development",
       PORT: 3333,
-      SESSION_TTL_DAYS: 7
+      SESSION_TTL_DAYS: 7,
+      TRUSTED_DEVICE_TTL_DAYS: 30,
+      TRUSTED_DEVICE_COOKIE_NAME: "arenax_trusted_device"
     });
   });
 

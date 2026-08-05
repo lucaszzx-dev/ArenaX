@@ -2,6 +2,7 @@ import { and, eq, gt, isNull, sql } from "drizzle-orm";
 
 import type {
   AuthRepository,
+  CreateTrustedDeviceInput,
   CreateSessionInput,
   CreateUserInput,
   LoginSecurityState,
@@ -9,10 +10,11 @@ import type {
   PasswordResetRequest,
   PublicUser,
   UpdateProfileInput,
-  UserWithPassword
+  UserWithPassword,
+  TrustedDevice
 } from "./auth-repository.js";
 import type { Database } from "../db/client.js";
-import { loginSecurity, oauthAccounts, passwordResetRequests, profiles, sessions, users } from "../db/schema.js";
+import { loginSecurity, oauthAccounts, passwordResetRequests, profiles, sessions, trustedDevices, users } from "../db/schema.js";
 
 export class DrizzleAuthRepository implements AuthRepository {
   constructor(private readonly db: Database) {}
@@ -230,6 +232,33 @@ export class DrizzleAuthRepository implements AuthRepository {
     await this.db.delete(sessions).where(eq(sessions.userId, userId));
   }
 
+  async createTrustedDevice(input: CreateTrustedDeviceInput): Promise<void> {
+    await this.db.insert(trustedDevices).values(input);
+  }
+
+  async findTrustedDeviceByTokenHash(tokenHash: string): Promise<TrustedDevice | null> {
+    const [result] = await this.db.select({
+      userId: trustedDevices.userId,
+      tokenHash: trustedDevices.tokenHash,
+      expiresAt: trustedDevices.expiresAt,
+      createdAt: trustedDevices.createdAt,
+      revokedAt: trustedDevices.revokedAt
+    }).from(trustedDevices).where(eq(trustedDevices.tokenHash, tokenHash)).limit(1);
+    return result ?? null;
+  }
+
+  async revokeTrustedDevice(tokenHash: string): Promise<void> {
+    await this.db.update(trustedDevices)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(trustedDevices.tokenHash, tokenHash), isNull(trustedDevices.revokedAt)));
+  }
+
+  async revokeTrustedDevicesForUser(userId: string): Promise<void> {
+    await this.db.update(trustedDevices)
+      .set({ revokedAt: new Date() })
+      .where(and(eq(trustedDevices.userId, userId), isNull(trustedDevices.revokedAt)));
+  }
+
   async savePasswordResetRequest(
     input: Omit<PasswordResetRequest, "createdAt">
   ): Promise<void> {
@@ -284,6 +313,8 @@ export class DrizzleAuthRepository implements AuthRepository {
       if (!consumed) return false;
       await transaction.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, userId));
       await transaction.delete(sessions).where(eq(sessions.userId, userId));
+      await transaction.update(trustedDevices).set({ revokedAt: new Date() })
+        .where(and(eq(trustedDevices.userId, userId), isNull(trustedDevices.revokedAt)));
       return true;
     });
   }

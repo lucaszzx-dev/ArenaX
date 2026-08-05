@@ -13,6 +13,8 @@ const envSchema = z.object({
   FRONTEND_URL: z.url(),
   SESSION_COOKIE_NAME: z.string().min(1).default("arenax_session"),
   SESSION_TTL_DAYS: z.coerce.number().int().positive().default(7),
+  TRUSTED_DEVICE_COOKIE_NAME: z.string().min(1).default("arenax_trusted_device"),
+  TRUSTED_DEVICE_TTL_DAYS: z.coerce.number().int().positive().default(30),
   RESEND_API_KEY: z.string().min(1).optional(),
   EMAIL_FROM: z.email().optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),

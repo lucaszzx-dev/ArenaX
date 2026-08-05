@@ -148,6 +148,13 @@
                         "when":  1785949200000,
                         "tag":  "0020_login_brute_force_protection",
                         "breakpoints":  true
+                    },
+                    {
+                        "idx":  21,
+                        "version":  "7",
+                        "when":  1785952800000,
+                        "tag":  "0021_trusted_devices",
+                        "breakpoints":  true
                     }
                 ]
 }

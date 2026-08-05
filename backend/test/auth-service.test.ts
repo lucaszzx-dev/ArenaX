@@ -81,6 +81,47 @@ describe("AuthService", () => {
     ).resolves.toBeNull();
   });
 
+  it("creates an opaque trusted-device token and persists only its hash", async () => {
+    const { repository, service } = createSubject();
+    const registered = await service.register(registration);
+    const trustedDevice = await service.createTrustedDevice(registered.user.id);
+
+    expect(trustedDevice.token).toMatch(/^[A-Za-z0-9_-]{40,}$/);
+    expect(repository.trustedDevices).toEqual([expect.objectContaining({
+      userId: registered.user.id,
+      expiresAt: trustedDevice.expiresAt,
+      revokedAt: null
+    })]);
+    expect(repository.trustedDevices[0]!.tokenHash).not.toBe(trustedDevice.token);
+    expect(await service.validateTrustedDevice(trustedDevice.token)).toBe(true);
+  });
+
+  it("rejects invalid, expired and revoked trusted-device tokens", async () => {
+    const { repository, service } = createSubject();
+    const registered = await service.register(registration);
+    const trustedDevice = await service.createTrustedDevice(registered.user.id);
+
+    expect(await service.validateTrustedDevice("invalid-token")).toBe(false);
+    repository.trustedDevices[0]!.expiresAt = new Date(Date.now() - 1);
+    expect(await service.isTrustedDeviceExpired(trustedDevice.token)).toBe(true);
+    expect(await service.validateTrustedDevice(trustedDevice.token)).toBe(false);
+    repository.trustedDevices[0]!.expiresAt = new Date(Date.now() + 60_000);
+    await service.revokeCurrentTrustedDevice(trustedDevice.token);
+    expect(await service.validateTrustedDevice(trustedDevice.token)).toBe(false);
+  });
+
+  it("revokes every trusted device when requested", async () => {
+    const { repository, service } = createSubject();
+    const registered = await service.register(registration);
+    const first = await service.createTrustedDevice(registered.user.id);
+    const second = await service.createTrustedDevice(registered.user.id);
+
+    await service.revokeAllTrustedDevices(registered.user.id);
+    expect(repository.trustedDevices.every((device) => device.revokedAt)).toBe(true);
+    expect(await service.validateTrustedDevice(first.token)).toBe(false);
+    expect(await service.validateTrustedDevice(second.token)).toBe(false);
+  });
+
   it("creates a user and session from a verified OAuth profile", async () => {
     const { repository, service } = createSubject();
 
@@ -121,11 +162,13 @@ describe("AuthService", () => {
   it("completes password recovery once and invalidates old sessions", async () => {
     const { repository, service, sent } = createSubject();
     const registered = await service.register(registration);
+    const trustedDevice = await service.createTrustedDevice(registered.user.id);
     await service.login({ email: registration.email, password: registration.password });
     await service.requestPasswordReset(registration.email);
     const token = await service.verifyPasswordReset(registration.email, sent[0]!.code);
     await service.resetPassword(registration.email, token, "nova-senha-segura");
     await expect(service.getCurrentUser(registered.sessionToken)).resolves.toBeNull();
+    await expect(service.validateTrustedDevice(trustedDevice.token)).resolves.toBe(false);
     await expect(service.login({ email: registration.email, password: registration.password })).rejects.toMatchObject({ code: "INVALID_CREDENTIALS" });
     await expect(service.login({ email: registration.email, password: "nova-senha-segura" })).resolves.toMatchObject({ user: { email: "jogador@exemplo.com" } });
     await expect(service.resetPassword(registration.email, token, "outra-senha"))

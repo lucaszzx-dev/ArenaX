@@ -103,6 +103,26 @@ export const sessions = pgTable("sessions", {
     .defaultNow()
 });
 
+export const trustedDevices = pgTable(
+  "trusted_devices",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true })
+  },
+  (table) => [
+    index("trusted_devices_user_idx").on(table.userId),
+    index("trusted_devices_expires_idx").on(table.expiresAt)
+  ]
+);
+
 export const passwordResetRequests = pgTable(
   "password_reset_requests",
   {

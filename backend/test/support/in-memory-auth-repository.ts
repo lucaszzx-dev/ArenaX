@@ -1,5 +1,6 @@
 import type {
   AuthRepository,
+  CreateTrustedDeviceInput,
   CreateSessionInput,
   CreateUserInput,
   LoginSecurityState,
@@ -7,7 +8,8 @@ import type {
   PasswordResetRequest,
   PublicUser,
   UpdateProfileInput,
-  UserWithPassword
+  UserWithPassword,
+  TrustedDevice
 } from "../../src/auth/auth-repository.js";
 
 type StoredSession = CreateSessionInput;
@@ -15,6 +17,7 @@ type StoredSession = CreateSessionInput;
 export class InMemoryAuthRepository implements AuthRepository {
   readonly users: UserWithPassword[] = [];
   readonly sessions: StoredSession[] = [];
+  readonly trustedDevices: TrustedDevice[] = [];
   readonly oauthAccounts: Array<{
     userId: string;
     provider: OAuthProfile["provider"];
@@ -117,6 +120,25 @@ export class InMemoryAuthRepository implements AuthRepository {
     }
   }
 
+  async createTrustedDevice(input: CreateTrustedDeviceInput): Promise<void> {
+    this.trustedDevices.push({ ...input, createdAt: new Date(), revokedAt: null });
+  }
+
+  async findTrustedDeviceByTokenHash(tokenHash: string): Promise<TrustedDevice | null> {
+    return this.trustedDevices.find((device) => device.tokenHash === tokenHash) ?? null;
+  }
+
+  async revokeTrustedDevice(tokenHash: string): Promise<void> {
+    const device = await this.findTrustedDeviceByTokenHash(tokenHash);
+    if (device && !device.revokedAt) device.revokedAt = new Date();
+  }
+
+  async revokeTrustedDevicesForUser(userId: string): Promise<void> {
+    for (const device of this.trustedDevices) {
+      if (device.userId === userId && !device.revokedAt) device.revokedAt = new Date();
+    }
+  }
+
   async savePasswordResetRequest(input: Omit<PasswordResetRequest, "createdAt">): Promise<void> {
     const index = this.passwordResetRequests.findIndex((item) => item.userId === input.userId);
     const request = { ...input, createdAt: new Date() };
@@ -153,6 +175,7 @@ export class InMemoryAuthRepository implements AuthRepository {
       request.verificationTokenHash = null;
     }
     await this.deleteSessionsForUser(userId);
+    await this.revokeTrustedDevicesForUser(userId);
     return true;
   }
 
