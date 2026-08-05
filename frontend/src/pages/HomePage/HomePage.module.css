@@ -69,6 +69,7 @@
   font-weight: 780;
   letter-spacing: -0.075em;
   line-height: 0.88;
+  overflow-wrap: anywhere;
 }
 
 .copy h1 span {
@@ -352,9 +353,16 @@
 }
 
 @media (max-width: 560px) {
+  .hero { width: min(100%, calc(100% - 1rem)); }
+  .copy { padding: 6rem 1rem 2rem; }
+
   .copy h1 {
-    font-size: 3.45rem;
+    font-size: clamp(2.75rem, 14vw, 3.45rem);
+    letter-spacing: -0.065em;
+    line-height: 0.92;
   }
+
+  .copy h1 span { -webkit-text-stroke-width: 1px; }
 
   .actions {
     align-items: flex-start;

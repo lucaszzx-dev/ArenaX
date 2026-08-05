@@ -9,6 +9,7 @@ import styles from "./ChampionshipForm.module.css";
 
 const sports = ["Futebol", "Futsal", "Basquete", "Vôlei", "eSports", "Outro"];
 const footballLike = new Set(["Futebol", "Futsal"]);
+const selectableSports = sports.filter((sport) => sport !== "eSports" && sport !== "Outro");
 
 type ChampionshipFormProps = {
   initial?: Championship;
@@ -38,6 +39,7 @@ export function ChampionshipForm({
   const [format, setFormat] = useState<TournamentFormatValue>(
     initial?.format ?? "LEAGUE"
   );
+  const isLegacySport = !selectableSports.includes(sport);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -96,12 +98,14 @@ export function ChampionshipForm({
 
           <label>
             Esporte
+            {isLegacySport && <input name="sport" type="hidden" value={sport} />}
             <select
-              name="sport"
+              disabled={isLegacySport}
+              name={isLegacySport ? undefined : "sport"}
               onChange={(event) => setSport(event.target.value)}
               value={sport}
             >
-              {sports.map((item) => (
+              {selectableSports.map((item) => (
                 <option key={item} value={item}>{item}</option>
               ))}
             </select>

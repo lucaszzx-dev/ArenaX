@@ -39,6 +39,9 @@
   gap: 1.15rem;
 }
 
+.headerActions { display: contents; }
+.menuButton { display: none; }
+
 .navigation a {
   color: var(--color-text);
   font-size: 0.9rem;
@@ -161,31 +164,34 @@
 }
 
 @media (max-width: 640px) {
+  .headerContent { position: relative; }
+
   .productName {
     display: none;
   }
 
+  .headerActions { display: flex; margin-left: auto; align-items: center; gap: 0.65rem; }
+  .menuButton { display: grid; width: 2.5rem; height: 2.5rem; padding: 0; place-content: center; gap: 0.25rem; border: 1px solid var(--color-border-strong); border-radius: 0.25rem; background: var(--color-surface-elevated); color: var(--color-text-strong); cursor: pointer; }
+  .menuButton span { display: block; width: 1rem; height: 1px; background: currentColor; }
+
   .navigation {
-    gap: 0.85rem;
-  }
-
-  .navigation a:first-child {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    left: 0;
     display: none;
+    padding: 0.75rem;
+    align-items: stretch;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface-elevated);
+    box-shadow: var(--shadow-medium);
+    gap: 0.25rem;
   }
 
-  .account {
-    gap: 0.65rem;
-  }
-
-  .accountLink > span:last-child,
-  .account > a:not(.accountLink),
-  .account button {
-    display: none;
-  }
-
-  .account > a.notificationsLink {
-    display: grid;
-  }
+  .navigation[data-open="true"] { display: flex; flex-direction: column; }
+  .navigation a, .navigation .primaryLink { display: block; padding: 0.7rem 0.75rem; }
+  .account { width: 100%; align-items: stretch; flex-direction: column; gap: 0.25rem; }
+  .navigation .accountLink, .account > a:not(.accountLink), .account button { display: block; width: 100%; padding: 0.7rem 0.75rem; text-align: left; }
 
   .footerContent {
     align-items: flex-start;
