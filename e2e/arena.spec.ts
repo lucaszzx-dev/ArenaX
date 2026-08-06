@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { loginAsSeedOrganizer } from "./auth-helper.js";
 
 test("visitor discovers a published arena by sport", async ({ page }) => {
   await page.goto("/campeonatos");
@@ -29,12 +30,7 @@ test("visitor follows the public arena and match result", async ({ page }) => {
 });
 
 test("organizer signs in and opens the demo arena panel", async ({ page }) => {
-  await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill("demo@arenax.local");
-  await page.locator('input[name="password"]').fill("ArenaXDemo2026!");
-  await page.getByRole("button", { name: "Entrar na ArenaX" }).click();
-
-  await expect(page).toHaveURL(/\/painel$/);
+  await loginAsSeedOrganizer(page);
   await expect(page.getByRole("heading", {
     name: "Olá, Organizador ArenaX."
   })).toBeVisible();
@@ -46,10 +42,7 @@ test("organizer signs in and opens the demo arena panel", async ({ page }) => {
 });
 
 test("organizer records a football event for a player", async ({ page }) => {
-  await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill("demo@arenax.local");
-  await page.locator('input[name="password"]').fill("ArenaXDemo2026!");
-  await page.getByRole("button", { name: "Entrar na ArenaX" }).click();
+  await loginAsSeedOrganizer(page);
 
   await page.getByRole("link", { name: /Copa ArenaX Demo/ }).click();
   await page.getByRole("link", { name: "Gerenciar partidas" }).click();

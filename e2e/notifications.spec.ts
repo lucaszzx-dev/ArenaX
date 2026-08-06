@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 
 import { expect, test } from "@playwright/test";
+import { loginAsSeedOrganizer } from "./auth-helper.js";
 
 test.beforeAll(() => {
   // Cada projeto roda a suíte de forma isolada; o seed global só roda uma vez
@@ -20,12 +21,7 @@ test.beforeAll(() => {
 });
 
 test("organizer opens the notification center and marks everything as read", async ({ page }) => {
-  await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill("demo@arenax.local");
-  await page.locator('input[name="password"]').fill("ArenaXDemo2026!");
-  await page.getByRole("button", { name: "Entrar na ArenaX" }).click();
-
-  await expect(page).toHaveURL(/\/painel$/);
+  await loginAsSeedOrganizer(page);
 
   const bell = page.getByRole("link", { name: /Notificações/ }).first();
   await expect(bell).toBeVisible();

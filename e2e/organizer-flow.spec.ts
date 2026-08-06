@@ -1,11 +1,8 @@
 import { expect, test } from "@playwright/test";
+import { loginAsSeedOrganizer } from "./auth-helper.js";
 
 async function login(page: import("@playwright/test").Page) {
-  await page.goto("/entrar");
-  await page.getByLabel("E-mail").fill("demo@arenax.local");
-  await page.locator('input[name="password"]').fill("ArenaXDemo2026!");
-  await page.getByRole("button", { name: "Entrar na ArenaX" }).click();
-  await expect(page).toHaveURL(/\/painel$/);
+  await loginAsSeedOrganizer(page);
 }
 
 async function createArena(
